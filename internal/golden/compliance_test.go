@@ -172,7 +172,24 @@ func TestComplianceWebsite(t *testing.T) {
 	ts := httptest.NewServer(site.Handler())
 	t.Cleanup(ts.Close)
 
-	paths := []string{"/", "/how-it-works", "/terms", "/privacy"}
+	// Every indexed page (the sitemap: the static pages, /townships and each
+	// township's page), plus the report page for every case.
+	paths := []string{"/townships/lakeview"} // a redirect, followed to the page
+	resp, err := http.Get(ts.URL + "/sitemap.xml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sitemap, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range regexp.MustCompile(`<loc>([^<]*)</loc>`).FindAllStringSubmatch(string(sitemap), -1) {
+		paths = append(paths, strings.TrimPrefix(m[1], ts.URL))
+	}
+	if len(paths) < 2 {
+		t.Fatalf("no pages in the sitemap:\n%s", sitemap)
+	}
 	for _, c := range golden.Cases {
 		paths = append(paths, "/check/"+c.Args[0])
 	}
@@ -199,6 +216,9 @@ func TestComplianceWebsite(t *testing.T) {
 		}
 		text := tags.ReplaceAllString(string(body), " ")
 		for _, m := range attrs.FindAllStringSubmatch(string(body), -1) {
+			if strings.HasPrefix(m[1], "http") {
+				continue // og:url and og:image are URLs, not prose ("/townships/worth")
+			}
 			text += " " + m[1]
 		}
 		for _, bad := range violations(html.UnescapeString(text)) {

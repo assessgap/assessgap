@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/assessgap/assessgap/internal/comps"
 	"github.com/assessgap/assessgap/internal/fixture"
@@ -61,4 +62,46 @@ func TestGoldenReportView(t *testing.T) {
 			golden.CheckFields(t, "web/"+c.Name+".txt", c.Name+" ("+c.Args[0]+")", header, got)
 		})
 	}
+}
+
+// TestGoldenTownships compares the township pages' data on fixed dates with
+// testdata/golden/web/township*.txt: the filing window (from internal/bor)
+// and the figures aggregated from the fixture's neighborhoods. Dates are
+// noon in Chicago.
+func TestGoldenTownships(t *testing.T) {
+	facts, err := loadTownshipFacts(context.Background(), fixture.Open(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	day := func(s string) time.Time {
+		d, err := time.Parse(time.DateOnly, s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return d.Add(18 * time.Hour) // noon in Chicago (UTC−6 in winter, −5 in summer: still that day)
+	}
+	header := "Township page data (web.townshipView, web.townshipIndex) on a fixed date" +
+		"\nRegenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update"
+	check := func(name string, v any) {
+		t.Helper()
+		b, err := json.Marshal(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := golden.Flatten(b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		golden.CheckFields(t, "web/"+name+".txt", name, header, got)
+	}
+	for _, c := range []struct{ township, on string }{
+		{"Oak Park", "2026-08-20"},  // open; in the fixture
+		{"Worth", "2026-09-15"},     // dates not posted; in the fixture
+		{"Jefferson", "2026-09-15"}, // dates not posted; in the fixture
+		{"Hyde Park", "2026-09-15"}, // opening soon; no data in the fixture
+	} {
+		v := townshipView(c.township, facts[c.township], day(c.on))
+		check("township-"+v.Slug+"-"+c.on, v)
+	}
+	check("townships-index-2026-09-15", townshipIndex(day("2026-09-15")))
 }

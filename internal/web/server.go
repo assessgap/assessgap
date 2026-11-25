@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
+	"github.com/assessgap/assessgap/internal/bor"
 	"github.com/assessgap/assessgap/internal/comps"
 	"github.com/assessgap/assessgap/internal/packet"
 	"github.com/assessgap/assessgap/internal/web/views"
@@ -38,8 +39,10 @@ type Server struct {
 	Dev  bool
 	Log  *slog.Logger
 
-	eng  *comps.Engine
-	site views.Site
+	eng     *comps.Engine
+	site    views.Site
+	towns   map[string]townshipFacts
+	ogImage string // share image path with a cache-busting hash
 }
 
 // New prepares a server. It reads a few site-wide numbers once at startup.
@@ -51,6 +54,10 @@ func New(cook, app *sql.DB, dev bool, log *slog.Logger) (*Server, error) {
 		FROM nbhd_bor_stats WHERE pro_se = 1`).
 		Scan(&s.site.ProSeWinRate, &s.site.ProSeAppeals, &s.site.FirstYear, &s.site.LastYear)
 	if err != nil {
+		return nil, err
+	}
+	s.ogImage = "/static/og.png?v=" + fileHash("static/og.png")
+	if s.towns, err = loadTownshipFacts(context.Background(), cook); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -78,6 +85,9 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /how-it-works", s.page(func(r *http.Request) templ.Component { return views.HowItWorks(s.site) }))
 	mux.HandleFunc("GET /terms", s.page(func(r *http.Request) templ.Component { return views.Terms(s.site) }))
 	mux.HandleFunc("GET /privacy", s.page(func(r *http.Request) templ.Component { return views.Privacy(s.site) }))
+	mux.HandleFunc("GET /townships", s.handleTownships)
+	mux.HandleFunc("GET /townships/{slug}", s.handleTownship)
+	mux.Handle("GET /townships/{$}", http.RedirectHandler("/townships", http.StatusMovedPermanently))
 	heavy := make(busy, 4)
 	mux.HandleFunc("GET /search", heavy.limit(s.handleSearch))
 	mux.HandleFunc("GET /check/{pin}", heavy.limit(s.handleCheck))
@@ -97,7 +107,7 @@ func (s *Server) page(c func(*http.Request) templ.Component) http.HandlerFunc {
 
 func (s *Server) render(w http.ResponseWriter, r *http.Request, c templ.Component) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := c.Render(r.Context(), w); err != nil {
+	if err := c.Render(views.WithShare(r.Context(), s.share(r)), w); err != nil {
 		s.Log.Error("render", "path", r.URL.Path, "err", err)
 	}
 }
@@ -139,7 +149,11 @@ func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleCheck(w http.ResponseWriter, r *http.Request) {
 	if rep := s.loadReport(w, r); rep != nil {
-		s.render(w, r, views.Report(s.site, toView(rep)))
+		v := toView(rep)
+		if t, ok := bor.LookupTownship(rep.Township); ok && v.Window.Text != "" {
+			v.Window.TownshipURL = townshipPath(t)
+		}
+		s.render(w, r, views.Report(s.site, v))
 	}
 }
 
@@ -182,12 +196,16 @@ func (s *Server) handleNotify(w http.ResponseWriter, r *http.Request) {
 	if reason != "condo-support" && reason != "unsupported" {
 		reason = "township-opens"
 	}
+	// A township page's form has no PIN, only the township's slug.
+	var township, slug string
+	if t, _, ok := resolveTownship(r.PostForm.Get("township")); ok {
+		township, slug = t, townshipSlug(t)
+	}
 	addr, err := mail.ParseAddress(email)
 	if err != nil || len(email) > 254 || addr.Address != email {
-		s.render(w, r, views.NotifyForm(pin, reason, "That email address doesn't look right."))
+		s.render(w, r, views.NotifyFormFor(pin, slug, reason, "That email address doesn't look right."))
 		return
 	}
-	var township string
 	if pin != "" {
 		_ = s.Cook.QueryRowContext(r.Context(), `SELECT COALESCE(township_name,'') FROM parcel WHERE pin = ?`, pin).Scan(&township)
 	}

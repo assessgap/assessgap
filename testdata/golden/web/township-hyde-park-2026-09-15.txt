@@ -1,0 +1,15 @@
+# Township page data (web.townshipView, web.townshipIndex) on a fixed date
+# Regenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update
+Attorney = null
+Homes = "0"
+Name = "Hyde Park"
+ProSe = null
+ScheduleAsOf = "November 24, 2026"
+Slug = "hyde-park"
+Window.Close = "December 8, 2026"
+Window.DaysLeft = ""
+Window.EvidenceDue = "December 18, 2026"
+Window.Group = "4"
+Window.Label = "Opening soon"
+Window.Open = "November 9, 2026"
+Window.State = "upcoming"

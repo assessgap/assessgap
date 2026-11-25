@@ -275,6 +275,11 @@ templ windowBanner(w Window) {
 		templ.KV("bg-sky-50 ring-sky-200 text-sky-900", w.State == "upcoming" || w.State == "unscheduled"),
 		templ.KV("bg-stone-100 ring-stone-200 text-slate-700", w.State == "closed") }>
 		<p class="font-medium">{ w.Text }</p>
-		<a href={ templ.SafeURL(w.LinkURL) } rel="noopener" class="shrink-0 text-sm font-semibold underline underline-offset-4">{ w.LinkText } →</a>
+		<span class="flex shrink-0 flex-wrap gap-x-5 gap-y-1">
+			if w.TownshipURL != "" {
+				<a href={ templ.SafeURL(w.TownshipURL) } class="text-sm font-semibold underline underline-offset-4">Township dates and steps →</a>
+			}
+			<a href={ templ.SafeURL(w.LinkURL) } rel="noopener" class="text-sm font-semibold underline underline-offset-4">{ w.LinkText } →</a>
+		</span>
 	</section>
 }

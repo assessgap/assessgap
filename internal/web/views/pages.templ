@@ -1,8 +1,16 @@
 package views
 
 templ NotifyForm(pin, reason, errMsg string) {
+	@NotifyFormFor(pin, "", reason, errMsg)
+}
+
+// NotifyFormFor carries a township slug when there's no PIN (township pages).
+templ NotifyFormFor(pin, township, reason, errMsg string) {
 	<form hx-post="/notify" hx-swap="outerHTML" action="/notify" method="post" class="space-y-2">
 		<input type="hidden" name="pin" value={ pin }/>
+		if township != "" {
+			<input type="hidden" name="township" value={ township }/>
+		}
 		<input type="hidden" name="reason" value={ reason }/>
 		<label for="email" class="block text-sm font-medium">
 			if reason == "township-opens" {
