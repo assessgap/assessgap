@@ -60,6 +60,11 @@ func New(cook, app *sql.DB, dev bool, log *slog.Logger) (*Server, error) {
 	if s.towns, err = loadTownshipFacts(context.Background(), cook); err != nil {
 		return nil, err
 	}
+	for _, t := range bor.Townships {
+		if !s.towns[t].found {
+			log.Warn("township not in the parcel data; its page shows no figures", "township", t)
+		}
+	}
 	return s, nil
 }
 

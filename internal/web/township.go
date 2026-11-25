@@ -47,6 +47,7 @@ type appealTotals struct {
 // townshipFacts are a township's numbers from the county data, read once at
 // startup (the data changes only when the database is rebuilt).
 type townshipFacts struct {
+	found            bool // the township is in the parcel data
 	homes            int
 	proSe, attorney  appealTotals
 	hasProSe, hasAtt bool
@@ -64,7 +65,7 @@ func loadTownshipFacts(ctx context.Context, db *sql.DB) (map[string]townshipFact
 		args[i] = c
 	}
 	rows, err := db.QueryContext(ctx, `
-		SELECT township_code, township_name, SUM(class IN (?`+strings.Repeat(",?", len(classes)-1)+`))
+		SELECT township_code, township_name, COALESCE(SUM(class IN (?`+strings.Repeat(",?", len(classes)-1)+`)), 0)
 		FROM parcel WHERE township_code <> '' AND township_name <> ''
 		GROUP BY township_code, township_name`, args...)
 	if err != nil {
@@ -79,8 +80,12 @@ func loadTownshipFacts(ctx context.Context, db *sql.DB) (map[string]townshipFact
 		if err := rows.Scan(&code, &name, &homes); err != nil {
 			return nil, err
 		}
+		if canon, ok := bor.LookupTownship(name); ok {
+			name = canon // the county's spelling may differ from bor.Townships ("Lakeview")
+		}
 		byCode[code] = name
 		f := facts[name]
+		f.found = true
 		f.homes += homes
 		facts[name] = f
 	}
@@ -170,14 +175,17 @@ func townshipWindow(township string, now time.Time) views.TownshipWindow {
 }
 
 func townshipView(name string, f townshipFacts, now time.Time) views.TownshipData {
-	return views.TownshipData{
+	v := views.TownshipData{
 		Name: name, Slug: townshipSlug(name),
 		Window:       townshipWindow(name, now),
 		ScheduleAsOf: scheduleAsOf(),
-		Homes:        humanize.Comma(int64(f.homes)),
 		ProSe:        appealsView(f.proSe, f.hasProSe),
 		Attorney:     appealsView(f.attorney, f.hasAtt),
 	}
+	if f.found { // otherwise show no count rather than a confident 0
+		v.Homes = humanize.Comma(int64(f.homes))
+	}
+	return v
 }
 
 // scheduleAsOf renders bor.ScheduleAsOf ("2026-11-24") as "November 24, 2026".
