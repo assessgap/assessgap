@@ -199,15 +199,15 @@ type queries struct {
 	parts map[string][]string // dataset name -> fetched part dirs
 }
 
-func (q *queries) dataset(name, where string) socrata.Dataset {
+func dataset(name, where string) (socrata.Dataset, error) {
 	for _, d := range ingest.Datasets {
 		if d.Name == name {
 			d.Where = ingest.And(d.Where, where)
 			d.Select = strings.Join(ingest.Columns[name], ", ")
-			return d
+			return d, nil
 		}
 	}
-	panic("live: unknown dataset " + name)
+	return socrata.Dataset{}, fmt.Errorf("live: unknown dataset %q", name)
 }
 
 func (q *queries) fetch(ctx context.Context, name, where string) error {
@@ -215,8 +215,12 @@ func (q *queries) fetch(ctx context.Context, name, where string) error {
 }
 
 func (q *queries) fetchAs(ctx context.Context, name, part, where string) error {
+	d, err := dataset(name, where)
+	if err != nil {
+		return err
+	}
 	dir := filepath.Join(q.dir, part)
-	if _, err := q.client.Fetch(ctx, q.dataset(name, where), dir); err != nil {
+	if _, err := q.client.Fetch(ctx, d, dir); err != nil {
 		return err
 	}
 	q.mu.Lock()
@@ -361,7 +365,7 @@ func isDigits(s string) bool {
 	return s != ""
 }
 
-// group runs functions concurrently and keeps the first error, cancelling
+// group runs functions concurrently and keeps the first error, canceling
 // the others' context when one fails.
 type group struct {
 	wg     sync.WaitGroup

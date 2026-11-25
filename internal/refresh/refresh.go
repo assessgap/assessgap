@@ -146,31 +146,35 @@ func (s StageChange) String() string {
 		s.Year, s.OldMailedOnly, s.NewMailedOnly, s.NowCertified, s.MissingFromNew)
 }
 
+// mailedOnlyPINs returns the PINs whose value for year is not yet certified.
+func mailedOnlyPINs(ctx context.Context, db *sql.DB, year int) (map[string]bool, error) {
+	rows, err := db.QueryContext(ctx, `SELECT pin FROM assessment WHERE year = ? AND certified IS NULL`, year)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]bool{}
+	for rows.Next() {
+		var pin string
+		if err := rows.Scan(&pin); err != nil {
+			return nil, err
+		}
+		out[pin] = true
+	}
+	return out, rows.Err()
+}
+
 // CertifiedSince compares mailed-only PINs for year between two databases.
 // The databases are read separately (no ATTACH) so old can stay read-only.
 func CertifiedSince(ctx context.Context, old, cur *sql.DB, year int) (StageChange, error) {
 	sc := StageChange{Year: year}
-	mailedOnly := map[string]bool{}
-	rows, err := old.QueryContext(ctx,
-		`SELECT pin FROM assessment WHERE year = ? AND certified IS NULL`, year)
+	mailedOnly, err := mailedOnlyPINs(ctx, old, year)
 	if err != nil {
-		return sc, err
-	}
-	for rows.Next() {
-		var pin string
-		if err := rows.Scan(&pin); err != nil {
-			rows.Close()
-			return sc, err
-		}
-		mailedOnly[pin] = true
-	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
 		return sc, err
 	}
 	sc.OldMailedOnly = len(mailedOnly)
 
-	rows, err = cur.QueryContext(ctx,
+	rows, err := cur.QueryContext(ctx,
 		`SELECT pin, certified IS NOT NULL FROM assessment WHERE year = ?`, year)
 	if err != nil {
 		return sc, err

@@ -48,7 +48,9 @@ func runServe(ctx context.Context, env *Env, args []string) error {
 		<-ctx.Done()
 		shut, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		srv.Shutdown(shut)
+		if err := srv.Shutdown(shut); err != nil {
+			log.Error("shutdown", "err", err)
+		}
 	}()
 	log.Info("listening", "addr", *addr, "dev", *dev)
 	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {

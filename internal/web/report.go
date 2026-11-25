@@ -240,8 +240,6 @@ func pctAbs(v float64) string { return pct(math.Abs(v)) }
 
 func num(v float64) string { return humanize.Comma(int64(math.Round(v))) }
 
-func f(v float64) string { return fmt.Sprintf("%.1f", v) }
-
 func baths(h comps.Home) string {
 	b := h.Baths()
 	if b == math.Trunc(b) {

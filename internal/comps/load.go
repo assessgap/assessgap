@@ -80,7 +80,7 @@ func scanHome(s scanner, extra ...any) (h Home, hasChars bool, err error) {
 	)
 	dest := append([]any{&h.PIN, &h.Address, &h.Class, &av,
 		&bldg, &land, &yrblt, &rooms, &beds, &fb, &hb, &typ, &wall, &bsmt, &cards}, extra...)
-	if err = s.Scan(dest...); err != nil {
+	if err := s.Scan(dest...); err != nil {
 		return h, false, err
 	}
 	h.AV, h.BldgSF, h.LandSF = av.Float64, bldg.Float64, land.Float64

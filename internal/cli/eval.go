@@ -15,6 +15,7 @@ import (
 	"io"
 	"math/rand/v2"
 	"sort"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -270,30 +271,42 @@ func (o outcome) String() string {
 	return fmt.Sprintf("%d | %.1f%% | %s", o.n, pctOf(o.wins, o.n), avgCut)
 }
 
-func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), db *sql.DB, e *comps.Engine, yearList string) error {
-	ys := strings.Split(yearList, ",")
-	q := fmt.Sprintf(backtestSQL, placeholders(len(ys)))
-	rows, err := db.QueryContext(ctx, q, append(anys(ys), anys(comps.ScopeClasses())...)...)
+type appeal struct {
+	pin      string
+	year     int
+	won, pro bool
+	cut      sql.NullFloat64
+}
+
+// loadAppeals reads the in-scope Board of Review appeals for the tax years
+// before any reports run, so the per-appeal queries get the connection.
+func loadAppeals(ctx context.Context, db *sql.DB, years []string) ([]appeal, error) {
+	q := fmt.Sprintf(backtestSQL, placeholders(len(years)))
+	rows, err := db.QueryContext(ctx, q, append(anys(years), anys(comps.ScopeClasses())...)...)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	type appeal struct {
-		pin      string
-		year     int
-		won, pro bool
-		cut      sql.NullFloat64
-	}
+	defer rows.Close()
 	var appeals []appeal
 	for rows.Next() {
 		var a appeal
 		if err := rows.Scan(&a.pin, &a.year, &a.won, &a.pro, &a.cut); err != nil {
-			rows.Close()
-			return err
+			return nil, err
 		}
 		appeals = append(appeals, a)
 	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
+	return appeals, rows.Err()
+}
+
+func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), db *sql.DB, e *comps.Engine, yearList string) error {
+	ys := strings.Split(yearList, ",")
+	for _, y := range ys {
+		if _, err := strconv.Atoi(y); err != nil {
+			return &exitError{2, fmt.Sprintf("-years: %q is not a year", y)}
+		}
+	}
+	appeals, err := loadAppeals(ctx, db, ys)
+	if err != nil {
 		return err
 	}
 	fmt.Fprintf(w, "in-scope BOR appeals (PIN-years) %s: %d\n", yearList, len(appeals))
@@ -348,7 +361,7 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 	for _, p := range append([]string{"all"}, ys...) {
 		yr := 0
 		if p != "all" {
-			fmt.Sscan(p, &yr)
+			yr, _ = strconv.Atoi(p) // validated above
 		}
 		fmt.Fprintf(w, "\n**Tax year %s**\n\n", p)
 		printOutcomeHeader(w, "verdict")

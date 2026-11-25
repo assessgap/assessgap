@@ -85,7 +85,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /notify", newPerIP(10, 10*time.Minute).limit(s.handleNotify))
 	mux.HandleFunc("/", s.notFound)
 
-	var h http.Handler = http.NewCrossOriginProtection().Handler(mux)
+	h := http.NewCrossOriginProtection().Handler(mux)
 	h = s.headers(h)
 	h = s.logRequests(h)
 	return h
