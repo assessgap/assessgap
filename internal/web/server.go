@@ -6,6 +6,7 @@ package web
 //go:generate ../../bin/tailwindcss -i styles/input.css -o static/app.css --minify
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"database/sql"
@@ -17,11 +18,13 @@ import (
 	"net/http"
 	"net/mail"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/a-h/templ"
 	"github.com/assessgap/assessgap/internal/comps"
+	"github.com/assessgap/assessgap/internal/packet"
 	"github.com/assessgap/assessgap/internal/web/views"
 )
 
@@ -76,11 +79,9 @@ func (s *Server) Handler() http.Handler {
 	heavy := make(busy, 4)
 	mux.HandleFunc("GET /search", heavy.limit(s.handleSearch))
 	mux.HandleFunc("GET /check/{pin}", heavy.limit(s.handleCheck))
+	mux.HandleFunc("GET /check/{pin}/report.pdf", heavy.limit(s.handleReportPDF))
 	mux.HandleFunc("POST /notify", newPerIP(10, 10*time.Minute).limit(s.handleNotify))
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		s.render(w, r, views.NotFound(s.site))
-	})
+	mux.HandleFunc("/", s.notFound)
 
 	var h http.Handler = http.NewCrossOriginProtection().Handler(mux)
 	h = s.headers(h)
@@ -136,26 +137,61 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 var pinRe = regexp.MustCompile(`^\d{14}$`)
 
-func (s *Server) handleCheck(w http.ResponseWriter, r *http.Request) {
+// loadReport validates the {pin} path value and builds its report. On failure
+// it writes the response (404 for a malformed or unknown PIN) and returns nil.
+func (s *Server) loadReport(w http.ResponseWriter, r *http.Request) *comps.Report {
 	pin := strings.ReplaceAll(r.PathValue("pin"), "-", "")
 	if !pinRe.MatchString(pin) {
-		w.WriteHeader(http.StatusNotFound)
-		s.render(w, r, views.NotFound(s.site))
-		return
+		s.notFound(w, r)
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 	rep, err := s.eng.Report(ctx, pin, 0)
 	if errors.Is(err, comps.ErrNotFound) {
-		w.WriteHeader(http.StatusNotFound)
-		s.render(w, r, views.NotFound(s.site))
+		s.notFound(w, r)
+		return nil
+	}
+	if err != nil {
+		s.fail(w, r, err)
+		return nil
+	}
+	return rep
+}
+
+func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
+	s.render(w, r, views.NotFound(s.site))
+}
+
+func (s *Server) handleCheck(w http.ResponseWriter, r *http.Request) {
+	if rep := s.loadReport(w, r); rep != nil {
+		s.render(w, r, views.Report(s.site, toView(rep)))
+	}
+}
+
+// handleReportPDF serves the free evidence report as a download. Unsupported
+// properties have no comparison to print, so they get 404 like unknown PINs.
+func (s *Server) handleReportPDF(w http.ResponseWriter, r *http.Request) {
+	rep := s.loadReport(w, r)
+	if rep == nil {
+		return
+	}
+	var buf bytes.Buffer // render fully first so an error never sends half a PDF
+	err := packet.Render(&buf, rep, time.Now())
+	if errors.Is(err, packet.ErrUnsupported) {
+		s.notFound(w, r)
 		return
 	}
 	if err != nil {
 		s.fail(w, r, err)
 		return
 	}
-	s.render(w, r, views.Report(s.site, toView(rep)))
+	h := w.Header()
+	h.Set("Content-Type", "application/pdf")
+	h.Set("Content-Disposition", `attachment; filename="assessgap-`+rep.PIN+`.pdf"`)
+	h.Set("Content-Length", strconv.Itoa(buf.Len()))
+	w.Write(buf.Bytes())
 }
 
 func (s *Server) handleNotify(w http.ResponseWriter, r *http.Request) {

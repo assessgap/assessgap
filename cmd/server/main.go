@@ -19,7 +19,7 @@ import (
 func main() {
 	addr := flag.String("addr", "127.0.0.1:8080", "listen address")
 	cookPath := flag.String("cook", "data/cook.db", "county data (read-only)")
-	appPath := flag.String("app", "data/app.db", "app database (signups, orders)")
+	appPath := flag.String("app", "data/app.db", "app database (email signups)")
 	dev := flag.Bool("dev", true, "dev mode (noindex)")
 	flag.Parse()
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))

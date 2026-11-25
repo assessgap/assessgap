@@ -58,7 +58,7 @@ func Home(s Site) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = stat("$0", "to file at the Board of Review. You don't need a lawyer or a paid service to appeal.", "").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = stat("Free", "to file at the Board of Review. You don't need a lawyer or a service to appeal.", "").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

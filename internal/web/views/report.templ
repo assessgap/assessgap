@@ -215,20 +215,25 @@ templ nextSteps(r ReportData) {
 			</li>
 			if r.Verdict != "weak" {
 				<li>
-					<strong class="font-semibold text-white">Use our Assessment Evidence Report.</strong>
-					Coming soon, $29: your similar homes with PINs and assessment details, the statistics, and step-by-step instructions for the free county filing.
-					You still file and sign everything yourself.
+					<strong class="font-semibold text-white">Download your evidence report (free PDF).</strong>
+					It lists the similar homes assessed lower than yours, with their PINs and details, the statistics, and step-by-step
+					instructions for filing with the Board of Review. You still file and sign everything yourself.
+					<span class="mt-3 block">
+						<a href={ templ.SafeURL("/check/" + r.PIN + "/report.pdf") } download class="inline-block rounded-xl bg-emerald-500 px-4 py-2.5 font-medium text-white hover:bg-emerald-600">
+							Download the PDF
+						</a>
+					</span>
 				</li>
 			} else {
 				<li>
 					<strong class="font-semibold text-white">Check your home's details.</strong>
 					If the Assessor has something wrong, such as square footage or the number of bathrooms, you can ask for a correction.
-					We only offer our Assessment Evidence Report when enough similar homes are assessed lower than yours to include.
+					We only offer the evidence report when enough similar homes are assessed lower than yours to include.
 				</li>
 			}
 			<li>
 				<strong class="font-semibold text-white">Hire an attorney or tax firm.</strong>
-				Many charge a share of what you save instead of an upfront fee.
+				They prepare and file the appeal for you.
 			</li>
 		</ul>
 		<div class="mt-6 max-w-lg">
