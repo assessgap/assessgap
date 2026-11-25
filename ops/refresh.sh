@@ -8,7 +8,7 @@
 #    unless -resume is passed (continue a fetch that failed earlier the same day).
 # 2. Load and build into DATA/cook.db.new. The live DATA/cook.db is never written.
 # 3. Validate: integrity check, every typed table non-empty, no table shrinks >2%,
-#    the latest assessment year doesn't go backwards, ./bin/check works on known PINs.
+#    the latest assessment year doesn't go backwards, "assessgap check" works on known PINs.
 # 4. Finalize (checkpoint, rollback journal, no -wal/-shm), then swap with an atomic mv.
 #    The previous database stays as DATA/cook.db.prev (hard link) for rollback.
 #    -no-swap stops after finalize and leaves DATA/cook.db.new in place.
@@ -102,20 +102,20 @@ fi
 
 log "refresh: data=$data raw=$raw swap=$swap"
 
-step "build binaries" go build -o bin/ ./cmd/ingest ./cmd/build ./cmd/check ./cmd/refresh
+step "build binary" go build -o bin/ ./cmd/assessgap
 
 # A leftover from a failed run must not leak old tables into this build.
 rm -f "$new" "$new-wal" "$new-shm"
 
-step "fetch" ./bin/ingest "${ingest_flags[@]}" fetch
-step "load" ./bin/ingest "${ingest_flags[@]}" -db "$new" load
-step "build" ./bin/build -db "$new"
-step "validate" ./bin/refresh validate -old "$db" -new "$new"
+step "fetch" ./bin/assessgap db fetch "${ingest_flags[@]}"
+step "load" ./bin/assessgap db load "${ingest_flags[@]}" -db "$new"
+step "build" ./bin/assessgap db build -db "$new"
+step "validate" ./bin/assessgap db validate -old "$db" -new "$new"
 
 check_pins() {
   local pin out verdict
   for pin in $pins; do
-    out=$(./bin/check -db "$new" -brief "$pin")
+    out=$(./bin/assessgap check -db "$new" -json -brief "$pin")
     case "$out" in
       *'"verdict": "'*) ;;
       *) die "check $pin: report has no verdict" ;;
@@ -127,7 +127,7 @@ check_pins() {
 step "check known PINs" check_pins
 
 finalize() {
-  ./bin/refresh finalize -db "$new"
+  ./bin/assessgap db finalize -db "$new"
   rm -f "$new-wal" "$new-shm"
 }
 step "finalize" finalize

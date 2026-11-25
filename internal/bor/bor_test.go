@@ -39,6 +39,32 @@ func TestScheduleTownshipsUnique(t *testing.T) {
 				t.Errorf("%s listed twice", n)
 			}
 			seen[n] = true
+			if _, ok := LookupTownship(n); !ok {
+				t.Errorf("scheduled township %q is not in Townships", n)
+			}
+		}
+	}
+}
+
+func TestLookupTownship(t *testing.T) {
+	if len(Townships) != 38 {
+		t.Errorf("%d townships, want 38", len(Townships))
+	}
+	tests := []struct {
+		in, want string
+		ok       bool
+	}{
+		{"Lake View", "Lake View", true},
+		{"lakeview", "Lake View", true},
+		{"Lake", "Lake", true},
+		{"new trier township", "New Trier", true},
+		{" JEFFERSON ", "Jefferson", true},
+		{"Springfield", "", false},
+	}
+	for _, tt := range tests {
+		got, ok := LookupTownship(tt.in)
+		if got != tt.want || ok != tt.ok {
+			t.Errorf("LookupTownship(%q) = %q, %v; want %q, %v", tt.in, got, ok, tt.want, tt.ok)
 		}
 	}
 }

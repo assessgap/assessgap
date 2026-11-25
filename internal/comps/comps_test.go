@@ -15,7 +15,7 @@ import (
 
 // The sample DB is PIN prefix 1328 (Jefferson, nbhd 71260). Build it with:
 //
-//	go run ./cmd/ingest -data data-sample -pin-prefix 1328 all && go run ./cmd/build -db data-sample/cook.db
+//	go run ./cmd/assessgap db sync -data data-sample -pin-prefix 1328
 const sampleDB = "../../data-sample/cook.db"
 
 func openSample(t *testing.T) *sql.DB {

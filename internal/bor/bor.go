@@ -58,6 +58,34 @@ var Schedule = []Group{
 		d("2026-11-09"), d("2026-12-08"), d("2026-12-18")},
 }
 
+// Townships are Cook County's 38 assessment townships, spelled as the
+// Assessor's parcel data spells them (the city's are "North Chicago",
+// "South Chicago" and so on).
+var Townships = []string{
+	"Barrington", "Berwyn", "Bloom", "Bremen", "Calumet", "Cicero", "Elk Grove", "Evanston",
+	"Hanover", "Hyde Park", "Jefferson", "Lake", "Lake View", "Lemont", "Leyden", "Lyons",
+	"Maine", "New Trier", "Niles", "North Chicago", "Northfield", "Norwood Park", "Oak Park", "Orland",
+	"Palatine", "Palos", "Proviso", "Rich", "River Forest", "Riverside", "Rogers Park", "Schaumburg",
+	"South Chicago", "Stickney", "Thornton", "West Chicago", "Wheeling", "Worth",
+}
+
+// LookupTownship matches a typed name ("lakeview", "new trier") to one of
+// Townships, ignoring case, spaces and a trailing "Township".
+func LookupTownship(name string) (string, bool) {
+	key := func(s string) string {
+		s = strings.ToLower(strings.TrimSpace(s))
+		s = strings.TrimSuffix(s, "township")
+		return strings.ReplaceAll(s, " ", "")
+	}
+	k := key(name)
+	for _, t := range Townships {
+		if key(t) == k {
+			return t, true
+		}
+	}
+	return "", false
+}
+
 // State of a township's filing window.
 type State int
 

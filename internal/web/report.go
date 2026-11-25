@@ -8,6 +8,7 @@ import (
 
 	"github.com/assessgap/assessgap/internal/bor"
 	"github.com/assessgap/assessgap/internal/comps"
+	"github.com/assessgap/assessgap/internal/search"
 	"github.com/assessgap/assessgap/internal/web/views"
 	"github.com/dustin/go-humanize"
 )
@@ -262,12 +263,7 @@ func titleCase(s string) string {
 	return strings.Join(ws, " ")
 }
 
-func formatPIN(p string) string {
-	if len(p) != 14 {
-		return p
-	}
-	return p[0:2] + "-" + p[2:4] + "-" + p[4:7] + "-" + p[7:10] + "-" + p[10:14]
-}
+func formatPIN(p string) string { return search.FormatPIN(p) }
 
 func shortDate(d string) string {
 	if len(d) >= 7 {
