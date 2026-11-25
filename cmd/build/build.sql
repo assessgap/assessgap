@@ -1,1 +1,0 @@
--- Moved to internal/ingest/build.sql. This file is left only until cmd/build is deleted.
