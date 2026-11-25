@@ -214,11 +214,17 @@ func (s *Server) handleNotify(w http.ResponseWriter, r *http.Request) {
 	if pin != "" {
 		_ = s.Cook.QueryRowContext(r.Context(), `SELECT COALESCE(township_name,'') FROM parcel WHERE pin = ?`, pin).Scan(&township)
 	}
-	_, err = s.App.ExecContext(r.Context(),
+	res, err := s.App.ExecContext(r.Context(),
 		`INSERT INTO signup (email, pin, township, reason) VALUES (?, ?, ?, ?)
 		 ON CONFLICT (email, pin) DO NOTHING`, strings.ToLower(email), pin, township, reason)
 	if err != nil {
 		s.fail(w, r, err)
+		return
+	}
+	// Signups are unique on (email, pin), and township pages send no PIN, so a
+	// second township with the same email isn't stored: say so, not "thanks".
+	if n, err := res.RowsAffected(); err == nil && n == 0 {
+		s.render(w, r, s.notifyResult(r, views.NotifyAlready()))
 		return
 	}
 	s.Log.Info("signup", "township", township, "reason", reason)

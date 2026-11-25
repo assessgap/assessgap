@@ -244,3 +244,19 @@ func TestNotifyInput(t *testing.T) {
 		t.Errorf("%d rows after a repeat signup (%v), want 1", n, err)
 	}
 }
+
+// TestNotifySecondTownship: a second township page with the same email stores
+// nothing (the key is email and PIN, and township pages send no PIN), so the
+// reply must not confirm a signup that didn't happen.
+func TestNotifySecondTownship(t *testing.T) {
+	site, ts := newSite(t, false)
+	postNotify(t, ts, url.Values{"email": {"gu@example.com"}, "township": {"worth"}}, nil)
+	_, body := postNotify(t, ts, url.Values{"email": {"gu@example.com"}, "township": {"lake"}}, nil)
+	var stored string
+	if err := site.App.QueryRow(`SELECT township FROM signup WHERE email = 'gu@example.com'`).Scan(&stored); err != nil || stored != "Worth" {
+		t.Errorf("stored township %q (%v), want Worth", stored, err)
+	}
+	if !strings.Contains(body, "already on our list") {
+		t.Errorf("second township signup reply doesn't say it was already on the list:\n%s", body)
+	}
+}

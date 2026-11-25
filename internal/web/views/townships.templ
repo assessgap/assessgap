@@ -203,10 +203,19 @@ templ fileSteps(t TownshipData) {
 
 func evidenceStep(t TownshipData) string {
 	due := "by the evidence deadline the Board posts with the township's dates"
-	if t.Window.EvidenceDue != "" {
+	if t.Window.EvidenceDue != "" && t.Window.State != "closed" {
 		due = "by the evidence deadline, " + t.Window.EvidenceDue
 	}
 	return "Upload your evidence " + due + ". The Board's rules ask for a brief that includes a color photo of the front of the home taken within the last 12 months. Listing comparable homes is optional."
+}
+
+// NotifyAlready answers a signup whose email (and PIN, if any) is already on
+// the list; nothing was stored.
+templ NotifyAlready() {
+	<div role="status" class="rounded-xl bg-emerald-500/10 p-4 ring-1 ring-emerald-500/40">
+		<p class="font-medium">This email is already on our list.</p>
+		<p class="text-sm opacity-80">Nothing changed. For now we keep one signup per email address, so a second township isn't added.</p>
+	</div>
 }
 
 templ fileStep(n, text string) {

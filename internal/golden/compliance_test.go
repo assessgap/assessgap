@@ -219,7 +219,7 @@ func TestComplianceWebsite(t *testing.T) {
 		}
 		text := tags.ReplaceAllString(string(body), " ")
 		for _, m := range attrs.FindAllStringSubmatch(string(body), -1) {
-			if strings.HasPrefix(m[1], "http") {
+			if strings.HasPrefix(m[1], "https://") || strings.HasPrefix(m[1], "http://") {
 				continue // og:url and og:image are URLs, not prose ("/townships/worth")
 			}
 			text += " " + m[1]
@@ -255,6 +255,7 @@ func TestComplianceTownshipStates(t *testing.T) {
 			{State: "unscheduled", Heading: "Dates not posted yet", Townships: links}, {State: "closed", Heading: "Closed", Townships: links},
 		}}),
 		views.NotifyPage(views.Site{}, views.NotifyThanks()),
+		views.NotifyPage(views.Site{}, views.NotifyAlready()),
 		views.NotifyPage(views.Site{}, views.NotifyFormFor("", "worth", "township-opens", "That email address doesn't look right.")),
 	)
 	tags := regexp.MustCompile(`(?s)<script.*?</script>|<style.*?</style>|<[^>]*>`)

@@ -20,16 +20,15 @@ var indexedPaths = func() []string {
 	return ps
 }()
 
-// share is the request's link-preview and canonical-URL data. Report pages get
-// a generic preview pointing at the home page, so no address or PIN ends up in
-// a third party's preview cache.
+// share is the request's link-preview and canonical-URL data. Only indexed
+// pages get their own preview. Every other page (reports, and 404s, which echo
+// whatever path was typed, PINs included) gets a generic preview pointing at
+// the home page, so no address or PIN ends up in a third party's preview cache.
 func (s *Server) share(r *http.Request) views.Share {
 	o := origin(r)
-	sh := views.Share{Origin: o, URL: o + r.URL.Path, Image: o + s.ogImage}
-	if strings.HasPrefix(r.URL.Path, "/check/") {
-		sh.URL, sh.Private = o+"/", true
-	}
+	sh := views.Share{Origin: o, URL: o + "/", Image: o + s.ogImage, Private: true}
 	if slices.Contains(indexedPaths, r.URL.Path) {
+		sh.URL, sh.Private = o+r.URL.Path, false
 		sh.Canonical = sh.URL
 	}
 	return sh

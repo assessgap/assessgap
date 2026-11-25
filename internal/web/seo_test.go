@@ -53,6 +53,9 @@ func TestSharePreview(t *testing.T) {
 		{"/check/13331030130000", []string{"13331030130000", "13-33-103-013-0000", "2329", "Lockwood"}, "", "/"},
 		{"/check/13-33-103-013-0000", []string{"13331030130000", "13-33-103-013-0000"}, "", "/"},
 		{"/townships/oak-park", nil, "/townships/oak-park", "/townships/oak-park"},
+		// 404s echo the typed path, so a PIN typed there must stay out too.
+		{"/townships/13331030130000", []string{"13331030130000"}, "", "/"},
+		{"/CHECK/13331030130000", []string{"13331030130000"}, "", "/"},
 		{"/?utm_source=x", nil, "/", "/"},
 	}
 	for _, tt := range tests {
