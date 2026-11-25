@@ -13,7 +13,7 @@ Filing an appeal with the Cook County Board of Review is free, and you don't nee
 > AssessGap is not affiliated with the Cook County Assessor, the Board of Review, or any government office. It is not a law firm and does not give legal advice, and it is not an appraisal. You file, sign and present your own appeal.
 
 ## Status
-Early. The website, the `assessgap` command and the free evidence report PDF work today. Planned next: checking a home straight from the county's open-data API (no big download), and Assessor-stage appeals.
+Early. The website, the `assessgap` command (which can check a home straight from the county's open data API, no big download) and the free evidence report PDF work today. Planned next: configurable comparisons ([data inventory](docs/data-inventory.md)) and Assessor-stage appeals.
 
 ## Run it yourself
 Requires Go 1.26+. Everything is pure Go (SQLite via `modernc.org/sqlite`), so there's no cgo.
@@ -40,6 +40,8 @@ go run ./cmd/assessgap township jefferson
 go run ./cmd/assessgap serve -app data-sample/app.db
 ```
 
+**No download needed for one home:** if there's no database (no `-db`, no `$ASSESSGAP_DB`, no `./data/cook.db`), `assessgap check <PIN>` and `assessgap report <PIN> -o x.pdf` fetch just that home's neighborhood from the county's open data API (about 10 requests and a few MB, usually a few seconds). Force it with `-live`. Searching by address still needs a local database.
+
 Without `-db` or `$ASSESSGAP_DB`, commands use `./data/cook.db`. For the whole county, run `assessgap db sync` with no flags: about 45 minutes and 9 GB. `ops/refresh.sh` rebuilds the full database safely (fresh download, validation, atomic swap) using `assessgap db fetch|load|build|validate|finalize`. `assessgap backtest` and `assessgap sample` reproduce the numbers in the methodology against a full database.
 
 ## Layout
@@ -47,6 +49,7 @@ Without `-db` or `$ASSESSGAP_DB`, commands use `./data/cook.db`. For the whole c
 |---|---|
 | `cmd/assessgap`, `internal/cli` | The `assessgap` command and its subcommands |
 | `internal/ingest`, `internal/socrata` | Download county datasets from Socrata; build typed, indexed SQLite tables (`build.sql`) |
+| `internal/live` | Live mode: one home's inputs from the API into an in-memory database |
 | `internal/comps` | The comparison engine: similar homes, statistics, data checks |
 | `internal/search` | Find a parcel by address or PIN (the website and the CLI) |
 | `internal/bor` | Board of Review township calendar and official links |
