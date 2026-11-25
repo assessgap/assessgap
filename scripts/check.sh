@@ -28,11 +28,16 @@ step() {
 	fi
 }
 
-# Packages tracked by git (local data directories such as data-*/ are
-# git-ignored and may hold scratch Go code).
+# Package directories tracked by git, as ./relative paths (local data
+# directories such as data-*/ are git-ignored and may hold scratch Go code).
 packages() {
-	go list -f '{{.ImportPath}} {{.Dir}}' ./... | while read -r pkg dir; do
-		git check-ignore -q "$dir" || echo "$pkg"
+	# -e: broken scratch code in an ignored directory must not stop the listing.
+	go list -e -f '{{.Dir}}' ./... | while read -r dir; do
+		if [ "$dir" = "$PWD" ]; then
+			echo .
+		else
+			git check-ignore -q "$dir" || echo "./${dir#"$PWD"/}"
+		fi
 	done
 }
 
@@ -60,35 +65,41 @@ check_names() {
 lint() {
 	local bin
 	bin=$(command -v golangci-lint || true)
-	if [ -n "$bin" ] && "$bin" version 2>/dev/null | grep -q "version ${GOLANGCI_LINT_VERSION#v} "; then
-		"$bin" run ./...
+	# shellcheck disable=SC2086 # $pkgs is a list of import paths
+	if [ -n "$bin" ] && "$bin" version 2>/dev/null | grep -Eq "version v?${GOLANGCI_LINT_VERSION#v} "; then
+		"$bin" run $pkgs
 	else
-		go run "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$GOLANGCI_LINT_VERSION" run ./...
+		go run "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$GOLANGCI_LINT_VERSION" run $pkgs
 	fi
 }
 
-# Regenerate templ and Tailwind output and fail if anything changed. The
-# regenerated files are left in place for you to review and commit.
+# Regenerate templ and Tailwind output and fail if anything changed or
+# appeared. The regenerated files are left in place to review and commit.
+# (step runs this inside "if !", where set -e is off, hence the || return 1.)
 check_generated() {
-	local files before after
+	local files before after new
 	files=$(git ls-files 'internal/web/views/*_templ.go' internal/web/static/app.css)
-	before=$(git hash-object $files)
-	go tool templ generate -path internal/web/views
-	if [ ! -x bin/tailwindcss ] && [ "${REQUIRE_TAILWIND:-}" = 1 ]; then
-		scripts/tailwind.sh
-	fi
+	before=$(git hash-object $files) || return 1
+	go tool templ generate -path internal/web/views || return 1
 	if [ -x bin/tailwindcss ]; then
-		(cd internal/web && ../../bin/tailwindcss -i styles/input.css -o static/app.css --minify)
-	else
-		echo "note: no bin/tailwindcss (run scripts/tailwind.sh); app.css not checked" >&2
+		(cd internal/web && ../../bin/tailwindcss -i styles/input.css -o static/app.css --minify) || return 1
 	fi
-	after=$(git hash-object $files)
-	if [ "$before" != "$after" ]; then
-		echo "generated files were stale and have been regenerated; review and commit:"
-		git status --short $files
+	after=$(git hash-object $files) || return 1
+	new=$(git status --porcelain --untracked-files=all -- internal/web/views internal/web/static | grep '^??' || true)
+	if [ "$before" != "$after" ] || [ -n "$new" ]; then
+		echo "generated files were stale or missing and have been regenerated; review and commit:"
+		git status --short --untracked-files=all -- internal/web/views internal/web/static
 		return 1
 	fi
 }
+
+if [ ! -x bin/tailwindcss ]; then
+	if [ "${REQUIRE_TAILWIND:-}" = 1 ]; then
+		scripts/tailwind.sh >/dev/null
+	else
+		echo "note: no bin/tailwindcss (run scripts/tailwind.sh); app.css is not checked" >&2
+	fi
+fi
 
 pkgs=$(packages)
 

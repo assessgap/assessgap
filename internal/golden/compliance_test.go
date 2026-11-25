@@ -12,6 +12,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"html"
 	"io"
 	"log/slog"
 	"net/http"
@@ -52,9 +53,10 @@ var banned = []*regexp.Regexp{
 // allowedWorth are the uses of "worth" that say nothing about value.
 var allowedWorth = []string{"worth double-checking", "worth a second look", "worth your time", "what my home is worth?"}
 
-// negatable words may appear only in a denial ("it is not an appraisal").
+// negatable words may appear only right after a denial ("it is not an
+// appraisal", "nothing here is an appraisal", "never guaranteed").
 var negatable = regexp.MustCompile(`(?i)\b(apprais\w*|guarantee[ds]?)\b`)
-var negation = regexp.MustCompile(`(?i)\b(not|nothing|never|no|isn't)\b`)
+var negation = regexp.MustCompile(`(?i)\b(not|never|isn't|nothing here is)\s+(an?\s+|be\s+)?$`)
 
 // violations lists banned phrases in text, with some context.
 func violations(text string) []string {
@@ -97,6 +99,11 @@ func TestViolations(t *testing.T) {
 		{"Your home is worth more than similar homes.", true},
 		{"Results are guaranteed.", true},
 		{"Download the report for $29 one-time fee", true},
+		{"We don't estimate what your home would sell for, and nothing here is an appraisal.", false},
+		{"is not an appraisal or an opinion of any kind", false},
+		{"This is not only an appraisal but a plan.", true},
+		{"No fee. This appraisal shows the gap.", true},
+		{"Not sure? Results guaranteed.", true},
 	}
 	for _, tt := range tests {
 		if got := len(violations(tt.text)) > 0; got != tt.bad {
@@ -111,8 +118,11 @@ func TestComplianceReportJSON(t *testing.T) {
 	for _, c := range golden.Cases {
 		var out bytes.Buffer
 		env := &cli.Env{Stdout: &out, Stderr: io.Discard, Getenv: func(string) string { return "" }}
-		cli.Run(context.Background(), env, append([]string{"check", "-json", "-db", db}, c.Args...))
+		code := cli.Run(context.Background(), env, append([]string{"check", "-json", "-db", db}, c.Args...))
 		if out.Len() == 0 {
+			if code == 0 {
+				t.Errorf("%s: exit 0 with no report to scan", c.Name)
+			}
 			continue
 		}
 		var v any
@@ -167,6 +177,8 @@ func TestComplianceWebsite(t *testing.T) {
 		paths = append(paths, "/check/"+c.Args[0])
 	}
 	tags := regexp.MustCompile(`(?s)<script.*?</script>|<style.*?</style>|<[^>]*>`)
+	// Attribute text a person can see or hear: meta descriptions, tooltips, alt text, labels.
+	attrs := regexp.MustCompile(`\b(?:content|title|alt|aria-label|placeholder)="([^"]*)"`)
 	for _, p := range paths {
 		resp, err := http.Get(ts.URL + p)
 		if err != nil {
@@ -177,8 +189,19 @@ func TestComplianceWebsite(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		// Every case's page exists (unknown PINs get the 404 page, which is scanned too).
+		wantStatus := 200
+		if strings.HasPrefix(p, "/check/99999") {
+			wantStatus = 404
+		}
+		if resp.StatusCode != wantStatus {
+			t.Errorf("%s: status %d", p, resp.StatusCode)
+		}
 		text := tags.ReplaceAllString(string(body), " ")
-		for _, bad := range violations(text) {
+		for _, m := range attrs.FindAllStringSubmatch(string(body), -1) {
+			text += " " + m[1]
+		}
+		for _, bad := range violations(html.UnescapeString(text)) {
 			t.Errorf("%s: page: %s", p, bad)
 		}
 	}

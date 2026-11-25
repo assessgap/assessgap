@@ -6,7 +6,7 @@ AssessGap helps Cook County homeowners appeal their own property assessments by 
 
 - **Gate:** `scripts/check.sh` before every push. It runs gofmt, a vague-name check, `go vet`, golangci-lint (`.golangci.yml`), `go test`, a generated-files check and `go build`, and prints only failures. CI runs the same script.
 - **While iterating**, run only what you touched: `go test ./internal/comps`, `go test ./internal/comps -run Synthetic -v`, `go vet ./internal/web`.
-- **Goldens:** if a change moves any homeowner-facing number or text, `go test ./internal/golden` fails with `case (PIN): field: old → new`. If the change is intended, run `go test ./internal/golden ./internal/web -run Golden -update`, read `git diff testdata/golden`, and explain each change under "Numbers impact" in the PR. Never update goldens to make a failure go away without understanding it.
+- **Goldens:** if a change moves a number or text in the report JSON, the evidence report's text or the report page's data, `go test ./internal/golden ./internal/web` fails with `case (PIN): field: old → new`. Not covered: how templates place that data, the filing-window text and the chart, so check those by running the site. If the change is intended, run `go test ./internal/golden ./internal/web -run Golden -update`, read `git diff testdata/golden`, and explain each change under "Numbers impact" in the PR. Never update goldens to make a failure go away without understanding it.
 - Never skip the gate, and don't disable a lint rule or add `//nolint` without a one-line reason.
 
 ## Layout

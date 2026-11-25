@@ -1,4 +1,4 @@
 # assessgap check -json 13331030130000 -year 1999
 # Regenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update
 exit = 1
-stderr = "assessgap check: PIN 13-33-103-013-0000 has no assessed value on record"
+stderr = "assessgap check: PIN 13-33-103-013-0000 has no assessed value on record for tax year 1999"

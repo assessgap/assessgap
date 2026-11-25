@@ -18,8 +18,9 @@ import (
 var required = []string{"Numbers impact", "Risk and rollback"}
 
 var (
-	comment = regexp.MustCompile(`(?s)<!--.*?-->`)
-	heading = regexp.MustCompile(`(?m)^##\s+(.+?)\s*$`)
+	locTable = regexp.MustCompile(`(?s)<!-- prloc:start -->.*?<!-- prloc:end -->`) // the bot's table is no one's answer
+	comment  = regexp.MustCompile(`(?s)<!--.*?-->`)
+	heading  = regexp.MustCompile(`(?m)^##\s+(.+?)\s*$`)
 )
 
 // placeholders are answers that say nothing.
@@ -27,7 +28,8 @@ var placeholders = map[string]bool{"": true, "-": true, "n/a": true, "na": true,
 
 // sections maps each "## " heading to its text, with HTML comments removed.
 func sections(body string) map[string]string {
-	body = comment.ReplaceAllString(strings.ReplaceAll(body, "\r\n", "\n"), "")
+	body = locTable.ReplaceAllString(strings.ReplaceAll(body, "\r\n", "\n"), "")
+	body = comment.ReplaceAllString(body, "")
 	out := map[string]string{}
 	locs := heading.FindAllStringSubmatchIndex(body, -1)
 	for i, l := range locs {
@@ -40,8 +42,10 @@ func sections(body string) map[string]string {
 	return out
 }
 
-// problems lists required sections that are missing, empty or placeholders.
-func problems(body string) []string {
+// problems lists required sections that are missing, empty or placeholders,
+// and a "None" numbers answer on a PR that changes goldens. changed is the
+// PR's file list.
+func problems(body string, changed []string) []string {
 	got := sections(body)
 	var out []string
 	for _, name := range required {
@@ -53,11 +57,19 @@ func problems(body string) []string {
 			out = append(out, fmt.Sprintf("%q is empty; fill it in (see the comment in the template)", name))
 		}
 	}
+	numbers := strings.ToLower(got["Numbers impact"])
+	if strings.HasPrefix(strings.TrimLeft(numbers, " *_"), "none") {
+		for _, f := range changed {
+			if strings.HasPrefix(f, "testdata/golden/") {
+				out = append(out, fmt.Sprintf(`"Numbers impact" says none, but %s changed; explain each changed golden`, f))
+			}
+		}
+	}
 	return out
 }
 
 func main() {
-	ps := problems(os.Getenv("PR_BODY"))
+	ps := problems(os.Getenv("PR_BODY"), strings.Fields(os.Getenv("CHANGED_FILES")))
 	for _, p := range ps {
 		fmt.Printf("::error title=PR description::%s\n", p)
 	}

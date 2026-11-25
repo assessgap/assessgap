@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -45,6 +46,29 @@ func TestGoldenCheck(t *testing.T) {
 			header := "assessgap check -json " + strings.Join(c.Args, " ") + "\n" + regenerate
 			golden.CheckFields(t, "check/"+c.Name+".txt", c.Name+" ("+c.Args[0]+")", header, got)
 		})
+	}
+}
+
+// TestGoldenNoOrphans fails when a golden file no longer has a case, so
+// deleting a case can't silently drop its coverage.
+func TestGoldenNoOrphans(t *testing.T) {
+	want := map[string]bool{}
+	for _, c := range golden.Cases {
+		want["check/"+c.Name+".txt"] = true
+	}
+	for _, c := range golden.PacketPINs {
+		want["pdf/"+c.Name+".txt"] = true
+	}
+	for _, dir := range []string{"check", "pdf"} {
+		files, err := os.ReadDir(filepath.Join(golden.Dir, dir))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, f := range files {
+			if name := dir + "/" + f.Name(); !want[name] {
+				t.Errorf("testdata/golden/%s has no case; delete it with git rm or restore its case", name)
+			}
+		}
 	}
 }
 
