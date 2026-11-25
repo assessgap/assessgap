@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-// Engine builds reports from a database produced by cmd/build.
+// Engine builds reports from a database produced by ingest.Build ("assessgap db sync").
 type Engine struct {
 	db *sql.DB
 

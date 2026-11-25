@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// Tables are the typed tables cmd/build produces. Each must be non-empty.
+// Tables are the typed tables ingest.Build produces. Each must be non-empty.
 var Tables = []string{
 	"parcel", "assessment", "res_char", "condo_char", "sale",
 	"bor_appeal", "ccao_appeal", "nbhd_bor_stats",

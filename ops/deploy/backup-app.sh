@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run on a machine you control (cron, nightly): copy the droplet's app.db (signups, later orders)
+# Run on a machine you control (cron, nightly): copy the droplet's app.db (email signups)
 # to data/backups/app-YYYYMMDD.db using SQLite's online backup. Keeps 30 days.
 set -euo pipefail
 cd "$(dirname "$0")/../.."

@@ -16,7 +16,7 @@ func OpenReadOnly(path string) (*sql.DB, error) {
 	return db, db.Ping()
 }
 
-// OpenApp opens (or creates) the small read-write app database: signups, orders.
+// OpenApp opens (or creates) the small read-write app database (email signups).
 func OpenApp(path string) (*sql.DB, error) {
 	db, err := sql.Open("sqlite", "file:"+path+"?_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)&_pragma=busy_timeout(5000)&_pragma=foreign_keys(1)")
 	if err != nil {

@@ -7,7 +7,7 @@ Wants=network-online.target
 User=assessgap
 Group=assessgap
 WorkingDirectory=/srv/assessgap
-ExecStart=/srv/assessgap/server -addr 127.0.0.1:8080 -cook /srv/assessgap/data/cook.db -app /srv/assessgap/data/app.db -dev=false
+ExecStart=/srv/assessgap/assessgap serve -addr 127.0.0.1:8080 -db /srv/assessgap/data/cook.db -app /srv/assessgap/data/app.db -dev=false
 Restart=on-failure
 RestartSec=2
 MemoryMax=600M

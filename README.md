@@ -13,43 +13,54 @@ Filing an appeal with the Cook County Board of Review is free, and you don't nee
 > AssessGap is not affiliated with the Cook County Assessor, the Board of Review, or any government office. It is not a law firm and does not give legal advice, and it is not an appraisal. You file, sign and present your own appeal.
 
 ## Status
-Early. The website and the analysis work today. Planned next: a single `assessgap` CLI that works straight from the county's open-data API (no big download), and Assessor-stage appeals.
+Early. The website, the `assessgap` command (which can check a home straight from the county's open data API, no big download) and the free evidence report PDF work today. Planned next: configurable comparisons ([data inventory](docs/data-inventory.md)) and Assessor-stage appeals.
 
 ## Run it yourself
 Requires Go 1.26+. Everything is pure Go (SQLite via `modernc.org/sqlite`), so there's no cgo.
 
+Everything is one command, `assessgap` (`go install ./cmd/assessgap`, or `go run ./cmd/assessgap` as below). Flags may go before or after the address or PIN.
+
 ```sh
 # 1. Download a small sample (one area of Jefferson Township) and build a database
-go run ./cmd/ingest -data data-sample -pin-prefix 1328 all
-go run ./cmd/build -db data-sample/cook.db
+go run ./cmd/assessgap db sync -data data-sample -pin-prefix 1328
+export ASSESSGAP_DB=data-sample/cook.db   # or pass -db to each command
 
-# 2. A report for one home, as JSON
-go run ./cmd/check -db data-sample/cook.db 13281000270000
+# 2. Compare one home with similar homes (add -json for the full report as JSON)
+go run ./cmd/assessgap check 13281000270000
+go run ./cmd/assessgap check 3134 N Luna Ave
 
-# 3. The evidence report PDF (flags go before the PIN)
-go run ./cmd/packet -db data-sample/cook.db -o report.pdf 13281000270000
+# 3. The free evidence report PDF
+go run ./cmd/assessgap report 13281000270000 -o report.pdf
 
-# 4. The website, at http://127.0.0.1:8080
-go run ./cmd/server -cook data-sample/cook.db -app data-sample/app.db
+# 4. Board of Review filing windows, for every township or one
+go run ./cmd/assessgap township
+go run ./cmd/assessgap township jefferson
+
+# 5. The website, at http://127.0.0.1:8080
+go run ./cmd/assessgap serve -app data-sample/app.db
 ```
 
-For the whole county, drop `-pin-prefix` and use `-data data`: about 45 minutes and 9 GB. `ops/refresh.sh` rebuilds the full database safely (fresh download, validation, atomic swap).
+**No download needed for one home:** if there's no database (no `-db`, no `$ASSESSGAP_DB`, no `./data/cook.db`), `assessgap check <PIN>` and `assessgap report <PIN> -o x.pdf` fetch just that home's neighborhood from the county's open data API (about 10 requests and a few MB, usually a few seconds). Force it with `-live`. Searching by address still needs a local database.
+
+Without `-db` or `$ASSESSGAP_DB`, commands use `./data/cook.db`. For the whole county, run `assessgap db sync` with no flags: about 45 minutes and 9 GB. `ops/refresh.sh` rebuilds the full database safely (fresh download, validation, atomic swap) using `assessgap db fetch|load|build|validate|finalize`. `assessgap backtest` and `assessgap sample` reproduce the numbers in the methodology against a full database.
 
 ## Layout
 | Path | What |
 |---|---|
-| `cmd/ingest`, `cmd/build` | Download county datasets from Socrata; build typed, indexed SQLite tables |
+| `cmd/assessgap`, `internal/cli` | The `assessgap` command and its subcommands |
+| `internal/ingest`, `internal/socrata` | Download county datasets from Socrata; build typed, indexed SQLite tables (`build.sql`) |
+| `internal/live` | Live mode: one home's inputs from the API into an in-memory database |
 | `internal/comps` | The comparison engine: similar homes, statistics, data checks |
+| `internal/search` | Find a parcel by address or PIN (the website and the CLI) |
 | `internal/bor` | Board of Review township calendar and official links |
 | `internal/packet` | The evidence report PDF (a small PDF writer, no dependencies) |
-| `internal/web`, `cmd/server` | The website: Go `net/http`, templ, htmx, Tailwind |
-| `cmd/check`, `cmd/compseval` | Report as JSON; coverage sample and backtest |
+| `internal/web` | The website: Go `net/http`, templ, htmx, Tailwind |
 | `ops/` | Refresh and deploy scripts (Caddy + systemd on a small VPS) |
 
 Templates are [templ](https://templ.guide); generated `*_templ.go` and `static/app.css` are committed. After editing templates or styles: `scripts/tailwind.sh` once, then `go generate ./internal/web/...`.
 
 ## Contributing
-Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). Ideas that would help most: the CLI, Assessor-stage appeals, tax-rate data for a dollar estimate, a Spanish translation, and other Illinois counties.
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). Ideas that would help most: Assessor-stage appeals, tax-rate data for a dollar estimate, a Spanish translation, and other Illinois counties.
 
 ## License
 [MIT](LICENSE) © 2026 AssessGap LLC

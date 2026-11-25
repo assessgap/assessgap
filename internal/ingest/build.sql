@@ -1,5 +1,5 @@
--- Transforms raw_* tables (loaded by cmd/ingest) into typed tables used by the site.
--- Runs against data/cook.db. Idempotent: drops and rebuilds.
+-- Transforms raw_* tables (loaded by ingest.Load) into the typed tables the engine reads.
+-- Run by "assessgap db build" / "db sync". Idempotent: drops and rebuilds.
 -- Socrata numbers arrive as text, often with ".0" suffixes, so cast via REAL.
 
 PRAGMA foreign_keys = OFF;

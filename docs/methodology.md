@@ -47,7 +47,7 @@ Caveats:
 - A Board decrease can come from reasons other than uniformity (vacancy, sales, errors); we don't split by reason.
 - Reports mostly use mailed 2026 values; the backtest used certified values.
 
-Reproduce with `go run ./cmd/compseval backtest` against a full database.
+Reproduce with `go run ./cmd/assessgap backtest` against a full database.
 
 ## Known gaps
 - No dollar estimate of tax savings yet: the open data has no current tax rates (they stop in 2013). PTAXSIM is the likely source.

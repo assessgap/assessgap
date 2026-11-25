@@ -1,70 +1,83 @@
-// Command compseval measures the comps engine on the full database.
+// Evaluation commands: measure the comparison engine on a full database.
 //
-//	compseval [-db path] sample   [-n 2000] [-seed 1]   coverage + verdict mix in the 16 upcoming BOR townships
-//	compseval [-db path] backtest [-years 2024,2025]    verdict vs. actual BOR outcome
+//	assessgap sample   [-db path] [-n 2000] [-seed 1]   coverage + comparison mix in townships whose BOR dates aren't posted
+//	assessgap backtest [-db path] [-years 2024,2025]    comparison tier vs. actual BOR outcome
 //
 // Output is plain text for pasting into docs.
-package main
+
+package cli
 
 import (
 	"context"
 	"database/sql"
 	"errors"
-	"flag"
 	"fmt"
-	"log"
+	"io"
 	"math/rand/v2"
-	"os"
 	"sort"
 	"strings"
 	"text/tabwriter"
 	"time"
 
+	"github.com/assessgap/assessgap/internal/bor"
 	"github.com/assessgap/assessgap/internal/comps"
-	"github.com/assessgap/assessgap/internal/store"
 )
-
-// Townships the BOR is expected to open Dec 2026 – Feb 2027 (business plan §2).
-// The data names the Chicago ones "North Chicago" / "South Chicago".
-var upcomingTownships = []string{
-	"Lake", "Jefferson", "North Chicago", "South Chicago", "Worth", "Proviso", "Leyden", "Wheeling",
-	"Palatine", "Orland", "Schaumburg", "Thornton", "Niles", "Hanover", "Rich", "Bloom",
-}
 
 var verdicts = []string{comps.Strong, comps.Possible, comps.Weak}
 
-func main() {
-	log.SetFlags(0)
-	dbPath := flag.String("db", "data/cook.db", "database built by cmd/build")
-	n := flag.Int("n", 2000, "sample size (sample mode)")
-	seed := flag.Uint64("seed", 1, "random seed (sample mode)")
-	years := flag.String("years", "2024,2025", "BOR tax years (backtest mode)")
-	flag.Parse()
-
-	if _, err := os.Stat(*dbPath); err != nil {
-		log.Fatal(err)
+// unscheduledTownships are the townships with no Board of Review dates posted
+// as of now: the ones still to open this session.
+func unscheduledTownships(now time.Time) []string {
+	var out []string
+	for _, t := range bor.Townships {
+		if bor.StatusOf(t, now).State == bor.Unscheduled {
+			out = append(out, t)
+		}
 	}
-	db, err := store.Open(*dbPath)
+	return out
+}
+
+func runSample(ctx context.Context, env *Env, args []string) error {
+	fl := newFlags(env, "sample", "[-db path] [-n 2000] [-seed 1]")
+	dbFlag := fl.String("db", "", "full county database (default $ASSESSGAP_DB, else "+DefaultDB+")")
+	n := fl.Int("n", 2000, "sample size")
+	seed := fl.Uint64("seed", 1, "random seed")
+	if _, err := parseArgs(fl, args); err != nil {
+		return err
+	}
+	db, e, err := evalEngine(env, *dbFlag)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer db.Close()
+	return evalSample(ctx, env.Stdout, logger(env), db, e, *n, *seed)
+}
+
+func runBacktest(ctx context.Context, env *Env, args []string) error {
+	fl := newFlags(env, "backtest", "[-db path] [-years 2024,2025]")
+	dbFlag := fl.String("db", "", "full county database (default $ASSESSGAP_DB, else "+DefaultDB+")")
+	years := fl.String("years", "2024,2025", "Board of Review tax years")
+	if _, err := parseArgs(fl, args); err != nil {
+		return err
+	}
+	db, e, err := evalEngine(env, *dbFlag)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	return evalBacktest(ctx, env.Stdout, logger(env), db, e, *years)
+}
+
+// evalEngine opens the database read-only with neighborhood pools cached,
+// since evaluations score many homes per neighborhood.
+func evalEngine(env *Env, dbFlag string) (*sql.DB, *comps.Engine, error) {
+	db, err := openCounty(dbPath(env, dbFlag))
+	if err != nil {
+		return nil, nil, err
+	}
 	e := comps.New(db)
 	e.CachePools = true
-	ctx := context.Background()
-
-	switch flag.Arg(0) {
-	case "sample":
-		err = runSample(ctx, db, e, *n, *seed)
-	case "backtest":
-		err = runBacktest(ctx, db, e, *years)
-	default:
-		flag.Usage()
-		os.Exit(2)
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
+	return db, e, nil
 }
 
 func placeholders(n int) string { return strings.TrimSuffix(strings.Repeat("?,", n), ",") }
@@ -96,19 +109,22 @@ func queryStrings(ctx context.Context, db *sql.DB, q string, args ...any) ([]str
 
 // ---------------------------------------------------------------- sample
 
-// In-scope homes in the upcoming townships, by current parcel class.
-var samplePINsSQL = `
+// In-scope homes in the given townships, by current parcel class.
+func samplePINsSQL(townships int) string {
+	return `
 SELECT pin FROM parcel
-WHERE township_name IN (` + placeholders(len(upcomingTownships)) + `)
+WHERE township_name IN (` + placeholders(townships) + `)
   AND class IN (` + placeholders(len(comps.ScopeClasses())) + `)
 ORDER BY pin`
+}
 
-func runSample(ctx context.Context, db *sql.DB, e *comps.Engine, n int, seed uint64) error {
-	pins, err := queryStrings(ctx, db, samplePINsSQL, append(anys(upcomingTownships), anys(comps.ScopeClasses())...)...)
+func evalSample(ctx context.Context, w io.Writer, logf func(string, ...any), db *sql.DB, e *comps.Engine, n int, seed uint64) error {
+	towns := unscheduledTownships(time.Now())
+	pins, err := queryStrings(ctx, db, samplePINsSQL(len(towns)), append(anys(towns), anys(comps.ScopeClasses())...)...)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("in-scope PINs in the 16 townships: %d\n", len(pins))
+	fmt.Fprintf(w, "in-scope PINs in the %d townships without posted BOR dates: %d\n", len(towns), len(pins))
 	rng := rand.New(rand.NewPCG(seed, seed))
 	rng.Shuffle(len(pins), func(i, j int) { pins[i], pins[j] = pins[j], pins[i] })
 	if len(pins) > n {
@@ -133,7 +149,7 @@ func runSample(ctx context.Context, db *sql.DB, e *comps.Engine, n int, seed uin
 		if err != nil {
 			errs++
 			if !errors.Is(err, comps.ErrNotFound) {
-				log.Printf("%s: %v", pin, err)
+				logf("%s: %v", pin, err)
 			}
 			continue
 		}
@@ -168,29 +184,29 @@ func runSample(ctx context.Context, db *sql.DB, e *comps.Engine, n int, seed uin
 		}
 	}
 	supported := total - errs - sum(unsupported)
-	fmt.Printf("sampled %d PINs in %s (seed %d)\n", total, time.Since(start).Round(time.Second), seed)
-	fmt.Printf("no assessment row: %d\n", errs)
-	fmt.Printf("report years: %v   AV stage: %v\n", years, stages)
-	fmt.Printf("unsupported: %d\n", sum(unsupported))
+	fmt.Fprintf(w, "sampled %d PINs in %s (seed %d)\n", total, time.Since(start).Round(time.Second), seed)
+	fmt.Fprintf(w, "no assessment row: %d\n", errs)
+	fmt.Fprintf(w, "report years: %v   AV stage: %v\n", years, stages)
+	fmt.Fprintf(w, "unsupported: %d\n", sum(unsupported))
 	for k, v := range unsupported {
-		fmt.Printf("  %5d  %s\n", v, k)
+		fmt.Fprintf(w, "  %5d  %s\n", v, k)
 	}
-	fmt.Printf("supported: %d\n", supported)
-	fmt.Printf("  >= 8 comps: %d (%.1f%% of supported, %.1f%% of sampled)\n", ge8, pctOf(ge8, supported), pctOf(ge8, total))
-	fmt.Println("verdicts (of supported):")
+	fmt.Fprintf(w, "supported: %d\n", supported)
+	fmt.Fprintf(w, "  >= 8 comps: %d (%.1f%% of supported, %.1f%% of sampled)\n", ge8, pctOf(ge8, supported), pctOf(ge8, total))
+	fmt.Fprintln(w, "verdicts (of supported):")
 	for _, v := range verdicts {
-		fmt.Printf("  %-8s %5d  %5.1f%%\n", v, byVerdict[v], pctOf(byVerdict[v], supported))
+		fmt.Fprintf(w, "  %-8s %5d  %5.1f%%\n", v, byVerdict[v], pctOf(byVerdict[v], supported))
 	}
-	fmt.Println("search level used:")
+	fmt.Fprintln(w, "search level used:")
 	for l := 0; l <= 3; l++ {
-		fmt.Printf("  L%d %5d  %5.1f%%\n", l, byLevel[l], pctOf(byLevel[l], supported))
+		fmt.Fprintf(w, "  L%d %5d  %5.1f%%\n", l, byLevel[l], pctOf(byLevel[l], supported))
 	}
-	fmt.Println("please-verify flags (count of reports with flag):")
+	fmt.Fprintln(w, "please-verify flags (count of reports with flag):")
 	for k, v := range flags {
-		fmt.Printf("  %-8s %5d  %5.1f%%\n", k, v, pctOf(v, supported))
+		fmt.Fprintf(w, "  %-8s %5d  %5.1f%%\n", k, v, pctOf(v, supported))
 	}
-	fmt.Println("verdicts by township:")
-	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.AlignRight)
+	fmt.Fprintln(w, "verdicts by township:")
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', tabwriter.AlignRight)
 	fmt.Fprintln(tw, "township\tn\tstrong\tpossible\tweak\t")
 	for _, t := range sortedKeys(byTownship) {
 		m := byTownship[t]
@@ -199,9 +215,9 @@ func runSample(ctx context.Context, db *sql.DB, e *comps.Engine, n int, seed uin
 			pctOf(m[comps.Strong], n), pctOf(m[comps.Possible], n), pctOf(m[comps.Weak], n))
 	}
 	tw.Flush()
-	fmt.Println("example PINs:")
+	fmt.Fprintln(w, "example PINs:")
 	for _, k := range sortedKeys(examples) {
-		fmt.Printf("  %-12s %s\n", k, strings.Join(examples[k], " "))
+		fmt.Fprintf(w, "  %-12s %s\n", k, strings.Join(examples[k], " "))
 	}
 	return nil
 }
@@ -254,7 +270,7 @@ func (o outcome) String() string {
 	return fmt.Sprintf("%d | %.1f%% | %s", o.n, pctOf(o.wins, o.n), avgCut)
 }
 
-func runBacktest(ctx context.Context, db *sql.DB, e *comps.Engine, yearList string) error {
+func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), db *sql.DB, e *comps.Engine, yearList string) error {
 	ys := strings.Split(yearList, ",")
 	q := fmt.Sprintf(backtestSQL, placeholders(len(ys)))
 	rows, err := db.QueryContext(ctx, q, append(anys(ys), anys(comps.ScopeClasses())...)...)
@@ -280,7 +296,7 @@ func runBacktest(ctx context.Context, db *sql.DB, e *comps.Engine, yearList stri
 	if err := rows.Err(); err != nil {
 		return err
 	}
-	fmt.Printf("in-scope BOR appeals (PIN-years) %s: %d\n", yearList, len(appeals))
+	fmt.Fprintf(w, "in-scope BOR appeals (PIN-years) %s: %d\n", yearList, len(appeals))
 
 	type key struct {
 		year    int
@@ -302,7 +318,7 @@ func runBacktest(ctx context.Context, db *sql.DB, e *comps.Engine, yearList stri
 	start := time.Now()
 	for i, a := range appeals {
 		if i > 0 && i%20000 == 0 {
-			log.Printf("  %d/%d (%s)", i, len(appeals), time.Since(start).Round(time.Second))
+			logf("  %d/%d (%s)", i, len(appeals), time.Since(start).Round(time.Second))
 		}
 		r, err := e.Report(ctx, a.pin, a.year)
 		if err != nil {
@@ -323,10 +339,10 @@ func runBacktest(ctx context.Context, db *sql.DB, e *comps.Engine, yearList stri
 		}
 		byGap[g][a.pro].add(a.won, a.cut.Float64)
 	}
-	fmt.Printf("scored in %s; errors %d; skipped (unsupported) %d\n",
+	fmt.Fprintf(w, "scored in %s; errors %d; skipped (unsupported) %d\n",
 		time.Since(start).Round(time.Second), reportErrors, sum(skipped))
 	for k, v := range skipped {
-		fmt.Printf("  %6d  %s\n", v, k)
+		fmt.Fprintf(w, "  %6d  %s\n", v, k)
 	}
 
 	for _, p := range append([]string{"all"}, ys...) {
@@ -334,30 +350,30 @@ func runBacktest(ctx context.Context, db *sql.DB, e *comps.Engine, yearList stri
 		if p != "all" {
 			fmt.Sscan(p, &yr)
 		}
-		fmt.Printf("\n**Tax year %s**\n\n", p)
-		printOutcomeHeader("verdict")
+		fmt.Fprintf(w, "\n**Tax year %s**\n\n", p)
+		printOutcomeHeader(w, "verdict")
 		for _, v := range verdicts {
-			printOutcomeRow(v, deref(byKey[key{yr, v, true}]), deref(byKey[key{yr, v, false}]))
+			printOutcomeRow(w, v, deref(byKey[key{yr, v, true}]), deref(byKey[key{yr, v, false}]))
 		}
 	}
-	fmt.Printf("\n**By subject AV/sf vs. comp median (all years)**\n\n")
-	printOutcomeHeader("gap")
+	fmt.Fprintf(w, "\n**By subject AV/sf vs. comp median (all years)**\n\n")
+	printOutcomeHeader(w, "gap")
 	for _, g := range gapOrder {
 		if m := byGap[g]; m != nil {
-			printOutcomeRow(g, *m[true], *m[false])
+			printOutcomeRow(w, g, *m[true], *m[false])
 		}
 	}
 	return nil
 }
 
-func printOutcomeHeader(first string) {
-	fmt.Printf("| %s | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |\n", first)
-	fmt.Println("|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|")
+func printOutcomeHeader(w io.Writer, first string) {
+	fmt.Fprintf(w, "| %s | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |\n", first)
+	fmt.Fprintln(w, "|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|")
 }
 
-func printOutcomeRow(label string, pro, att outcome) {
+func printOutcomeRow(w io.Writer, label string, pro, att outcome) {
 	all := outcome{n: pro.n + att.n, wins: pro.wins + att.wins, cutSum: pro.cutSum + att.cutSum}
-	fmt.Printf("| %s | %s | %s | %s |\n", label, pro, att, all)
+	fmt.Fprintf(w, "| %s | %s | %s | %s |\n", label, pro, att, all)
 }
 
 var gapOrder = []string{"<3 comps", "< -10%", "-10..-5%", "-5..0%", "0..5%", "5..10%", "10..20%", "20..30%", ">= 30%"}

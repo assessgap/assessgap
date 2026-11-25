@@ -1,13 +1,14 @@
 #!/bin/bash
-# Build the server for the droplet and install it.  ops/deploy/deploy.sh
+# Build the assessgap binary for the droplet and install it; systemd runs
+# "assessgap serve".  ops/deploy/deploy.sh
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 host=${DEPLOY_HOST:-assessgap-web}
-out=$(mktemp -d)/server
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o "$out" ./cmd/server
+out=$(mktemp -d)/assessgap
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o "$out" ./cmd/assessgap
 scp -q "$out" ops/deploy/assessgap.service ops/deploy/Caddyfile "$host:/tmp/"
 ssh "$host" 'set -euo pipefail
-  sudo install -m 755 -o root -g root /tmp/server /srv/assessgap/server
+  sudo install -m 755 -o root -g root /tmp/assessgap /srv/assessgap/assessgap
   sudo install -m 644 /tmp/assessgap.service /etc/systemd/system/assessgap.service
   sudo install -m 644 /tmp/Caddyfile /etc/caddy/Caddyfile
   sudo install -d -o caddy -g caddy -m 755 /var/log/caddy
