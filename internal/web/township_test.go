@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/assessgap/assessgap/internal/bor"
 )
 
 // TestLoadTownshipFacts checks the aggregation across neighborhoods on a
@@ -26,8 +28,8 @@ func TestLoadTownshipFacts(t *testing.T) {
 		CREATE TABLE nbhd_bor_stats (nbhd TEXT, pro_se INTEGER, n_appeals INTEGER, n_decrease INTEGER,
 			avg_cut_pct REAL, first_year INTEGER, last_year INTEGER);
 		INSERT INTO nbhd_bor_stats VALUES
-			('39010', 1, 10, 8, 0.10, 2023, 2025),
 			('39020', 1, 30, 2, 0.20, 2024, 2025),
+			('39010', 1, 10, 8, 0.10, 2023, 2025),
 			('39030', 1, 5, 0, NULL, 2023, 2024),
 			('99999', 1, 50, 50, 0.50, 2023, 2025);`)
 	if err != nil {
@@ -38,7 +40,8 @@ func TestLoadTownshipFacts(t *testing.T) {
 		t.Fatal(err)
 	}
 	w := facts["Worth"]
-	// Homes: classes 203 and 278 are checked, 299 isn't. Appeals: 10+30+5 = 45,
+	// Years: 39020 (2024–2025) is read first, so 2023–2025 needs the span to
+	// widen over later rows. Homes: classes 203 and 278 are checked, 299 isn't. Appeals: 10+30+5 = 45,
 	// reduced 8+2 = 10 (22%). Average cut weighted by reductions:
 	// (0.10*8 + 0.20*2) / 10 = 0.12, not the plain mean 0.15. 99999 is no township's.
 	got := appealsView(w.proSe, w.hasProSe)
@@ -47,6 +50,17 @@ func TestLoadTownshipFacts(t *testing.T) {
 	}
 	if n := facts["Nowhere"]; !n.found || n.homes != 0 {
 		t.Errorf("a township with no classed parcels: %+v, want found with 0 homes", n)
+	}
+}
+
+// TestTownshipSlugsResolveToThemselves checks that no township's slug leads
+// to another township's page (a page would still return 200, with the other
+// township's dates and figures).
+func TestTownshipSlugsResolveToThemselves(t *testing.T) {
+	for _, town := range bor.Townships {
+		if name, canonical, ok := resolveTownship(townshipSlug(town)); name != town || !canonical || !ok {
+			t.Errorf("%s: slug %q resolves to %q (canonical %v, ok %v)", town, townshipSlug(town), name, canonical, ok)
+		}
 	}
 }
 
