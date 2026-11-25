@@ -456,7 +456,7 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 			printOutcomeRow(w, v, deref(byKey[key{yr, v, true}]), deref(byKey[key{yr, v, false}]))
 		}
 	}
-	fmt.Fprintf(w, "\n**By subject AV/sf vs. comp median (all years)**\n\n")
+	fmt.Fprintf(w, "\n**By subject building AV/sf vs. comp median (all years)**\n\n")
 	printOutcomeHeader(w, "gap")
 	for _, g := range gapOrder {
 		if m := byGap[g]; m != nil {

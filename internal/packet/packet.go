@@ -166,15 +166,15 @@ func (p *pager) summary(generated time.Time) {
 		perSF(s.BldgAVPerSF), money(s.BldgAV), num(s.BldgSF), st.NumComps, perSF(st.MedianBldgAVPerSF), gapPhrase(st.PctAboveMedian)))
 	p.body("The building part of the assessment is compared, per square foot, because the Assessor values land " +
 		"separately at a neighborhood rate per square foot of land.")
-	below := len(p.belowSubject())
+	below := comps.CountBelow(*s, r.Comps)
 	p.body(fmt.Sprintf("%d of the %d comparable homes have a building assessed lower per square foot than the property. "+
 		"The property ranks at the %s percentile of the comparable homes by building AV per square foot.",
 		below, st.NumComps, ordinal(int(math.Round(st.SubjectPercentile)))))
 	if r.Search != nil {
 		p.body(fmt.Sprintf("How comparable homes were chosen: %s (Assessor neighborhood %s), excluding multi-building "+
 			"parcels and homes without recorded square footage or a building assessment. The %d most similar by size, "+
-			"age, baths, lot, design, construction and basement (the nearer home first when two are equally similar) "+
-			"are listed on page 2.", r.Search.Description, r.Nbhd, st.NumComps))
+			"age, baths, lot, design, construction, basement and distance (the nearer home first when two are equally "+
+			"similar) are listed on page 2.", r.Search.Description, r.Nbhd, st.NumComps))
 	}
 
 	p.heading("Uniformity figure")
@@ -239,16 +239,6 @@ func (p *pager) boxed(s string) {
 	p.y += h + 8
 }
 
-func (p *pager) belowSubject() []comps.Comp {
-	var out []comps.Comp
-	for _, c := range p.r.Comps {
-		if c.BldgAVPerSF < p.r.Subject.BldgAVPerSF {
-			out = append(out, c)
-		}
-	}
-	return out
-}
-
 // ---------------------------------------------------------------- page 2
 
 type column struct {
@@ -278,7 +268,7 @@ var columns = []column{
 	{"Beds /\nbaths", 31, true, func(c comps.Comp) string { return fmt.Sprintf("%d / %s", c.Beds, baths(c.Home)) }},
 	{"Basement", 66, false, func(c comps.Comp) string { return dash(c.Features().Basement) }},
 	{"Central\nair", 27, false, func(c comps.Comp) string { return dash(c.Features().Air) }},
-	{"Fire-\nplaces", 25, true, func(c comps.Comp) string { return fmt.Sprint(c.Fireplaces) }},
+	{"Fire-\nplaces", 25, true, func(c comps.Comp) string { return dash(c.Features().Fireplaces) }},
 	{"Garage", 31, false, func(c comps.Comp) string { return dash(c.Features().Garage) }},
 	{"Land\nsq ft", 31, true, func(c comps.Comp) string { return landSF(c.LandSF) }},
 	{"Building\nAV", 40, true, func(c comps.Comp) string { return money(c.BldgAV) }},
@@ -298,7 +288,7 @@ func (p *pager) grid() {
 	r := p.r
 	p.newPageSized("Comparable property grid", pageH, pageW, gridMargin) // landscape
 	m, cw := p.m, p.cur.w-2*p.m
-	p.para(m, cw, regular, 8.5, fmt.Sprintf(
+	p.para(m, cw, regular, 8, fmt.Sprintf(
 		"Tax year %d assessed values from the Cook County Assessor, %s stage; building characteristics are the "+
 			"Assessor's records. Homes are compared on building AV per square foot (building AV ÷ building square feet), "+
 			"because the Assessor values land separately at a neighborhood rate. Evidence comparables are the most similar "+
@@ -335,17 +325,21 @@ func (p *pager) grid() {
 	}
 	p.strokeRect(x0, top, tableW, p.y-top, 0.8)
 
-	p.y += 12
+	p.y += 10
 	st := r.Stats
-	p.para(m, cw, bold, 8.5, fmt.Sprintf("Median building AV / sq ft of the %d comparable homes: $%.2f.  Subject: $%.2f (%s the median).",
+	p.para(m, cw, bold, 8, fmt.Sprintf("Median building AV / sq ft of the %d comparable homes: $%.2f.  Subject: $%.2f (%s the median).",
 		st.NumComps, st.MedianBldgAVPerSF, st.SubjectBldgAVPerSF, gapPhrase(st.PctAboveMedian)))
 	if len(r.Evidence) > 0 {
-		p.y -= 2
-		p.text(m, p.y, bold, 8, "Differences of each evidence comparable from the subject (theirs vs the subject's):")
-		p.y += 10
+		p.y -= 3
+		p.text(m, p.y, bold, 7.5, "Differences of each evidence comparable from the subject (theirs vs the subject's):")
+		p.y += 9
 		for i, c := range r.Evidence {
-			p.para(m, cw, regular, 7.5, fmt.Sprintf("%d. %s: %s", i+1, titleCase(c.Address), c.Differences))
-			p.y -= 3
+			addr := titleCase(c.Address)
+			if addr == "" {
+				addr = "PIN " + formatPIN(c.PIN)
+			}
+			p.para(m, cw, regular, 7, fmt.Sprintf("%d. %s: %s", i+1, addr, c.Differences))
+			p.y -= 4
 		}
 	}
 }
@@ -462,8 +456,9 @@ func (p *pager) steps(now time.Time) {
 			"you are a Board of Review attorney, answer No. Choose your appellant type (owner).",
 		"Decide whether you want a hearing. It is optional, held by phone for homeowners, and the Board says you are " +
 			"not penalized for skipping it. You choose this when you file.",
-		"Enter comparable properties if you like (optional: the Board's analysts also pull their own). The PINs on " +
-			"page 2 are similar homes assessed lower per square foot than yours, from the same neighborhood and class.",
+		"Enter comparable properties if you like (optional: the Board's analysts also pull their own). The evidence " +
+			"comparables on page 2 are similar homes in your Assessor neighborhood whose building is assessed lower per " +
+			"square foot than yours; the other homes listed there are not.",
 		"Review, initial, confirm and submit before the deadline. Save your complaint number.",
 		"Upload your evidence after submitting: your brief with the photo, and this report if you wish, by the " +
 			"evidence deadline for your township.",
@@ -518,12 +513,12 @@ func perSF(v float64) string { return fmt.Sprintf("$%.2f", v) }
 
 func gapPhrase(g float64) string {
 	switch {
-	case g >= 0.005:
-		return fmt.Sprintf("%.0f%% above", 100*g)
-	case g <= -0.005:
-		return fmt.Sprintf("%.0f%% below", -100*g)
-	default:
+	case comps.InLine(g):
 		return "about equal to"
+	case g > 0:
+		return fmt.Sprintf("%.0f%% above", 100*g)
+	default:
+		return fmt.Sprintf("%.0f%% below", -100*g)
 	}
 }
 

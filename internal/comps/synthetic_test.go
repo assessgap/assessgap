@@ -55,6 +55,7 @@ type sh struct {
 	zeroBaths  bool
 	landAV     float64 // part of av; the building is av − landAV
 	noSplit    bool    // no building/land split on record
+	splitOff   float64 // added to the building AV, so the split doesn't sum to av
 	lat, lon   float64 // 0, 0 means no location
 }
 
@@ -67,7 +68,7 @@ func (s *synth) add(h sh) {
 		}
 	}
 	var mailed, cert any = h.av, nil
-	var bldg, land any = h.av - h.landAV, h.landAV
+	var bldg, land any = h.av - h.landAV + h.splitOff, h.landAV
 	if h.noSplit {
 		bldg, land = nil, nil
 	}
@@ -248,19 +249,32 @@ func TestSyntheticBuildingRate(t *testing.T) {
 	}
 }
 
-// TestSyntheticLandInLine: a land rate within 1% of the comps' raises no flag.
-func TestSyntheticLandInLine(t *testing.T) {
-	s := newSynth(t)
-	// Land per sq ft: subject 10,090 / 3,000 = $3.3633; comps 10,000 / 3,000 = $3.3333 (0.9% apart).
-	s.add(sh{pin: "S", class: "203", sf: 1000, av: 40090, landAV: 10090, year: 1950})
-	for i := range 3 {
-		s.add(sh{pin: fmt.Sprintf("C%d", i), class: "203", sf: 1000, av: 35000, landAV: 10000, year: 1950})
+// TestSyntheticLandTolerance: the land check compares unrounded rates with a
+// 1% tolerance. Every home has 3,000 sq ft of land.
+func TestSyntheticLandTolerance(t *testing.T) {
+	tests := []struct {
+		name                string
+		subjectLand, others float64
+		flag                bool
+	}{
+		// $3.3633 vs $3.3333: 0.9% apart.
+		{"within 1%", 10090, 10000, false},
+		// $3.3700 vs $3.3333: 1.1% apart.
+		{"just over 1%", 10110, 10000, true},
+		// $0.4950 vs $0.5050: 2% apart, though both round to $0.50.
+		{"apart, same in cents", 1485, 1515, true},
 	}
-	r := s.report("S")
-	// Rounded to cents first: $3.36 vs $3.33 is 0.9% apart, inside the tolerance.
-	if r.Stats.SubjectLandAVPerSF != 3.36 || r.Stats.MedianLandAVPerSF != 3.33 || len(r.Flags) != 0 {
-		t.Errorf("land %v vs %v, flags %+v; want 3.36 vs 3.33 and no flag",
-			r.Stats.SubjectLandAVPerSF, r.Stats.MedianLandAVPerSF, r.Flags)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := newSynth(t)
+			s.add(sh{pin: "S", class: "203", sf: 1000, av: 30000 + tt.subjectLand, landAV: tt.subjectLand, year: 1950})
+			for i := range 3 {
+				s.add(sh{pin: fmt.Sprintf("C%d", i), class: "203", sf: 1000, av: 25000 + tt.others, landAV: tt.others, year: 1950})
+			}
+			if got := len(s.report("S").Flags) == 1; got != tt.flag {
+				t.Errorf("land flag %v, want %v", got, tt.flag)
+			}
+		})
 	}
 }
 
@@ -271,11 +285,13 @@ func TestSyntheticMissingSplit(t *testing.T) {
 	s.add(sh{pin: "S", class: "203", sf: 1000, av: 30000, year: 1950})
 	s.add(sh{pin: "OK", class: "203", sf: 1000, av: 25000, year: 1950})
 	s.add(sh{pin: "NOSPLIT", class: "203", sf: 1000, av: 25000, year: 1950, noSplit: true})
-	s.add(sh{pin: "ALLLAND", class: "203", sf: 1000, av: 25000, landAV: 25000, year: 1950}) // $0 building
-	if got := pins(s.report("S").Comps); got != "OK" {
-		t.Errorf("comps %s, want only OK", got)
+	s.add(sh{pin: "ALLLAND", class: "203", sf: 1000, av: 25000, landAV: 25000, year: 1950})             // $0 building
+	s.add(sh{pin: "BADSUM", class: "203", sf: 1000, av: 25000, landAV: 5000, splitOff: 2, year: 1950})  // 20,002 + 5,000 ≠ 25,000
+	s.add(sh{pin: "ROUNDED", class: "203", sf: 1000, av: 25000, landAV: 5000, splitOff: 1, year: 1950}) // off by $1: rounding, kept
+	if got := pins(s.report("S").Comps); got != "OK,ROUNDED" {
+		t.Errorf("comps %s, want OK,ROUNDED", got)
 	}
-	for _, pin := range []string{"NOSPLIT", "ALLLAND"} {
+	for _, pin := range []string{"NOSPLIT", "ALLLAND", "BADSUM"} {
 		r := s.report(pin)
 		if !strings.Contains(r.Unsupported, "split") || r.Stats != nil {
 			t.Errorf("%s: unsupported %q; want the missing-split reason and no comparison", pin, r.Unsupported)
@@ -288,15 +304,18 @@ func TestSyntheticMissingSplit(t *testing.T) {
 func TestSyntheticProximity(t *testing.T) {
 	s := newSynth(t)
 	s.add(sh{pin: "S", class: "203", sf: 1000, av: 30000, year: 1950, lat: 41.9, lon: -87.7})
-	// 0.01° of latitude = 3,958.8 mi × 0.01 × π/180 = 0.6909 mi; 0.001° = 0.0691 mi.
-	s.add(sh{pin: "A", class: "203", sf: 1000, av: 25000, year: 1950, lat: 41.91, lon: -87.7})
-	s.add(sh{pin: "B", class: "203", sf: 1000, av: 25000, year: 1950, lat: 41.901, lon: -87.7})
-	s.add(sh{pin: "C", class: "203", sf: 1000, av: 25000, year: 1950}) // no location
+	// 0.01° of latitude = 3,958.8 mi × 0.01 × π/180 = 0.6909 mi. A, B and C
+	// are all past the 1-mile cap (C counts as the cap), so they score the
+	// same and only the tie-break orders them; N, nearer, scores better.
+	s.add(sh{pin: "A", class: "203", sf: 1000, av: 25000, year: 1950, lat: 41.92, lon: -87.7})  // 1.3819 mi
+	s.add(sh{pin: "B", class: "203", sf: 1000, av: 25000, year: 1950, lat: 41.915, lon: -87.7}) // 1.0364 mi
+	s.add(sh{pin: "C", class: "203", sf: 1000, av: 25000, year: 1950})                          // no location
+	s.add(sh{pin: "N", class: "203", sf: 1000, av: 25000, year: 1950, lat: 41.901, lon: -87.7}) // 0.0691 mi
 	r := s.report("S")
-	if got := pins(r.Comps); got != "B,A,C" {
-		t.Errorf("comps %s, want B,A,C (nearest first, unknown location last)", got)
+	if got := pins(r.Comps); got != "N,B,A,C" {
+		t.Errorf("comps %s, want N,B,A,C (more similar first, then nearer, unknown location last)", got)
 	}
-	want := map[string]float64{"A": 0.69, "B": 0.07, "C": -1}
+	want := map[string]float64{"A": 1.38, "B": 1.04, "C": -1, "N": 0.07}
 	for _, c := range r.Comps {
 		if c.Miles != want[c.PIN] {
 			t.Errorf("%s: %v mi, want %v", c.PIN, c.Miles, want[c.PIN])

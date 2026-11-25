@@ -16,8 +16,8 @@ search level used:
   L2    14    0.7%
   L3     9    0.5%
 please-verify flags (count of reports with flag):
+  land        42    2.1%
   bldg_sf     67    3.4%
-  land        79    4.0%
 verdicts by township:
        township    n  strong  possible  weak
           Bloom   85     24%       15%   61%

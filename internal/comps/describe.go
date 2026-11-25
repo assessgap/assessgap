@@ -102,7 +102,7 @@ func (h Home) Features() Features {
 		Construction: capitalize(h.Construction()),
 		Basement:     capitalize(bsmt),
 		Air:          capitalize(h.CentralAir()),
-		Fireplaces:   fmt.Sprint(h.Fireplaces),
+		Fireplaces:   fireplaceCount(h.Fireplaces),
 		Garage:       capitalize(h.GarageText()),
 	}
 }
@@ -177,7 +177,7 @@ func Differences(s Home, c Comp) string {
 	case ca == "no" && sa == "yes":
 		add("no central air vs central air")
 	}
-	if c.Fireplaces != s.Fireplaces {
+	if c.Fireplaces >= 0 && s.Fireplaces >= 0 && c.Fireplaces != s.Fireplaces {
 		yours := "none"
 		if s.Fireplaces > 0 {
 			yours = fmt.Sprint(s.Fireplaces)
@@ -195,6 +195,14 @@ func Differences(s Home, c Comp) string {
 		return "No differences in the recorded features we compare"
 	}
 	return strings.Join(out, " · ")
+}
+
+// fireplaceCount is the grid's count; "" when not on record.
+func fireplaceCount(n int) string {
+	if n < 0 {
+		return ""
+	}
+	return fmt.Sprint(n)
 }
 
 func fireplaces(n int) string {

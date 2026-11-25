@@ -40,7 +40,7 @@ type Home struct {
 	Basement    string  `json:"basement"`
 	BsmtFin     string  `json:"basement_finish"`
 	Air         string  `json:"central_air"`
-	Fireplaces  int     `json:"fireplaces"`
+	Fireplaces  int     `json:"fireplaces"` // -1 = not on record
 	Garage      string  `json:"garage"`
 	Lat         float64 `json:"lat,omitempty"`
 	Lon         float64 `json:"lon,omitempty"`

@@ -85,7 +85,7 @@ type ChartLayout struct {
 
 func (l ChartLayout) ViewBox() string { return fmt.Sprintf("0 0 %.0f %.0f", l.W, l.H) }
 
-// Chart is a strip plot of AV per square foot.
+// Chart is a strip plot of building AV per square foot.
 type Chart struct {
 	L                  ChartLayout
 	Dots               []Dot

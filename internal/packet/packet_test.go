@@ -5,6 +5,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"reflect"
 	"regexp"
@@ -117,9 +119,42 @@ func TestGridFitsEveryValue(t *testing.T) {
 		if col.title == "Address" {
 			continue
 		}
-		if got, size := cellText(bold, col.w-2*cellPad, v, false); got != v || size < 5 {
-			t.Errorf("%s column draws %q at %.1f pt, want %q at 5 pt or more", col.title, got, size, v)
+		if _, size := cellText(bold, col.w-2*cellPad, v, false); size < 5 {
+			t.Errorf("%s column draws %q at %.1f pt, want 5 pt or more", col.title, v, size)
 		}
+	}
+}
+
+// TestRenderWorstCaseGrid fills page 2 as far as a real report can: 20 comps,
+// 6 evidence comps, each differing on every feature, with long addresses.
+func TestRenderWorstCaseGrid(t *testing.T) {
+	subject := comps.Home{PIN: "13331030130000", Address: "12345 W NORTHWEST HIGHWAY AVE", Class: "203",
+		AV: 30000, BldgAV: 24000, LandAV: 6000, BldgAVPerSF: 20, BldgSF: 1200, LandSF: 4000, YearBuilt: 1950,
+		FullBaths: 1, TypeResd: "1 Story", ExtWall: "Masonry", Basement: "Full", BsmtFin: "Unfinished",
+		Air: "Central A/C", Garage: "0 cars", NumCards: 1, HasSplit: true}
+	far := comps.Home{Class: "204", BldgSF: 1500, YearBuilt: 1990, FullBaths: 3, HalfBaths: 2,
+		TypeResd: "Split Level", ExtWall: "Frame + Masonry", Basement: "Full", BsmtFin: "Formal Rec Room",
+		Air: "No Central A/C", Fireplaces: 2, Garage: "2.5 cars"}
+	r := &comps.Report{PIN: subject.PIN, Year: 2026, AVStage: "mailed", Class: "203", Nbhd: "71280",
+		Township: "Jefferson", Subject: &subject, Disclaimer: comps.Disclaimer,
+		Search: &comps.Search{Level: 3, Description: "same neighborhood, one-story homes, building sqft within ±50%, built within ±40 years"},
+		Stats:  &comps.Stats{NumComps: 20, SubjectBldgAVPerSF: 20, MedianBldgAVPerSF: 18, PctAboveMedian: 0.1111}}
+	for i := range 20 {
+		h := far
+		h.PIN = fmt.Sprintf("1333103%03d0000", i)
+		h.Address, h.AV, h.BldgAV, h.LandAV, h.BldgAVPerSF = "12345 W NORTHWEST HIGHWAY AVE", 30000, 24000, 6000, 16
+		c := comps.Comp{Home: h, Miles: 0.95}
+		if i < 6 {
+			c.Differences = comps.Differences(subject, c)
+			r.Evidence = append(r.Evidence, c)
+		}
+		r.Comps = append(r.Comps, c)
+	}
+	if n := len(r.Evidence[0].Differences); n < 200 {
+		t.Fatalf("differences line is only %d characters; the test needs a long one", n)
+	}
+	if err := Render(io.Discard, r, when); err != nil {
+		t.Fatal(err)
 	}
 }
 

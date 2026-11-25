@@ -8,7 +8,7 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-// Verdict thresholds on how far the subject's AV/sqft sits above the comp median.
+// Verdict thresholds on how far the subject's building AV/sqft sits above the comp median.
 const (
 	strongGap   = 0.05 // backtest: pro se win rate plateaus ~89% from +5% (docs/methodology.md)
 	possibleGap = 0.01 // 1–5% above median: ~84% pro se win rate; within ±1% is "in line" (~64%)
@@ -89,9 +89,17 @@ const landTolerance = 0.01
 
 // landFlag asks the owner to check the land assessment when its rate per land
 // sq ft differs from similar homes'. It states the figures only.
-func landFlag(s Home, st Stats) []Flag {
-	if st.SubjectLandAVPerSF <= 0 || st.MedianLandAVPerSF <= 0 ||
-		abs64(st.SubjectLandAVPerSF/st.MedianLandAVPerSF-1) <= landTolerance {
+// The comparison uses unrounded rates: at land rates under $1, rounding to
+// cents alone could cross 1%.
+func landFlag(s Home, comps []Comp, st Stats) []Flag {
+	var rates []float64
+	for _, c := range comps {
+		if r := c.LandAVPerSF(); r > 0 {
+			rates = append(rates, r)
+		}
+	}
+	subj := s.LandAVPerSF()
+	if subj <= 0 || len(rates) == 0 || abs64(subj/median(rates)-1) <= landTolerance {
 		return nil
 	}
 	return []Flag{{Field: "land", Message: fmt.Sprintf(
@@ -121,7 +129,7 @@ func decide(r *Report) (string, []string) {
 	gap := st.PctAboveMedian
 	var rel string
 	switch {
-	case abs64(gap) < 0.01:
+	case InLine(gap):
 		rel = "in line with the median"
 	case gap > 0:
 		rel = pct(gap) + " above the median"
@@ -141,7 +149,7 @@ func decide(r *Report) (string, []string) {
 
 	// Facts only: no recommendation about whether to appeal. The verdict is an
 	// internal tier (styling, and whether we offer a packet), never shown as a label.
-	if gap >= possibleGap {
+	if AboveMedian(gap) {
 		why = append(why, fmt.Sprintf(
 			"At similar homes' median building rate per sq ft, plus your land's assessed value of %s, your assessed value would be %s, which is %s lower than now.",
 			money(s.LandAV), money(st.UniformityAV), money(st.PotentialAVReduction)))
@@ -169,6 +177,18 @@ func decide(r *Report) (string, []string) {
 		return Weak, why
 	}
 }
+
+// InLine reports whether a gap is within ±1% of the median. Every surface
+// describes such a home as in line with (or about equal to) similar homes.
+func InLine(gap float64) bool { return abs64(gap) < possibleGap }
+
+// AboveMedian reports whether a gap is far enough above the median (1% or
+// more) that reports state the value at the median rate and the difference.
+func AboveMedian(gap float64) bool { return gap >= possibleGap }
+
+// CountBelow counts the comps whose building is assessed lower per sq ft
+// than s's (strictly: equal rates don't count).
+func CountBelow(s Home, comps []Comp) int { return countBelow(s, comps) }
 
 func countBelow(s Home, comps []Comp) int {
 	n := 0

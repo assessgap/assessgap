@@ -40,13 +40,13 @@ func toView(r *comps.Report) views.ReportData {
 	v.Verdict, v.Reasons = r.Verdict, r.Reasons
 	v.Headline, v.Badge = headline(r), badge(r)
 	v.SubjectBldgAVPerSF, v.MedianBldgAVPerSF = perSF(st.SubjectBldgAVPerSF), perSF(st.MedianBldgAVPerSF)
-	switch {
-	case st.PctAboveMedian >= 0.005:
-		v.GapLabel = pct(st.PctAboveMedian) + " above"
-	case st.PctAboveMedian <= -0.005:
-		v.GapLabel = pctAbs(st.PctAboveMedian) + " below"
-	default:
+	switch g := st.PctAboveMedian; {
+	case comps.InLine(g):
 		v.GapLabel = "about equal to"
+	case g > 0:
+		v.GapLabel = pct(g) + " above"
+	default:
+		v.GapLabel = pctAbs(g) + " below"
 	}
 	v.NumComps = st.NumComps
 	if r.Search != nil {
@@ -54,7 +54,8 @@ func toView(r *comps.Report) views.ReportData {
 	}
 	v.SubjectAV, v.UniformityAV = money(s.AV), money(st.UniformityAV)
 	v.SubjectBldgAV, v.SubjectLandAV, v.LandNote = money(s.BldgAV), money(s.LandAV), comps.LandNote
-	if st.PotentialAVReduction >= 1 {
+	// Shown only when the reasons state it too (1% or more above the median).
+	if comps.AboveMedian(st.PctAboveMedian) && st.PotentialAVReduction >= 1 {
 		v.Reduction = money(st.PotentialAVReduction)
 	}
 	v.Subject = homeRow(comps.Comp{Home: s, Miles: 0}, false)
@@ -116,12 +117,12 @@ func headline(r *comps.Report) string {
 	switch {
 	case st == nil || st.NumComps < 3:
 		return "We found too few similar homes to compare."
-	case st.PctAboveMedian >= 0.005:
-		return "Your home is assessed " + pct(st.PctAboveMedian) + " above similar homes nearby."
-	case st.PctAboveMedian <= -0.005:
-		return "Your home is assessed " + pctAbs(st.PctAboveMedian) + " below similar homes nearby."
+	case comps.InLine(st.PctAboveMedian):
+		return "Your home's building is assessed about the same per square foot as similar homes nearby."
+	case st.PctAboveMedian > 0:
+		return "Your home's building is assessed " + pct(st.PctAboveMedian) + " above similar homes nearby, per square foot."
 	default:
-		return "Your home is assessed about the same as similar homes nearby."
+		return "Your home's building is assessed " + pctAbs(st.PctAboveMedian) + " below similar homes nearby, per square foot."
 	}
 }
 
@@ -130,13 +131,8 @@ func badge(r *comps.Report) string {
 	if r.Stats == nil || r.Stats.NumComps < 3 {
 		return "Too few similar homes"
 	}
-	lower := 0
-	for _, c := range r.Comps {
-		if c.BldgAVPerSF < r.Subject.BldgAVPerSF {
-			lower++
-		}
-	}
-	return fmt.Sprintf("%d of %d similar homes assessed lower", lower, r.Stats.NumComps)
+	return fmt.Sprintf("%d of %d similar homes have a building assessed lower per sq ft",
+		comps.CountBelow(*r.Subject, r.Comps), r.Stats.NumComps)
 }
 
 func location(r *comps.Report) string {

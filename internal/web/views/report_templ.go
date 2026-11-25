@@ -1778,7 +1778,7 @@ func nextSteps(r ReportData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if r.Verdict != "weak" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 135, "<li><strong class=\"font-semibold text-white\">Download your evidence report (free PDF).</strong> It lists the similar homes assessed lower than yours, with their PINs and details, the statistics, and step-by-step instructions for filing with the Board of Review. You still file and sign everything yourself. <span class=\"mt-3 block\"><a href=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 135, "<li><strong class=\"font-semibold text-white\">Download your evidence report (free PDF).</strong> It lists the similar homes whose building is assessed lower per square foot than yours, with their PINs and details, the statistics, and step-by-step instructions for filing with the Board of Review. You still file and sign everything yourself. <span class=\"mt-3 block\"><a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -1796,7 +1796,7 @@ func nextSteps(r ReportData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 137, "<li><strong class=\"font-semibold text-white\">Check your home's details.</strong> If the Assessor has something wrong, such as square footage or the number of bathrooms, you can ask for a correction. We only offer the evidence report when enough similar homes are assessed lower than yours to include.</li>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 137, "<li><strong class=\"font-semibold text-white\">Check your home's details.</strong> If the Assessor has something wrong, such as square footage or the number of bathrooms, you can ask for a correction. We only offer the evidence report when enough similar homes have a building assessed lower per square foot than yours to include.</li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

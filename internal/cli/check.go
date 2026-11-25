@@ -245,15 +245,7 @@ func table(w io.Writer, indent string, rows [][]string, numFrom int) {
 	}
 }
 
-func countBelow(r *comps.Report) int {
-	n := 0
-	for _, c := range r.Comps {
-		if c.BldgAVPerSF < r.Subject.BldgAVPerSF { // building rate, as compared
-			n++
-		}
-	}
-	return n
-}
+func countBelow(r *comps.Report) int { return comps.CountBelow(*r.Subject, r.Comps) }
 
 type printer struct {
 	w   io.Writer

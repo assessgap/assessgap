@@ -13,7 +13,7 @@ Every assessed value has two parts: the **building** (improvement) and the **lan
 Land is checked on its own: if the subject's land AV per square foot of land differs from the similar homes' median by more than 1%, the report asks the owner to verify it.
 
 ## Which homes are supported
-Classes 202–210, 234, 278 and 295 (single-family homes and townhomes). Condos (299) are not supported: a condo unit's assessed value is the building's value times the unit's percentage of ownership, so in about 95% of buildings every unit is assessed at the same rate and a unit-to-unit comparison finds nothing. Two-to-six-flats, multi-building PINs, PINs without building square footage and PINs whose record doesn't split the value into building and land (or shows a $0 building) are also unsupported, and the report says why.
+Classes 202–210, 234, 278 and 295 (single-family homes and townhomes). Condos (299) are not supported: a condo unit's assessed value is the building's value times the unit's percentage of ownership, so in about 95% of buildings every unit is assessed at the same rate and a unit-to-unit comparison finds nothing. Two-to-six-flats, multi-building PINs, PINs without building square footage and PINs whose record doesn't split the value into building and land (or shows a $0 building, or a split that doesn't add up to the total within $1; none did in 2026) are also unsupported, and the report says why.
 
 ## Finding similar homes
 | Step | Rule |
@@ -32,7 +32,7 @@ The distance weight (1 per mile, capped at 1 mile) was chosen with the backtest:
 ## The evidence grid
 For the subject and each similar home the report shows: address and PIN, distance, class, stories, construction (exterior wall), building sq ft, year built, bedrooms and baths, basement and finish, central air, fireplaces, garage, land sq ft, building AV, land AV, total AV and building AV per sq ft. Characteristics are the Assessor's published words, reworded plainly ("Formal Rec Room" → "finished"); a bare numeric code is never shown.
 
-"Differences from your home" lists, for each lower-assessed home, only differences in the features Property Tax Appeal Board decisions weigh when they compare homes (as reasons for less weight, or as adjustments): distance (always), class, stories, construction, living area (5% or more), age (10 years or more), full and half baths, basement type and finish, central air, fireplaces and garage. It states facts only.
+"Differences from your home" lists, for each lower-assessed home, only differences in the features Property Tax Appeal Board decisions weigh when they compare homes (as reasons for less weight, or as adjustments): distance (whenever both locations are known), class, stories, construction, living area (5% or more), age (10 years or more), full and half baths, basement type and finish, central air, fireplaces and garage. It states facts only.
 
 ## How we describe results
 We state facts and don't tell anyone whether to appeal. Internally, a report is in one of three tiers, which only controls styling and whether the evidence report is offered:

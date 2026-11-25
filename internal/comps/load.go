@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"math"
 	"strings"
 )
 
@@ -94,12 +95,18 @@ func scanHome(s scanner, extra ...any) (h Home, hasChars bool, err error) {
 	h.FullBaths, h.HalfBaths, h.NumCards = int(fb.Int64), int(hb.Int64), int(cards.Int64)
 	h.TypeResd, h.ExtWall, h.Basement = typ.String, wall.String, bsmt.String
 	h.BsmtFin, h.Air, h.Fireplaces, h.Garage = fin.String, air.String, int(frpl.Int64), garage.String
+	if !frpl.Valid {
+		h.Fireplaces = -1 // not on record: never shown as "0"
+	}
 	if lat.Valid && lon.Valid && lat.Float64 != 0 && lon.Float64 != 0 {
 		h.Lat, h.Lon = lat.Float64, lon.Float64
 	}
 	// A $0 building value happens on vacant or newly split parcels; such a
 	// home has no building rate to compare.
-	h.HasSplit = bldgAV.Valid && landAV.Valid && bldgAV.Float64 > 0
+	// The split must also add up to the total (it does in every 2026 record),
+	// or "building + land" on the report wouldn't sum.
+	h.HasSplit = bldgAV.Valid && landAV.Valid && bldgAV.Float64 > 0 &&
+		math.Abs(bldgAV.Float64+landAV.Float64-h.AV) <= 1
 	if h.BldgSF > 0 && h.HasSplit {
 		h.BldgAVPerSF = h.BldgAV / h.BldgSF
 	}

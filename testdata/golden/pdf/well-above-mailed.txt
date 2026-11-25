@@ -33,8 +33,8 @@ separately at a neighborhood rate per square foot of land.
 property ranks at the 100th percentile of the comparable homes by building AV per square foot.
 How comparable homes were chosen: same neighborhood, class 203, building sqft within ±25%, built within
 ±15 years (Assessor neighborhood 71280), excluding multi-building parcels and homes without recorded
-square footage or a building assessment. The 20 most similar by size, age, baths, lot, design, construction
-and basement (the nearer home first when two are equally similar) are listed on page 2.
+square footage or a building assessment. The 20 most similar by size, age, baths, lot, design, construction,
+basement and distance (the nearer home first when two are equally similar) are listed on page 2.
 Uniformity figure
 Applying the comparable homes' median building rate of $12.77 per square foot to the property's 1,080
 square feet, and adding the property's land AV of $6,294, gives an assessed value of $20,090. That is
@@ -46,9 +46,9 @@ Comparable property grid
 PIN 13-33-103-013-0000 · Tax year 2026
 Page 2 of 3
 AssessGap is not affiliated with Cook County. You file and sign your own appeal.
-Tax year 2026 assessed values from the Cook County Assessor, mailed stage; building characteristics are the Assessor's records. Homes are compared on building AV per square foot
-(building AV ÷ building square feet), because the Assessor values land separately at a neighborhood rate. Evidence comparables are the most similar homes whose building is assessed lower
-per square foot than the subject's. Away = straight-line distance from the subject.
+Tax year 2026 assessed values from the Cook County Assessor, mailed stage; building characteristics are the Assessor's records. Homes are compared on building AV per square foot (building AV ÷
+building square feet), because the Assessor values land separately at a neighborhood rate. Evidence comparables are the most similar homes whose building is assessed lower per square foot than the
+subject's. Away = straight-line distance from the subject.
 PIN
 Address
 Away
@@ -494,9 +494,9 @@ asked if you are a Board of Review attorney, answer No. Choose your appellant ty
 Decide whether you want a hearing. It is optional, held by phone for homeowners, and the Board
 says you are not penalized for skipping it. You choose this when you file.
 7.
-Enter comparable properties if you like (optional: the Board's analysts also pull their own). The PINs
-on page 2 are similar homes assessed lower per square foot than yours, from the same
-neighborhood and class.
+Enter comparable properties if you like (optional: the Board's analysts also pull their own). The
+evidence comparables on page 2 are similar homes in your Assessor neighborhood whose building
+is assessed lower per square foot than yours; the other homes listed there are not.
 8.
 Review, initial, confirm and submit before the deadline. Save your complaint number.
 9.
