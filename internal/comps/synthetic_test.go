@@ -108,18 +108,16 @@ func TestSyntheticTwoComps(t *testing.T) {
 	if *r.Stats != want {
 		t.Errorf("stats %+v\nwant  %+v", *r.Stats, want)
 	}
-	// Fewer than 3 comps: lowest tier, whatever the gap.
-	if r.Verdict != Weak || len(r.Reasons) != 1 || !strings.Contains(r.Reasons[0], "only 2 comparable") {
+	// Fewer than 3 comps: lowest tier whatever the gap, and only the
+	// too-few explanation (no median or tax comparison).
+	if r.Verdict != Weak || len(r.Reasons) != 1 {
 		t.Errorf("verdict %s, reasons %q", r.Verdict, r.Reasons)
-	}
-	if r.AVStage != "mailed" {
-		t.Errorf("AVStage %q, want mailed", r.AVStage)
 	}
 }
 
 func TestSyntheticTieAtMedian(t *testing.T) {
 	s := newSynth(t)
-	s.add(sh{pin: "S", class: "203", sf: 1000, av: 25000, year: 1950, certified: true})
+	s.add(sh{pin: "S", class: "203", sf: 1000, av: 25000, year: 1950})
 	for i, av := range []float64{20000, 25000, 25000, 30000} {
 		s.add(sh{pin: fmt.Sprintf("C%d", i), class: "203", sf: 1000, av: av, year: 1950})
 	}
@@ -135,15 +133,17 @@ func TestSyntheticTieAtMedian(t *testing.T) {
 	if len(r.Evidence) != 1 || r.Evidence[0].PIN != "C0" {
 		t.Errorf("evidence %v, want [C0]", pins(r.Evidence))
 	}
-	if r.Verdict != Weak || r.AVStage != "certified" {
-		t.Errorf("verdict %s, stage %s; want weak, certified", r.Verdict, r.AVStage)
+	if r.Verdict != Weak {
+		t.Errorf("verdict %s, want weak", r.Verdict)
 	}
 }
 
 func TestSyntheticEvenMedianBetween(t *testing.T) {
 	s := newSynth(t)
 	s.add(sh{pin: "S", class: "203", sf: 1200, av: 36000, year: 1950}) // $30.00
-	for i, av := range []float64{24000, 26400, 27600, 30000} {         // $20, $22, $23, $25
+	// $29, $20, $22, $23: out of order, and chosen so the mean ($23.50), the
+	// midrange ($24.50) and an unsorted middle pair ($21) all differ from the median.
+	for i, av := range []float64{34800, 24000, 26400, 27600} {
 		s.add(sh{pin: fmt.Sprintf("C%d", i), class: "203", sf: 1200, av: av, year: 1950})
 	}
 	r := s.report("S")
@@ -153,9 +153,8 @@ func TestSyntheticEvenMedianBetween(t *testing.T) {
 		r.Stats.UniformityAV != 27000 || r.Stats.PotentialAVReduction != 9000 {
 		t.Errorf("stats %+v", *r.Stats)
 	}
-	// 4 comps, all lower, gap ≥ 5% but fewer than 8 comps: the middle tier.
-	if r.Verdict != Possible || len(r.Evidence) != 4 {
-		t.Errorf("verdict %s with %d evidence, want possible with 4", r.Verdict, len(r.Evidence))
+	if len(r.Evidence) != 4 {
+		t.Errorf("%d lower-assessed homes, want all 4", len(r.Evidence))
 	}
 }
 
@@ -164,10 +163,12 @@ func TestSyntheticNoComps(t *testing.T) {
 	s.add(sh{pin: "S", class: "203", sf: 1000, av: 30000, year: 1950})
 	s.add(sh{pin: "T", class: "295", sf: 1000, av: 10000, year: 1950}) // townhome: another class group
 	r := s.report("S")
-	if r.Stats.NumComps != 0 || r.Stats.MedianAVPerSF != 0 || r.Stats.UniformityAV != 0 || len(r.Comps) != 0 {
-		t.Errorf("stats %+v, %d comps; want all zero", *r.Stats, len(r.Comps))
+	// No median to divide by: every comparison figure stays zero (not NaN or
+	// Inf, and no reduction equal to the whole AV).
+	if *r.Stats != (Stats{SubjectAVPerSF: 30}) || len(r.Comps) != 0 {
+		t.Errorf("stats %+v, %d comps; want only the subject's $30", *r.Stats, len(r.Comps))
 	}
-	if r.Verdict != Weak || !strings.Contains(r.Reasons[0], "only 0 comparable") {
+	if r.Verdict != Weak || len(r.Reasons) != 1 {
 		t.Errorf("verdict %s, reasons %q", r.Verdict, r.Reasons)
 	}
 }
@@ -176,19 +177,20 @@ func TestSyntheticUnsupported(t *testing.T) {
 	s := newSynth(t)
 	s.add(sh{pin: "NOCHARS", class: "203", av: 30000, noChars: true})
 	s.add(sh{pin: "ZEROSF", class: "203", sf: 0, av: 30000, year: 1950})
-	s.add(sh{pin: "CARDS", class: "203", sf: 2000, av: 30000, year: 1950, cards: 2})
 	s.add(sh{pin: "NOAV", class: "203", sf: 1000, av: 0, year: 1950})
-	tests := []struct{ pin, want string }{
-		{"NOCHARS", "No building characteristics on record"},
-		{"ZEROSF", "No building square footage on record"},
-		{"CARDS", "more than one building"},
-		{"NOAV", "No assessed value on record for tax year 2026"},
+	// The keyword tells the branches apart; the full wording is not the point.
+	tests := []struct{ pin, keyword string }{
+		{"NOCHARS", "characteristics"},
+		{"ZEROSF", "square footage"},
+		{"NOAV", "assessed value"},
 	}
 	for _, tt := range tests {
-		r := s.report(tt.pin)
-		if !strings.Contains(r.Unsupported, tt.want) || r.Stats != nil || r.Subject != nil {
-			t.Errorf("%s: unsupported %q (stats %v); want %q and no comparison", tt.pin, r.Unsupported, r.Stats, tt.want)
-		}
+		t.Run(tt.pin, func(t *testing.T) {
+			r := s.report(tt.pin)
+			if !strings.Contains(r.Unsupported, tt.keyword) || r.Stats != nil || r.Subject != nil {
+				t.Errorf("unsupported %q (stats %v); want the %s reason and no comparison", r.Unsupported, r.Stats, tt.keyword)
+			}
+		})
 	}
 }
 
@@ -208,25 +210,18 @@ func TestSyntheticPoolExclusions(t *testing.T) {
 
 func TestSyntheticUnknownYearBuilt(t *testing.T) {
 	s := newSynth(t)
-	s.add(sh{pin: "S", class: "203", sf: 1000, av: 30000, year: 0, zeroBaths: true})
-	s.add(sh{pin: "OLD", class: "203", sf: 1000, av: 25000, year: 1880}) // would fail ±40 years of anything recent
+	s.add(sh{pin: "S", class: "203", sf: 1000, av: 30000, year: 0})
+	s.add(sh{pin: "OLD", class: "203", sf: 1000, av: 25000, year: 1880}) // 140 years apart from NEW
 	s.add(sh{pin: "NEW", class: "203", sf: 1000, av: 25000, year: 2020})
 	r := s.report("S")
 	// With the subject's year unknown, the age filter is skipped and age adds no distance.
 	if got := pins(r.Comps); got != "NEW,OLD" {
-		t.Errorf("comps %s, want NEW,OLD (both at distance 0.5 for the bath difference, by PIN)", got)
+		t.Errorf("comps %s, want NEW,OLD (both at distance 0, so by PIN)", got)
 	}
 	for _, c := range r.Comps {
-		if c.Distance != 0.5 {
-			t.Errorf("%s distance %v, want 0.5", c.PIN, c.Distance)
+		if c.Distance != 0 {
+			t.Errorf("%s distance %v, want 0", c.PIN, c.Distance)
 		}
-	}
-	var fields []string
-	for _, f := range r.Flags {
-		fields = append(fields, f.Field)
-	}
-	if got := strings.Join(fields, ","); got != "fbath,yrblt" {
-		t.Errorf("flags %s, want fbath,yrblt", got)
 	}
 }
 

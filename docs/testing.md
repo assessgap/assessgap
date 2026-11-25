@@ -30,7 +30,7 @@ Use the two data sources for different jobs, and don't mix them:
 2. **Hardcode its expected values.** Never compute the expectation with production code (`want := median(xs)`, `want := round(st.MedianAVPerSF*sf, 0)`). Write the number, and show the arithmetic in a comment if it isn't obvious.
 3. **Live at the one cheapest layer that owns the behaviour.** The median is tested in `comps`, not again through the CLI and the website. The CLI's tests cover argument parsing and address resolution; the website's cover HTTP behaviour.
 4. **Be table-driven when cases differ only in inputs and expected outputs.** One row per distinct behaviour, named for it. Don't add rows that exercise the same branch, and don't branch inside the loop body.
-5. **Be deterministic.** No network (the one real-API test skips under `-short` and in CI), no wall clock (pass a `time.Time`), no `time.Sleep`, no map iteration order in assertions.
+5. **Be deterministic.** No network (live mode is tested against a fake county API that serves the fixture, `internal/live`), no wall clock (pass a `time.Time`), no `time.Sleep`, no map iteration order in assertions.
 
 ## Don't write tests that
 

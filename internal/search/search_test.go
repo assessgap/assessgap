@@ -3,10 +3,13 @@ package search
 import (
 	"context"
 	"os"
+	"reflect"
 	"testing"
 
-	"github.com/assessgap/assessgap/internal/store"
+	"github.com/assessgap/assessgap/internal/fixture"
 )
+
+func TestMain(m *testing.M) { os.Exit(fixture.Main(m)) }
 
 func TestNormalizeQuery(t *testing.T) {
 	tests := []struct{ in, want string }{
@@ -14,7 +17,7 @@ func TestNormalizeQuery(t *testing.T) {
 		{"5555 W. Belmont Ave, Chicago IL", "5555 W BELMONT AVE"},
 		{"221 s evergreen ave apt b", "221 S EVERGREEN AVE UNIT B"},
 		{"221 s evergreen #b", "221 S EVERGREEN UNIT B"},
-		{"5555 w belm", "5555 W BELM"},
+		{"5555 w belmont av", "5555 W BELMONT AVE"},
 	}
 	for _, tt := range tests {
 		if got := NormalizeQuery(tt.in); got != tt.want {
@@ -31,7 +34,7 @@ func TestParsePIN(t *testing.T) {
 	}{
 		{"13-28-100-027-0000", "13281000270000", true},
 		{"13281000270000", "13281000270000", true},
-		{" 13281000270000 ", "13281000270000", true},
+		{"\t13281000270000\n", "13281000270000", true},
 		{"13-28-100-027", "13281000270000", true},
 		{"5555 W Belmont", "", false},
 		{"1328", "", false},
@@ -57,44 +60,69 @@ func TestFormatPIN(t *testing.T) {
 }
 
 func TestExact(t *testing.T) {
-	ms := []Match{
+	house := []Match{
 		{PIN: "1", Address: "5555 W BELMONT AVE"},
 		{PIN: "2", Address: "5555 W BELMONT AVE UNIT 2"},
 	}
+	// Two parcels with one address: picking either could show the wrong home.
+	twins := []Match{
+		{PIN: "1", Address: "2329 N LOCKWOOD AVE"},
+		{PIN: "2", Address: "2329 N LOCKWOOD AVE"},
+	}
 	tests := []struct {
+		name   string
 		q      string
+		ms     []Match
 		want   string
 		wantOK bool
 	}{
-		{"5555 w belmont avenue", "1", true},
-		{"5555 w belmont", "", false},
+		{"house over its unit", "5555 w belmont avenue", house, "1", true},
+		{"prefix only", "5555 w belmont", house, "", false},
+		{"same address twice", "2329 n lockwood ave", twins, "", false},
 	}
 	for _, tt := range tests {
-		m, ok := Exact(tt.q, ms)
+		m, ok := Exact(tt.q, tt.ms)
 		if ok != tt.wantOK || m.PIN != tt.want {
 			t.Errorf("Exact(%q) = %q, %v; want %q, %v", tt.q, m.PIN, ok, tt.want, tt.wantOK)
 		}
 	}
 }
 
-func TestFindSample(t *testing.T) {
-	const path = "../../data-sample/cook.db"
-	if _, err := os.Stat(path); err != nil {
-		t.Skipf("sample DB missing (%v)", err)
+// TestFind looks up fixture parcels. A wrong match here shows someone else's home.
+func TestFind(t *testing.T) {
+	db := fixture.Open(t)
+	tests := []struct {
+		name  string
+		q     string
+		want  []string // PINs, in order; nil for none
+		count int      // when the exact PINs don't matter, just how many
+	}{
+		{"PIN with dashes", "13-33-103-013-0000", []string{"13331030130000"}, 0},
+		{"address prefix", "2329 n lockwood", []string{"13331030130000"}, 0},
+		{"no direction: retried with N, S, E, W", "2329 lockwood", []string{"13331030130000"}, 0},
+		{"condo units in one building", "2106 n laramie", []string{"13331120411001", "13331120411002", "13331120411003"}, 0},
+		{"too short", "ab", nil, 0},
+		{"capped at MaxMatches", "210", nil, 8}, // 68 fixture addresses start "210"
 	}
-	db, err := store.OpenReadOnly(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
-	ctx := context.Background()
-	for _, q := range []string{"5555 w belmont", "5555 belmont", "13-28-100-027-0000"} {
-		ms, err := Find(ctx, db, q)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(ms) == 0 {
-			t.Errorf("Find(%q): no matches", q)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ms, err := Find(context.Background(), db, tt.q)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var got []string
+			for _, m := range ms {
+				got = append(got, m.PIN)
+			}
+			if tt.count > 0 {
+				if len(got) != tt.count {
+					t.Errorf("%d matches, want %d", len(got), tt.count)
+				}
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Find(%q) = %v, want %v", tt.q, got, tt.want)
+			}
+		})
 	}
 }

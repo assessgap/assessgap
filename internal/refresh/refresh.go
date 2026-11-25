@@ -9,13 +9,12 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/assessgap/assessgap/internal/ingest"
 )
 
 // Tables are the typed tables ingest.Build produces. Each must be non-empty.
-var Tables = []string{
-	"parcel", "assessment", "res_char", "condo_char", "sale",
-	"bor_appeal", "ccao_appeal", "nbhd_bor_stats",
-}
+var Tables = ingest.Tables
 
 // Snapshot is what we compare between the old and new database.
 type Snapshot struct {

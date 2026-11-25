@@ -1,57 +1,60 @@
 package live
 
 import (
+	"bytes"
 	"context"
-	"net"
+	"database/sql"
+	"encoding/csv"
+	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"reflect"
+	"regexp"
+	"strconv"
+	"strings"
 	"testing"
-	"time"
 
 	"github.com/assessgap/assessgap/internal/comps"
+	"github.com/assessgap/assessgap/internal/fixture"
 	"github.com/assessgap/assessgap/internal/ingest"
 	"github.com/assessgap/assessgap/internal/store"
 )
 
-func TestBlockWhere(t *testing.T) {
-	tests := []struct {
-		blocks []string
-		want   string
-	}{
-		{[]string{"1328100"}, "starts_with(pin, '1328100')"},
-		{[]string{"1328100", "1328101"}, "starts_with(pin, '1328100') OR starts_with(pin, '1328101')"},
+func TestMain(m *testing.M) { os.Exit(fixture.Main(m)) }
+
+// TestDatasetWhere checks the block filter is joined inside the dataset's own
+// year filter: without the parentheses, the OR list would escape the year limit.
+func TestDatasetWhere(t *testing.T) {
+	d, err := dataset("bor_appeals", blockWhere([]string{"1328100", "1328101"}))
+	if err != nil {
+		t.Fatal(err)
 	}
-	for _, tt := range tests {
-		if got := blockWhere(tt.blocks); got != tt.want {
-			t.Errorf("blockWhere(%q) = %q, want %q", tt.blocks, got, tt.want)
-		}
+	want := "(tax_year >= '2021') AND (starts_with(pin, '1328100') OR starts_with(pin, '1328101'))"
+	if d.Where != want {
+		t.Errorf("Where = %q\nwant    %q", d.Where, want)
+	}
+	if _, err := dataset("nope", ""); err == nil {
+		t.Error("unknown dataset: no error")
 	}
 }
 
+// TestChunks guards the PIN-block batching: a lost remainder would silently
+// drop homes from the comparison pool, and an empty chunk would become an
+// empty filter that downloads a whole dataset.
 func TestChunks(t *testing.T) {
 	tests := []struct {
-		n, size int
-		want    []int
+		name string
+		xs   []string
+		want [][]string
 	}{
-		{0, 3, nil},
-		{3, 3, []int{3}},
-		{7, 3, []int{3, 3, 1}},
+		{"none", nil, nil},
+		{"remainder", []string{"a", "b", "c", "d", "e", "f", "g"}, [][]string{{"a", "b", "c"}, {"d", "e", "f"}, {"g"}}},
 	}
 	for _, tt := range tests {
-		xs := make([]string, tt.n)
-		var got []int
-		for _, c := range chunks(xs, tt.size) {
-			got = append(got, len(c))
+		if got := chunks(tt.xs, 3); !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%s: chunks = %q, want %q", tt.name, got, tt.want)
 		}
-		if !reflect.DeepEqual(got, tt.want) {
-			t.Errorf("chunks(%d, %d) = %v, want %v", tt.n, tt.size, got, tt.want)
-		}
-	}
-}
-
-func TestSQLQuote(t *testing.T) {
-	if got := sqlQuote("a'b"); got != "'a''b'" {
-		t.Errorf("sqlQuote = %s", got)
 	}
 }
 
@@ -74,54 +77,107 @@ func TestColumnsCoverBuild(t *testing.T) {
 	}
 }
 
-// TestFetchLive builds a live database for one sample PIN from the real API.
-// It skips without network, in -short mode, and in CI (so CI doesn't depend
-// on the county's servers). With the sample database built, it also checks
-// the live report matches the local one.
-func TestFetchLive(t *testing.T) {
-	if testing.Short() || os.Getenv("CI") != "" {
-		t.Skip("network test")
+// TestLiveMatchesDatabase runs live mode against a fake county API that
+// answers its queries from the fixture's raw tables, and requires the live
+// report to equal the report from the fixture database, field for field.
+// It exercises every round of Fetch (year and neighborhood, PIN blocks,
+// merging parts, empty datasets) without the network.
+func TestLiveMatchesDatabase(t *testing.T) {
+	db := fixture.Open(t)
+	api := &fakeAPI{db: db}
+	f := &Fetcher{Domain: "county.test", HTTP: &http.Client{Transport: api}}
+	e := comps.New(db)
+	pins := []string{
+		"13331030130000", // Jefferson, mailed
+		"24294030030000", // Worth, certified, recorded sales
+		"16171280200000", // Oak Park, few comps after widening
+		"13331120411001", // condo (unsupported)
 	}
-	conn, err := net.DialTimeout("tcp", ingest.Domain+":443", 3*time.Second)
-	if err != nil {
-		t.Skipf("no network: %v", err)
+	for _, pin := range pins {
+		t.Run(pin, func(t *testing.T) {
+			res, err := f.Fetch(context.Background(), pin, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer res.Close()
+			got, err := comps.New(res.DB).Report(context.Background(), pin, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			want, err := e.Report(context.Background(), pin, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(got, want) {
+				t.Errorf("live report differs from the database's:\nlive %+v\ndb   %+v", got, want)
+			}
+			if res.Stats.Calls < 4 {
+				t.Errorf("%d API calls; want every round to run", res.Stats.Calls)
+			}
+		})
 	}
-	conn.Close()
+	if _, err := f.Fetch(context.Background(), "99999999999999", 0); err == nil {
+		t.Error("unknown PIN: no error")
+	}
+}
 
-	const pin = "13281000290000"
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-	defer cancel()
-	f := &Fetcher{Domain: ingest.Domain, AppToken: os.Getenv("SOCRATA_APP_TOKEN"), Log: t.Logf}
-	res, err := f.Fetch(ctx, pin, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer res.Close()
-	t.Logf("%+v", res.Stats)
-	got, err := comps.New(res.DB).Report(ctx, pin, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got.Unsupported != "" || got.Stats == nil || got.Stats.NumComps < 8 {
-		t.Fatalf("live report: unsupported %q, stats %+v", got.Unsupported, got.Stats)
-	}
+// fakeAPI serves Socrata CSV queries from raw_<dataset> tables. It
+// understands the SoQL live mode sends: =, >=, AND, OR, parentheses and
+// starts_with(pin, '...').
+type fakeAPI struct{ db *sql.DB }
 
-	const sample = "../../data-sample/cook.db"
-	if _, err := os.Stat(sample); err != nil {
-		return
+var startsWith = regexp.MustCompile(`starts_with\(pin, '([0-9]+)'\)`)
+
+func (a *fakeAPI) RoundTrip(r *http.Request) (*http.Response, error) {
+	id := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/resource/"), ".csv")
+	name := ""
+	for _, d := range ingest.Datasets {
+		if d.ID == id {
+			name = d.Name
+		}
 	}
-	sdb, err := store.OpenReadOnly(sample)
+	if name == "" {
+		return nil, fmt.Errorf("fake API: unknown dataset %q", id)
+	}
+	q := r.URL.Query()
+	cols := strings.Split(q.Get("$select"), ", ")
+	where := startsWith.ReplaceAllString(q.Get("$where"), "pin LIKE '$1%'")
+	if where == "" {
+		where = "1"
+	}
+	limit, _ := strconv.Atoi(q.Get("$limit"))
+	offset, _ := strconv.Atoi(q.Get("$offset"))
+	rows, err := a.db.Query(fmt.Sprintf(`SELECT "%s" FROM raw_%s WHERE %s ORDER BY rowid LIMIT %d OFFSET %d`,
+		strings.Join(cols, `", "`), name, where, limit, offset))
 	if err != nil {
-		t.Fatal(err)
+		return nil, fmt.Errorf("fake API: %w", err)
 	}
-	defer sdb.Close()
-	want, err := comps.New(sdb).Report(ctx, pin, 0)
-	if err != nil {
-		t.Fatal(err)
+	defer rows.Close()
+	var buf bytes.Buffer
+	w := csv.NewWriter(&buf)
+	if err := w.Write(cols); err != nil {
+		return nil, err
 	}
-	// The sample covers only PINs starting 1328, so neighborhood homes outside
-	// it can make the comparisons differ; the subject must still match.
-	if !reflect.DeepEqual(got.Subject, want.Subject) {
-		t.Errorf("subject differs:\nlive   %+v\nsample %+v", got.Subject, want.Subject)
+	vals := make([]sql.NullString, len(cols))
+	ptrs := make([]any, len(cols))
+	for i := range vals {
+		ptrs[i] = &vals[i]
 	}
+	rec := make([]string, len(cols))
+	for rows.Next() {
+		if err := rows.Scan(ptrs...); err != nil {
+			return nil, err
+		}
+		for i, v := range vals {
+			rec[i] = v.String
+		}
+		if err := w.Write(rec); err != nil {
+			return nil, err
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	w.Flush()
+	return &http.Response{StatusCode: 200, Body: io.NopCloser(&buf), Header: http.Header{}, Request: r}, nil
 }

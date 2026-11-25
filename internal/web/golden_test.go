@@ -23,6 +23,15 @@ var viewCases = map[string]bool{
 // the chart geometry are left out; the chart's labels are kept.
 func TestGoldenReportView(t *testing.T) {
 	e := comps.New(fixture.Open(t))
+	found := 0
+	for _, c := range golden.Cases {
+		if viewCases[c.Name] {
+			found++
+		}
+	}
+	if found != len(viewCases) {
+		t.Fatalf("%d of %d viewCases are not in golden.Cases (renamed?)", len(viewCases)-found, len(viewCases))
+	}
 	for _, c := range golden.Cases {
 		if !viewCases[c.Name] {
 			continue
