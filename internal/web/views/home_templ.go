@@ -62,7 +62,7 @@ func Home(s Site) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"mt-4 rounded-2xl bg-white p-6 ring-1 ring-stone-200 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between\"><div><h2 class=\"text-lg font-semibold text-slate-900\">Find your township</h2><p class=\"mt-1 text-slate-600\">Board of Review appeal dates and deadlines for all 38 Cook County townships.</p></div><a href=\"/townships\" class=\"shrink-0 rounded-xl bg-emerald-600 px-4 py-2.5 text-center font-medium text-white hover:bg-emerald-700\">Appeal dates by township →</a></div></section><section class=\"border-y border-stone-200 bg-white\"><div class=\"mx-auto max-w-5xl px-5 py-16 grid gap-10 sm:grid-cols-3\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"mt-4 rounded-2xl bg-white p-6 ring-1 ring-stone-200 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between\"><div><p class=\"text-lg font-semibold text-slate-900\">Find your township</p><p class=\"mt-1 text-slate-600\">Board of Review appeal dates and deadlines for all 38 Cook County townships.</p></div><a href=\"/townships\" class=\"shrink-0 rounded-xl bg-emerald-600 px-4 py-2.5 text-center font-medium text-white hover:bg-emerald-700\">Appeal dates by township →</a></div></section><section class=\"border-y border-stone-200 bg-white\"><div class=\"mx-auto max-w-5xl px-5 py-16 grid gap-10 sm:grid-cols-3\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

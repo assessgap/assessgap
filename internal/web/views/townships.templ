@@ -53,8 +53,8 @@ templ Township(s Site, t TownshipData) {
 		<div class="mx-auto max-w-3xl px-5 py-10 space-y-8">
 			<header>
 				<nav aria-label="Breadcrumb" class="text-sm text-slate-500">
-					<a href="/" class="hover:underline">Home</a> ›
-					<a href="/townships" class="hover:underline">Townships</a> ›
+					<a href="/" class="hover:underline">Home</a> <span aria-hidden="true">›</span>
+					<a href="/townships" class="hover:underline">Townships</a> <span aria-hidden="true">›</span>
 					<span aria-current="page">{ t.Name }</span>
 				</nav>
 				<h1 class="mt-3 text-3xl font-semibold tracking-tight text-slate-900 text-balance">{ t.Name } Township property tax appeals</h1>
@@ -67,13 +67,21 @@ templ Township(s Site, t TownshipData) {
 			</section>
 			@townshipFacts(t)
 			@fileSteps(t)
-			<section class="rounded-3xl bg-slate-900 p-6 sm:p-8 text-slate-100">
-				<h2 class="text-xl font-semibold text-white">Get an email when { t.Name } opens</h2>
-				<p class="mt-2 text-slate-300">We'll write when the Board of Review opens { t.Name } Township for appeals.</p>
-				<div class="mt-4 max-w-lg">
-					@NotifyFormFor("", t.Slug, "township-opens", "")
-				</div>
-			</section>
+			if t.Window.State != "open" {
+				<section class="rounded-3xl bg-slate-900 p-6 sm:p-8 text-slate-100">
+					<h2 class="text-xl font-semibold text-white">
+						if t.Window.State == "closed" {
+							Get an email when { t.Name } opens again
+						} else {
+							Get an email when { t.Name } opens
+						}
+					</h2>
+					<p class="mt-2 text-slate-300">We'll write when the Board of Review opens { t.Name } Township for appeals.</p>
+					<div class="mt-4 max-w-lg">
+						@NotifyFormFor("", t.Slug, "township-opens", "")
+					</div>
+				</section>
+			}
 		</div>
 	}
 }
@@ -94,20 +102,21 @@ templ townshipWindow(t TownshipData) {
 		if w.Open != "" {
 			<dl class="mt-4 grid gap-4 sm:grid-cols-3">
 				<div><dt class="text-sm opacity-80">Opens</dt><dd class="font-semibold">{ w.Open }</dd></div>
-				<div><dt class="text-sm opacity-80">Closes (last day to file)</dt><dd class="font-semibold">{ w.Close }</dd></div>
+				<div><dt class="text-sm opacity-80">Closes</dt><dd class="font-semibold">{ w.Close }</dd></div>
 				<div><dt class="text-sm opacity-80">Evidence deadline</dt><dd class="font-semibold">{ w.EvidenceDue }</dd></div>
 			</dl>
 			<p class="mt-4 text-sm opacity-80">From the Board's posted schedule (group { w.Group }), checked { t.ScheduleAsOf }.</p>
 		} else {
-			<p class="mt-3">The Board hasn't posted dates yet (as of { t.ScheduleAsOf }). It opens each township after the Assessor certifies it, and its dates aren't set in advance.</p>
+			<p class="mt-3">The Board hasn't posted dates yet (as of { t.ScheduleAsOf }). It opens each township after the Assessor has assessed it, and says its dates aren't set in advance.</p>
 		}
 		<p class="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold">
-			if w.State == "open" {
-				<a href={ templ.SafeURL(bor.PortalURL) } rel="noopener" class="underline underline-offset-4">File on the Board's portal →</a>
-			} else {
-				<a href={ templ.SafeURL(bor.PortalURL) } rel="noopener" class="underline underline-offset-4">Pre-register with the Board →</a>
+			switch w.State {
+				case "open":
+					<a href={ templ.SafeURL(bor.PortalURL) } rel="noopener" class="py-1 underline underline-offset-4">File on the Board's portal →</a>
+				case "upcoming", "unscheduled":
+					<a href={ templ.SafeURL(bor.PortalURL) } rel="noopener" class="py-1 underline underline-offset-4">Pre-register with the Board →</a>
 			}
-			<a href={ templ.SafeURL(bor.DatesURL) } rel="noopener" class="underline underline-offset-4">The Board's dates and deadlines →</a>
+			<a href={ templ.SafeURL(bor.DatesURL) } rel="noopener" class="py-1 underline underline-offset-4">The Board's dates and deadlines →</a>
 		</p>
 	</section>
 }
@@ -184,8 +193,8 @@ templ fileSteps(t TownshipData) {
 			@fileStep("5", fmt.Sprintf("If you disagree with the decision, you can ask the Board for a re-review within %d days of the decision letter, or appeal to the state Property Tax Appeal Board within %d days of the decision.", bor.ReReviewDays, bor.PTABDays))
 		</ol>
 		<p class="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm">
-			<a href="/how-it-works" class="text-emerald-700 underline">How AssessGap's comparison works</a>
-			<a href="https://github.com/assessgap/assessgap/blob/main/docs/bor-filing-facts.md" rel="noopener" class="text-emerald-700 underline">Our filing notes, with sources</a>
+			<a href="/how-it-works" class="py-1 text-emerald-700 underline">How AssessGap's comparison works</a>
+			<a href="https://github.com/assessgap/assessgap/blob/main/docs/bor-filing-facts.md" rel="noopener" class="py-1 text-emerald-700 underline">Our filing notes, with sources</a>
 		</p>
 	</section>
 }

@@ -151,7 +151,7 @@ func (s *Server) handleCheck(w http.ResponseWriter, r *http.Request) {
 	if rep := s.loadReport(w, r); rep != nil {
 		v := toView(rep)
 		if t, ok := bor.LookupTownship(rep.Township); ok && v.Window.Text != "" {
-			v.Window.TownshipURL = townshipPath(t)
+			v.Window.TownshipName, v.Window.TownshipURL = t, townshipPath(t)
 		}
 		s.render(w, r, views.Report(s.site, v))
 	}
@@ -203,7 +203,7 @@ func (s *Server) handleNotify(w http.ResponseWriter, r *http.Request) {
 	}
 	addr, err := mail.ParseAddress(email)
 	if err != nil || len(email) > 254 || addr.Address != email {
-		s.render(w, r, views.NotifyFormFor(pin, slug, reason, "That email address doesn't look right."))
+		s.render(w, r, s.notifyResult(r, views.NotifyFormFor(pin, slug, reason, "That email address doesn't look right.")))
 		return
 	}
 	if pin != "" {
@@ -217,7 +217,7 @@ func (s *Server) handleNotify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.Log.Info("signup", "township", township, "reason", reason)
-	s.render(w, r, views.NotifyThanks())
+	s.render(w, r, s.notifyResult(r, views.NotifyThanks()))
 }
 
 // ---- middleware

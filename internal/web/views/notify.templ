@@ -1,0 +1,12 @@
+package views
+
+// NotifyPage wraps the signup form's result in the site layout, for a form
+// posted without JavaScript (htmx swaps in the bare result instead).
+templ NotifyPage(s Site, result templ.Component) {
+	@Layout(s, "Email updates · AssessGap", "") {
+		<section class="mx-auto max-w-lg px-5 py-24">
+			@result
+			<p class="mt-6"><a href="/" class="text-emerald-700 underline">Back to AssessGap</a> · <a href="/townships" class="text-emerald-700 underline">Appeal dates by township</a></p>
+		</section>
+	}
+}
