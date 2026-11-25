@@ -11,22 +11,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/assessgap/assessgap/internal/fixture"
 	"github.com/assessgap/assessgap/internal/store"
 )
 
-const sampleDB = "../../data-sample/cook.db"
+func TestMain(m *testing.M) { os.Exit(fixture.Main(m)) }
 
-// newTestServer serves the sample database, or skips when it hasn't been built.
+// newTestServer serves the frozen fixture database (testdata/fixture).
 func newTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
-	if _, err := os.Stat(sampleDB); err != nil {
-		t.Skipf("sample DB missing (%v); see README to build it", err)
-	}
-	cook, err := store.OpenReadOnly(sampleDB)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { cook.Close() })
+	cook := fixture.Open(t)
 	app, err := store.OpenApp(filepath.Join(t.TempDir(), "app.db"))
 	if err != nil {
 		t.Fatal(err)
@@ -49,10 +43,10 @@ func TestReportPDF(t *testing.T) {
 		status []int // any of these
 		pdf    bool
 	}{
-		{"supported", "/check/13281000290000/report.pdf", []int{200}, true},
-		{"supported with dashes", "/check/13-28-100-029-0000/report.pdf", []int{200}, true},
-		{"weak verdict still renders", "/check/13281000270000/report.pdf", []int{200}, true},
-		{"condo is unsupported", "/check/13281010421001/report.pdf", []int{404}, false},
+		{"supported", "/check/13331030130000/report.pdf", []int{200}, true},
+		{"supported with dashes", "/check/13-33-103-013-0000/report.pdf", []int{200}, true},
+		{"weak verdict still renders", "/check/13331020180000/report.pdf", []int{200}, true},
+		{"condo is unsupported", "/check/13331120411001/report.pdf", []int{404}, false},
 		{"unknown PIN", "/check/99999999999999/report.pdf", []int{404}, false},
 		{"malformed PIN", "/check/1328abc/report.pdf", []int{400, 404}, false},
 		{"too short", "/check/1328/report.pdf", []int{400, 404}, false},
@@ -83,7 +77,9 @@ func TestReportPDF(t *testing.T) {
 				t.Errorf("Content-Type %q", ct)
 			}
 			cd := resp.Header.Get("Content-Disposition")
-			if !strings.HasPrefix(cd, "attachment;") || !strings.Contains(cd, `filename="assessgap-1328100`) {
+			pin := strings.TrimSuffix(strings.TrimPrefix(tt.path, "/check/"), "/report.pdf")
+			pin = strings.ReplaceAll(pin, "-", "")
+			if !strings.HasPrefix(cd, "attachment;") || !strings.Contains(cd, `filename="assessgap-`+pin+`.pdf"`) {
 				t.Errorf("Content-Disposition %q", cd)
 			}
 		})
@@ -98,8 +94,9 @@ func TestReportPageOffersPDF(t *testing.T) {
 		pin   string
 		offer bool
 	}{
-		{"13281000290000", true},  // possible
-		{"13281000270000", false}, // weak
+		{"13331030130000", true},  // strong
+		{"16171210300000", true},  // possible
+		{"13331020180000", false}, // weak
 	}
 	for _, tt := range tests {
 		resp, err := http.Get(ts.URL + "/check/" + tt.pin)
@@ -116,7 +113,8 @@ func TestReportPageOffersPDF(t *testing.T) {
 			t.Errorf("%s: PDF link shown = %v, want %v", tt.pin, got, tt.offer)
 		}
 		// ("$29" alone would match AV-per-sq-ft figures such as "$29.40".)
-		for _, banned := range []string{"$29:", "Coming soon", "upfront fee", "paid us"} {
+		// "upfront fee" is allowed: the attorney option describes attorneys' fees (restored in f9046db).
+		for _, banned := range []string{"$29:", "Coming soon", "paid us"} {
 			if strings.Contains(page, banned) {
 				t.Errorf("%s: page contains %q", tt.pin, banned)
 			}

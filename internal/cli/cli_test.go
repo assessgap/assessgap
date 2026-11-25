@@ -11,7 +11,11 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/assessgap/assessgap/internal/fixture"
 )
+
+func TestMain(m *testing.M) { os.Exit(fixture.Main(m)) }
 
 func TestParseArgs(t *testing.T) {
 	tests := []struct {
@@ -144,33 +148,27 @@ func TestTownship(t *testing.T) {
 	}
 }
 
-const sampleDB = "../../data-sample/cook.db"
-
-func needSample(t *testing.T) {
-	t.Helper()
-	if _, err := os.Stat(sampleDB); err != nil {
-		t.Skipf("sample DB missing (%v); see README to build it", err)
-	}
-}
-
-func TestCheckSample(t *testing.T) {
-	needSample(t)
+// TestCheckText covers the terminal report and how a query resolves to one
+// PIN. The report's numbers are in the goldens (internal/golden).
+func TestCheckText(t *testing.T) {
+	db := fixture.Path(t)
 	tests := []struct {
 		args     []string
 		code     int
 		contains []string // in stdout, or stderr when code != 0
 	}{
-		{[]string{"check", "13281000290000"}, 0, []string{
-			"3134 N Luna Ave", "PIN 13-28-100-029-0000", "Jefferson Township", "Board of Review:", "per sq ft",
-			"Similar homes assessed lower", "Filed by homeowners", "not an appraisal"}},
-		{[]string{"check", "13-28-100-029-0000", "-year", "2026"}, 0, []string{"tax year 2026"}},
-		{[]string{"check", "3134", "n", "luna", "ave"}, 0, []string{"PIN 13-28-100-029-0000"}},
-		{[]string{"check", "5555 w belmont"}, 1, []string{"matches several", "13-28-100-001-0000"}},
+		{[]string{"check", "13331030130000"}, 0, []string{
+			"2329 N Lockwood Ave, Chicago", "PIN 13-33-103-013-0000", "Jefferson Township", "Board of Review:",
+			"$25.00 per sq ft", "32% above the median", "20 of 20 similar homes", "($6,529 below this home's)",
+			"Similar homes assessed lower", "Filed by homeowners: 61% got a reduction (170 appeals, 2023–2025)"}},
+		{[]string{"check", "13-33-103-013-0000", "-year", "2025"}, 0, []string{"tax year 2025 (certified value)"}},
+		{[]string{"check", "2329", "n", "lockwood", "ave"}, 0, []string{"PIN 13-33-103-013-0000"}},
+		{[]string{"check", "2106 n laramie"}, 1, []string{"matches several", "13-33-112-041-1001", "13-33-112-041-1003"}},
 		{[]string{"check", "99999 Nowhere"}, 1, []string{"no Cook County address"}},
-		{[]string{"check", "13281010421001"}, 0, []string{"can't compare", "Condominium"}},
+		{[]string{"check", "13331120411001"}, 0, []string{"can't compare", "Condominium"}},
 	}
 	for _, tt := range tests {
-		code, out, stderr := run(t, sampleDB, tt.args...)
+		code, out, stderr := run(t, db, tt.args...)
 		text := out
 		if tt.code != 0 {
 			text = stderr
@@ -187,9 +185,10 @@ func TestCheckSample(t *testing.T) {
 	}
 }
 
-func TestCheckJSON(t *testing.T) {
-	needSample(t)
-	code, out, stderr := run(t, sampleDB, "check", "13281000290000", "-json", "-brief")
+// TestCheckJSONBrief checks that -brief drops the full comp list but keeps
+// the lower-assessed homes. Full -json output is in the goldens.
+func TestCheckJSONBrief(t *testing.T) {
+	code, out, stderr := run(t, fixture.Path(t), "check", "13331030130000", "-json", "-brief")
 	if code != 0 {
 		t.Fatalf("exit %d: %s", code, stderr)
 	}
@@ -202,15 +201,15 @@ func TestCheckJSON(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &r); err != nil {
 		t.Fatal(err)
 	}
-	if r.PIN != "13281000290000" || r.Verdict == "" || len(r.Evidence) == 0 || r.Comps != nil {
+	if r.PIN != "13331030130000" || r.Verdict != "strong" || len(r.Evidence) != 6 || r.Comps != nil {
 		t.Errorf("got %+v", r)
 	}
 }
 
-func TestReportSample(t *testing.T) {
-	needSample(t)
+func TestReportCommand(t *testing.T) {
+	db := fixture.Path(t)
 	out := filepath.Join(t.TempDir(), "x.pdf")
-	code, _, stderr := run(t, sampleDB, "report", "13281000270000", "-o", out) // flags after the PIN
+	code, _, stderr := run(t, db, "report", "13331030130000", "-o", out) // flags after the PIN
 	if code != 0 {
 		t.Fatalf("exit %d: %s", code, stderr)
 	}
@@ -218,7 +217,7 @@ func TestReportSample(t *testing.T) {
 	if err != nil || !bytes.HasPrefix(b, []byte("%PDF-")) {
 		t.Fatalf("not a PDF (%v)", err)
 	}
-	code, _, stderr = run(t, sampleDB, "report", "-o", out, "13281010421001")
+	code, _, stderr = run(t, db, "report", "-o", out, "13331120411001")
 	if code != 1 || !strings.Contains(stderr, "no evidence report") {
 		t.Errorf("condo: exit %d, %q", code, stderr)
 	}

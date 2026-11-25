@@ -3,7 +3,6 @@ package packet
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"errors"
 	"os"
 	"regexp"
@@ -12,31 +11,18 @@ import (
 	"time"
 
 	"github.com/assessgap/assessgap/internal/comps"
-	"github.com/assessgap/assessgap/internal/store"
+	"github.com/assessgap/assessgap/internal/fixture"
 )
 
-const sampleDB = "../../data-sample/cook.db"
-
-func openSample(t *testing.T) *sql.DB {
-	t.Helper()
-	if _, err := os.Stat(sampleDB); err != nil {
-		t.Skipf("sample DB missing (%v)", err)
-	}
-	db, err := store.OpenReadOnly(sampleDB)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { db.Close() })
-	return db
-}
+func TestMain(m *testing.M) { os.Exit(fixture.Main(m)) }
 
 var when = time.Date(2026, 11, 24, 0, 0, 0, 0, time.UTC)
 
-func TestRenderSample(t *testing.T) {
-	db := openSample(t)
+func TestRenderFixture(t *testing.T) {
+	db := fixture.Open(t)
 	eng := comps.New(db)
-	// A "possible", a "weak" and the first few supported PINs in the sample.
-	pins := []string{"13281000290000", "13281000270000"}
+	// A strong, a possible, a weak and the first few supported PINs in the fixture.
+	pins := []string{"13331030130000", "16171210300000", "13331020180000"}
 	rows, err := db.Query(`SELECT a.pin FROM assessment a JOIN res_char r USING (pin)
 		WHERE a.year = 2026 AND r.num_cards = 1 AND r.bldg_sf > 0 AND a.class IN ('202','203','205','211','234','278','295')
 		ORDER BY a.pin LIMIT 25`)

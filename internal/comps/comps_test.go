@@ -2,7 +2,6 @@ package comps
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"os"
@@ -10,29 +9,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/assessgap/assessgap/internal/store"
+	"github.com/assessgap/assessgap/internal/fixture"
 )
 
-// The sample DB is PIN prefix 1328 (Jefferson, nbhd 71260). Build it with:
-//
-//	go run ./cmd/assessgap db sync -data data-sample -pin-prefix 1328
-const sampleDB = "../../data-sample/cook.db"
+func TestMain(m *testing.M) { os.Exit(fixture.Main(m)) }
 
-func openSample(t *testing.T) *sql.DB {
-	t.Helper()
-	if _, err := os.Stat(sampleDB); err != nil {
-		t.Skipf("sample DB missing (%v)", err)
-	}
-	db, err := store.Open(sampleDB)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { db.Close() })
-	return db
-}
-
-func TestReportSample(t *testing.T) {
-	e := New(openSample(t))
+// TestReportFixture checks the AV stage, the unsupported reasons and the
+// invariants every supported report must satisfy, on the frozen fixture
+// (testdata/fixture). The exact numbers are in the goldens.
+func TestReportFixture(t *testing.T) {
+	e := New(fixture.Open(t))
 	ctx := context.Background()
 
 	tests := []struct {
@@ -43,15 +29,16 @@ func TestReportSample(t *testing.T) {
 		unsupported string // substring; "" means supported
 		wantStage   string
 	}{
-		{name: "one-story bungalow, latest year", pin: "13281000270000", wantStage: "mailed"},
-		{name: "one-story bungalow, certified year", pin: "13281000270000", year: 2025, wantStage: "certified"},
-		{name: "two-story older home", pin: "13281020260000", year: 2025, wantStage: "certified"},
-		{name: "condo", pin: "13281010421001", year: 2025, unsupported: "Condominium"},
-		{name: "commercial", pin: "13281000010000", year: 2025, unsupported: "not residential"},
-		{name: "two-flat", pin: "13281000280000", year: 2025, unsupported: "Multi-family"},
-		{name: "multi-card home", pin: "13281130150000", year: 2025, unsupported: "more than one building"},
+		{name: "one-story, mailed latest year", pin: "13331030130000", wantStage: "mailed"},
+		{name: "one-story, certified earlier year", pin: "13331050130000", year: 2025, wantStage: "certified"},
+		{name: "two-story older home, certified", pin: "16171180290000", wantStage: "certified"},
+		{name: "split-level, certified", pin: "24293040050000", wantStage: "certified"},
+		{name: "condo", pin: "13331120411001", unsupported: "Condominium"},
+		{name: "commercial", pin: "13331020090000", unsupported: "not residential"},
+		{name: "two-flat", pin: "13331010100000", unsupported: "Multi-family"},
+		{name: "multi-card home", pin: "13331060090000", unsupported: "more than one building"},
 		{name: "unknown PIN", pin: "99999999999999", wantErr: ErrNotFound},
-		{name: "known PIN, missing year", pin: "13281000270000", year: 1999, wantErr: ErrNotFound},
+		{name: "known PIN, missing year", pin: "13331030130000", year: 1999, wantErr: ErrNotFound},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

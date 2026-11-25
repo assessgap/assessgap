@@ -1,0 +1,4 @@
+# assessgap check -json 99999999999999
+# Regenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update
+exit = 1
+stderr = "assessgap check: PIN 99-99-999-999-9999 has no assessed value on record"

@@ -35,6 +35,26 @@ var Datasets = []socrata.Dataset{
 	{Name: "ccao_appeals", ID: "y282-6ig3", Where: "year >= '2021'"},
 }
 
+// Columns are the fields build.sql reads from each dataset. Live mode selects
+// only these (smaller responses, and an empty raw table when a query matches
+// no rows), and the test fixture keeps only these.
+var Columns = map[string][]string{
+	"parcel_universe": {"pin", "year", "class", "township_code", "township_name", "nbhd_code", "tax_code",
+		"tax_municipality_name", "lat", "lon"},
+	"addresses":       {"pin", "year", "prop_address_full", "prop_address_city_name", "prop_address_zipcode_1"},
+	"assessed_values": {"pin", "year", "class", "nbhd", "mailed_tot", "certified_tot", "board_tot"},
+	"sales": {"pin", "year", "sale_date", "sale_price", "doc_no", "deed_type", "class", "nbhd", "is_multisale",
+		"sale_filter_same_sale_within_365", "sale_filter_less_than_10k", "sale_filter_deed_type"},
+	"res_chars": {"pin", "year", "card", "class", "char_bldg_sf", "char_land_sf", "char_yrblt", "char_beds",
+		"char_fbath", "char_hbath", "char_rooms", "char_apts", "char_type_resd", "char_ext_wall", "char_bsmt",
+		"char_bsmt_fin", "char_gar1_size", "char_air", "char_frpl", "char_cnst_qlty", "char_repair_cnd"},
+	"condo_chars": {"pin", "year", "card", "pin10", "char_unit_sf", "char_building_sf", "char_bedrooms",
+		"char_full_baths", "char_yrblt", "is_parking_space", "is_common_area", "tieback_proration_rate"},
+	"bor_appeals": {"pin", "tax_year", "class", "majorclass", "appealtypedescription", "result", "attorneycode",
+		"assessor_totalvalue", "bor_totalvalue", "changereasondescription", "nochangereasondescription"},
+	"ccao_appeals": {"pin", "year", "class", "status", "change", "agent_name", "mailed_tot", "certified_tot", "reason_desc1"},
+}
+
 // Select returns the named datasets (all of them when names is empty), each
 // restricted to PINs starting with pinPrefix when it is set.
 func Select(names []string, pinPrefix string) ([]socrata.Dataset, error) {

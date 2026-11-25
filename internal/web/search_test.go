@@ -18,8 +18,8 @@ func TestSearchHandler(t *testing.T) {
 		location string // redirect target, if any
 		contains string
 	}{
-		{"13-28-100-029-0000", false, http.StatusSeeOther, "/check/13281000290000", ""},
-		{"5555 w belmont", true, http.StatusOK, "", "/check/"},
+		{"13-33-103-013-0000", false, http.StatusSeeOther, "/check/13331030130000", ""},
+		{"2106 n laramie", true, http.StatusOK, "", "/check/13331120411002"},
 		{"zz", true, http.StatusOK, "", ""},
 	}
 	for _, tt := range tests {

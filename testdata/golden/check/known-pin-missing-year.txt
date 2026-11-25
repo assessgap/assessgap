@@ -1,0 +1,4 @@
+# assessgap check -json 13331030130000 -year 1999
+# Regenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update
+exit = 1
+stderr = "assessgap check: load subject 13331030130000/1999: comps: PIN/year not found"

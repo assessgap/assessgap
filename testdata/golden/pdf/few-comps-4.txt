@@ -1,0 +1,145 @@
+# Evidence report text for PIN 13332250110000, prepared 2026-11-24
+# Regenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update
+Assessment comparison: tax year 2026
+PIN 13-33-225-011-0000 · Tax year 2026
+Page 1 of 3
+AssessGap is not affiliated with Cook County. You file and sign your own appeal.
+Prepared November 24, 2026 from public Cook County Assessor data. Figures are assessed values (AV) as published by the
+Assessor.
+Property
+Address
+2023 N Leclaire Ave, Chicago
+PIN
+13-33-225-011-0000
+Property class
+278
+Township
+Jefferson
+Tax year
+2026
+Assessed value
+$57,000
+Value stage
+Mailed: the Assessor's initial value; not yet certified, and it may change
+Building
+2,172 sq ft, built 2014, 4 bedrooms, 3.5 baths
+Comparison with similar homes
+The property is assessed at $26.24 per square foot of building area. The median of 4 similar homes in the
+same Assessor neighborhood is $24.48 per square foot, so the property is 7% above the median.
+3 of the 4 comparable homes are assessed lower per square foot than the property. The property ranks at
+the 75th percentile of the comparable homes by AV per square foot.
+How comparable homes were chosen: same neighborhood, multi-story homes, building sqft within ±50%,
+built within ±40 years (Assessor neighborhood 71280), excluding multi-building parcels and homes without
+recorded square footage. The 4 most similar by size, age, baths, land and construction are listed on page 2.
+Uniformity figure
+Applying the comparable homes' median of $24.48 per square foot to the property's 2,172 square feet gives
+an assessed value of $53,167. That is $3,833 less than the current assessed value of $57,000.
+This compares Cook County assessed values (AV) and AV per building square foot among similar homes, using public
+Assessor data. It is not an appraisal and does not estimate what any property would sell for. AssessGap is not affiliated
+with Cook County. You file and sign your own appeal.
+Comparable property grid
+PIN 13-33-225-011-0000 · Tax year 2026
+Page 2 of 3
+AssessGap is not affiliated with Cook County. You file and sign your own appeal.
+Tax year 2026 assessed values from the Cook County Assessor, mailed stage. Building characteristics are the
+Assessor's records. Evidence comparables are the most similar homes assessed lower per square foot than the
+subject. AV / sq ft = assessed value ÷ building square feet.
+PIN
+Address
+Class
+Bldg sq ft
+Built
+Beds/baths
+Assessed value
+AV / sq ft
+Subject property
+13-33-225-011-0000
+2023 N Leclaire Ave
+278
+2,172
+2014
+4 / 3.5
+$57,000
+$26.24
+Evidence comparables (3): similar homes assessed lower per sq ft
+13-33-230-006-0000
+2045 N La Crosse Ave 1
+278
+2,492
+2018
+4 / 3.5
+$61,000
+$24.48
+13-33-230-007-0000
+2043 N La Crosse Ave
+278
+2,492
+2018
+4 / 3.5
+$61,000
+$24.48
+13-33-102-013-0000
+2337 N Lorel Ave
+207
+1,708
+1990
+3 / 2
+$34,001
+$19.91
+Other comparable homes (1)
+13-33-203-027-0000
+4938 W Medill Ave
+207
+1,791
+2026
+4 / 3.5
+$70,001
+$39.08
+Median AV / sq ft of the 4 comparable homes: $24.48. Subject: $26.24 (7% above the median).
+Selection: same neighborhood, multi-story homes, building sqft within ±50%, built within ±40 years (Assessor neighborhood
+71280). Multi-building parcels and homes without recorded square footage are excluded.
+Filing steps: Cook County Board of Review
+PIN 13-33-225-011-0000 · Tax year 2026
+Page 3 of 3
+AssessGap is not affiliated with Cook County. You file and sign your own appeal.
+How a homeowner files their own appeal, from the Board of Review's published instructions and rules (checked
+2026-11-24). Rules and dates change; the Board's website is the final word. This is general information, not legal
+advice. You file, sign and present your own appeal.
+1.
+Check when Jefferson Township opens. The Board hasn't posted its dates yet; each township is
+open about 30 days. You can pre-register on the Board's portal now. Dates:
+https://www.cookcountyboardofreview.com/dates-and-deadlines
+2.
+Take a color photo of the front of your home. The Board's Rule 14 requires one, taken within the last
+12 months, in the brief you upload. Mark the date it was taken. Photos of the comparable homes are
+encouraged.
+3.
+Check the details on page 2 (square feet, year built, bedrooms, baths) against your home. If the
+Assessor has something wrong, say so in your brief.
+4.
+Go to https://appeals.cookcountyboardofreview.com/ and choose Submit an Appeal. You can create
+an account or continue as a guest (guests get the decision by mail only; account holders also get it
+by email).
+5.
+Choose "Property Over-Assessed" as the type of appeal and enter PIN 13-33-225-011-0000. When
+asked if you are a Board of Review attorney, answer No. Choose your appellant type (owner).
+6.
+Decide whether you want a hearing. It is optional, held by phone for homeowners, and the Board
+says you are not penalized for skipping it. You choose this when you file.
+7.
+Enter comparable properties if you like (optional: the Board's analysts also pull their own). The PINs
+on page 2 are similar homes assessed lower per square foot than yours, from the same
+neighborhood and class.
+8.
+Review, initial, confirm and submit before the deadline. Save your complaint number.
+9.
+Upload your evidence after submitting: your brief with the photo, and this report if you wish, by the
+evidence deadline for your township.
+10.
+Watch for the decision, usually 8–16 weeks after your township closes. You can check status at
+https://apps.cookcountyil.gov/BORDecisionSearch/. A re-review must be requested within 3 days of
+the decision letter. If you disagree with the decision, you can appeal to the state Property Tax
+Appeal Board within 30 days, and you can appeal again next year.
+AssessGap is not affiliated with Cook County. You file and sign your own appeal. This compares Cook County assessed
+values (AV) and AV per building square foot among similar homes, using public Assessor data. It is not an appraisal and
+does not estimate what any property would sell for.

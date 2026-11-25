@@ -43,14 +43,18 @@ const (
 )
 
 // distance scores how different c is from s; 0 = identical on every measure.
+//
+// The float64() conversions stop the compiler fusing "d += w * x" into one
+// FMA instruction on arm64 but not amd64, which would make the same report
+// differ in the last bits (and so in comp order) between a Mac and the server.
 func distance(s, c Home) float64 {
 	d := wSF * math.Abs(c.BldgSF-s.BldgSF) / s.BldgSF
 	if s.YearBuilt > 0 && c.YearBuilt > 0 {
 		d += wAge * math.Abs(float64(c.YearBuilt-s.YearBuilt)) / 15
 	}
-	d += wBath * math.Abs(c.Baths()-s.Baths())
+	d += float64(wBath * math.Abs(c.Baths()-s.Baths()))
 	if s.LandSF > 0 && c.LandSF > 0 {
-		d += wLand * math.Min(1, math.Abs(c.LandSF-s.LandSF)/s.LandSF)
+		d += float64(wLand * math.Min(1, math.Abs(c.LandSF-s.LandSF)/s.LandSF))
 	}
 	for _, pair := range [][2]string{{s.TypeResd, c.TypeResd}, {s.ExtWall, c.ExtWall}, {s.Basement, c.Basement}} {
 		if pair[0] != pair[1] {
