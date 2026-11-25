@@ -169,20 +169,20 @@ const nFolds = 5
 // metrics are one trial's measures on a dataset; the deltas are against the
 // current rule on the same population.
 type metrics struct {
-	n                  int
-	aucPro, aucAtt     float64
-	aucAll             float64
-	aucProYear         map[int]float64
-	dPro               float64
-	dProYear           map[int]float64
-	foldsUp            int
-	minFoldD           float64
-	top25, top25Share  float64
-	top25Base          float64
-	spearman           float64
-	calib              float64 // tiers from the first year quoted for the second
-	coverage           float64
-	tiers              tierTable // pro se, all years
+	n                 int
+	aucPro, aucAtt    float64
+	aucAll            float64
+	aucProYear        map[int]float64
+	dPro              float64
+	dProYear          map[int]float64
+	foldsUp           int
+	minFoldD          float64
+	top25, top25Share float64
+	top25Base         float64
+	spearman          float64
+	calib             float64 // tiers from the first year quoted for the second
+	coverage          float64
+	tiers             tierTable // pro se, all years
 }
 
 func measure(d *Dataset, base, sc []Scored, t Trial) metrics {
