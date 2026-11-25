@@ -28,7 +28,7 @@ Everything here compares **assessed values** and the characteristics the Assesso
 
 ## Summary
 
-- **The engine uses 11 characteristics today**: building sq ft, year built, land sq ft, full and half baths, residence type, exterior wall, basement, number of buildings (cards), class and neighborhood. Bedrooms and rooms are used only in the data checks and the display.
+- **The engine uses 12 characteristics today**: building sq ft, year built, land sq ft, full and half baths, residence type, exterior wall, basement, number of buildings (cards), class, neighborhood and, since 2026-11-25c, location (parcel latitude/longitude, for distance). Bedrooms and rooms are used only in the data checks and the display; basement finish, central air, fireplaces and garage in the evidence grid and the "differences" line.
 - **Well filled and with real variety** (good candidates to offer as user choices): building sq ft, land sq ft, year built, bedrooms, rooms, full and half baths, residence type (5 values), exterior wall (4), basement type (4), basement finish (3), garage size (8), central air (2), attic type and finish (3 each), fireplaces, porch (3), garage attached (2).
 - **Filled but almost constant** (99%+ one value; not useful for matching, and they could mislead): construction quality, repair condition, CDU (the portal itself says "not well maintained"), site desirability, use, apartments, commercial units.
 - **Too sparse**: renovation (1.2% filled, and only ever "Yes").
@@ -116,7 +116,7 @@ API rows: 50,671,458. Rows last updated 2026-11-15. Fill rates over 929,070 rows
 | `board_hie` | number | Board of Review certified home improvement exemption value | 0.0% | 0 | – |
 | `row_id` | text | Unique row key for API | 100.0% | 929070 | – |
 
-The building/land split (`*_bldg`, `*_land`) is filled and unused. A "building AV per sq ft" comparison, which leaves land out, would be a natural option.
+Since 2026-11-25c the building/land split (`*_bldg`, `*_land`) is loaded and drives the comparison: homes are compared on building AV per sq ft, and land AV per land sq ft is checked separately.
 
 ### parcel_universe: Assessor - Parcel Universe (Current) (`pabr-t5kh`)
 
