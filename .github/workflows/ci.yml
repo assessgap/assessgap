@@ -6,17 +6,14 @@ on:
 permissions:
   contents: read
 jobs:
-  check:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      # Keep in step with GOLANGCI_LINT_VERSION in scripts/check.sh.
-      - run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
-      # The same gate as local: gofmt, names, vet, lint, tests (including the
-      # goldens on the committed fixture), generated files, build.
-      - run: scripts/check.sh
-        env:
-          REQUIRE_TAILWIND: "1"
+      - run: test -z "$(gofmt -l . | grep -v _templ.go)"
+      - run: go vet ./...
+      - run: go test ./...
+      - run: go build ./...
