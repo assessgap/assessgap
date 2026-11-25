@@ -70,6 +70,8 @@ func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	static, _ := fs.Sub(staticFS, "static")
 	mux.Handle("GET /static/", cacheForever(http.StripPrefix("/static/", http.FileServerFS(static))))
+	mux.HandleFunc("GET /robots.txt", s.handleRobots)
+	mux.HandleFunc("GET /sitemap.xml", s.handleSitemap)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok")) })
 
 	mux.HandleFunc("GET /{$}", s.page(func(r *http.Request) templ.Component { return views.Home(s.site) }))
