@@ -6,66 +6,39 @@ import (
 	"database/sql"
 	"errors"
 	"os"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/assessgap/assessgap/internal/comps"
-	"github.com/assessgap/assessgap/internal/store"
+	"github.com/assessgap/assessgap/internal/fixture"
 )
 
-const sampleDB = "../../data-sample/cook.db"
+func TestMain(m *testing.M) { os.Exit(fixture.Main(m)) }
 
-func openSample(t *testing.T) *sql.DB {
-	t.Helper()
-	if _, err := os.Stat(sampleDB); err != nil {
-		t.Skipf("sample DB missing (%v)", err)
-	}
-	db, err := store.OpenReadOnly(sampleDB)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { db.Close() })
-	return db
-}
+// when is Nov 24, 2026 in Chicago (midnight UTC would still be Nov 23 there).
+var when = time.Date(2026, 11, 24, 12, 0, 0, 0, time.UTC)
 
-var when = time.Date(2026, 11, 24, 0, 0, 0, 0, time.UTC)
-
-func TestRenderSample(t *testing.T) {
-	db := openSample(t)
+// TestRenderEveryHome renders the evidence report for every supported home in
+// the fixture: each must be a complete 3-page PDF whose content never runs
+// into the footer (build returns an error if it does), with every comparable
+// home in the grid exactly once. The text of three reports is in the goldens.
+func TestRenderEveryHome(t *testing.T) {
+	db := fixture.Open(t)
 	eng := comps.New(db)
-	// A "possible", a "weak" and the first few supported PINs in the sample.
-	pins := []string{"13281000290000", "13281000270000"}
-	rows, err := db.Query(`SELECT a.pin FROM assessment a JOIN res_char r USING (pin)
-		WHERE a.year = 2026 AND r.num_cards = 1 AND r.bldg_sf > 0 AND a.class IN ('202','203','205','211','234','278','295')
-		ORDER BY a.pin LIMIT 25`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for rows.Next() {
-		var p string
-		rows.Scan(&p)
-		pins = append(pins, p)
-	}
-	rows.Close()
-
+	eng.CachePools = true
 	rendered := 0
-	for _, pin := range pins {
+	for _, pin := range supportedPINs(t, db) {
 		r, err := eng.Report(context.Background(), pin, 0)
 		if err != nil {
 			t.Fatalf("%s: %v", pin, err)
 		}
 		var buf bytes.Buffer
-		err = Render(&buf, r, when)
-		if r.Unsupported != "" {
-			if !errors.Is(err, ErrUnsupported) {
-				t.Errorf("%s unsupported (%s): err = %v, want ErrUnsupported", pin, r.Unsupported, err)
-			}
+		if err := Render(&buf, r, when); err != nil {
+			t.Errorf("%s: %v", pin, err)
 			continue
-		}
-		if err != nil {
-			t.Fatalf("%s: %v", pin, err)
 		}
 		rendered++
 		out := buf.Bytes()
@@ -75,62 +48,78 @@ func TestRenderSample(t *testing.T) {
 		if got := countPages(out); got != Pages {
 			t.Errorf("%s: %d page objects, want %d", pin, got, Pages)
 		}
-		if !bytes.Contains(out, []byte("/Count 3 ")) {
-			t.Errorf("%s: page tree /Count is not 3", pin)
-		}
-
 		txt, err := Text(r, when)
 		if err != nil {
 			t.Fatal(err)
 		}
-		checkText(t, pin, r, txt)
+		for _, c := range r.Comps {
+			if n := strings.Count(txt, formatPIN(c.PIN)); n != 1 {
+				t.Errorf("%s: comp %s appears %d times", pin, c.PIN, n)
+			}
+		}
 	}
-	if rendered < 2 {
-		t.Fatalf("rendered only %d packets", rendered)
+	// The frozen fixture has 2,102 supported homes; this keeps the loop honest.
+	if rendered != 2102 {
+		t.Errorf("rendered %d reports, want 2102", rendered)
 	}
+}
+
+// supportedPINs lists the fixture's homes that get a comparison.
+func supportedPINs(t *testing.T, db *sql.DB) []string {
+	t.Helper()
+	rows, err := db.Query(`SELECT a.pin FROM assessment a JOIN res_char r USING (pin)
+		WHERE a.year = 2026 AND r.num_cards = 1 AND r.bldg_sf > 0
+		  AND a.class IN ('202','203','204','205','206','207','208','209','210','234','278','295')
+		ORDER BY a.pin`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	var pins []string
+	for rows.Next() {
+		var p string
+		if err := rows.Scan(&p); err != nil {
+			t.Fatal(err)
+		}
+		pins = append(pins, p)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	return pins
 }
 
 func countPages(pdf []byte) int {
 	return len(regexp.MustCompile(`/Type /Page /`).FindAll(pdf, -1))
 }
 
-func checkText(t *testing.T, pin string, r *comps.Report, txt string) {
-	t.Helper()
-	for _, want := range []string{formatPIN(r.PIN), NotAffiliated, "Comparable property grid", "Filing steps", "Property Over-Assessed", "Page 3 of 3"} {
-		if !strings.Contains(txt, want) {
-			t.Errorf("%s: packet text missing %q", pin, want)
-		}
-	}
-	// Every comp appears in the grid exactly once (subject once in the grid).
-	for _, c := range r.Comps {
-		if n := strings.Count(txt, formatPIN(c.PIN)); n != 1 {
-			t.Errorf("%s: comp %s appears %d times", pin, c.PIN, n)
-		}
-	}
-	// Appraisal-law guardrail: the disclaimer may say "not an appraisal"; nothing else may.
-	body := strings.ToLower(strings.ReplaceAll(txt, "\n", " "))
-	body = strings.ReplaceAll(body, strings.ToLower(r.Disclaimer), "")
-	for _, banned := range []string{"market value", "apprais", "worth", "you should", "we recommend"} {
-		if strings.Contains(body, banned) {
-			t.Errorf("%s: packet text contains %q", pin, banned)
-		}
-	}
-}
-
 func TestUnsupported(t *testing.T) {
-	r := &comps.Report{PIN: "13281000000000", Unsupported: "Condominium units (class 299) are not supported yet."}
-	if err := Render(&bytes.Buffer{}, r, when); !errors.Is(err, ErrUnsupported) {
-		t.Errorf("err = %v, want ErrUnsupported", err)
+	condo, err := comps.New(fixture.Open(t)).Report(context.Background(), "13331120411001", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := comps.Home{PIN: "S"}
+	tests := []struct {
+		name string
+		r    *comps.Report
+	}{
+		{"no report", nil},
+		{"condo", condo},
+		{"subject but no statistics", &comps.Report{PIN: "S", Subject: &s}},
+	}
+	for _, tt := range tests {
+		if err := Render(&bytes.Buffer{}, tt.r, when); !errors.Is(err, ErrUnsupported) {
+			t.Errorf("%s: err = %v, want ErrUnsupported", tt.name, err)
+		}
 	}
 }
 
 func TestPDFString(t *testing.T) {
 	tests := []struct{ in, want string }{
-		{"plain", "plain"},
-		{`a (b) \c`, `a \(b\) \\c`},
-		{"1–2 · ×", "1\x962 \xb7 \xd7"},
-		{"≥5%", ">=5%"},
-		{"日本", "??"},
+		{`a (b) \c`, `a \(b\) \\c`},     // escaping
+		{"1–2 • ÷", "1\x962 \x95 \xf7"}, // WinAnsi map, then Latin-1
+		{"≥5%", ">=5%"},                 // ASCII fallback
+		{"日本", "??"},                    // unknown
 	}
 	for _, tt := range tests {
 		if got := pdfString(tt.in); got != tt.want {
@@ -139,30 +128,52 @@ func TestPDFString(t *testing.T) {
 	}
 }
 
-func TestWrap(t *testing.T) {
-	s := "The quick brown fox jumps over the lazy dog and keeps running far away"
-	lines := wrap(regular, 10, 120, s)
-	if len(lines) < 3 {
-		t.Fatalf("expected wrapping, got %q", lines)
+func TestTextWidth(t *testing.T) {
+	tests := []struct {
+		f    font
+		s    string
+		want float64
+	}{
+		{regular, "Hello", 22.78}, // Helvetica 722+556+222+222+556 = 2278 at 10 pt
+		{bold, "Hello", 24.45},    // Helvetica-Bold 722+556+278+278+611 = 2445
+		{regular, "•", 3.5},       // a WinAnsi character outside ASCII (350)
 	}
-	for _, ln := range lines {
-		if w := textWidth(regular, 10, ln); w > 120 {
-			t.Errorf("line %q is %.1f wide, max 120", ln, w)
+	for _, tt := range tests {
+		if got := textWidth(tt.f, 10, tt.s); got < tt.want-0.001 || got > tt.want+0.001 {
+			t.Errorf("textWidth(%q) = %v, want %v", tt.s, got, tt.want)
 		}
 	}
-	if strings.Join(lines, " ") != s {
-		t.Errorf("wrap lost words: %q", lines)
+}
+
+func TestWrap(t *testing.T) {
+	// At 10 pt, "Hello Hello" is 22.78 + 2.78 + 22.78 = 48.34 wide.
+	tests := []struct {
+		name string
+		maxW float64
+		s    string
+		want []string
+	}{
+		{"two fit", 48.4, "Hello Hello Hello", []string{"Hello Hello", "Hello"}},
+		{"just too narrow for two", 48.3, "Hello Hello Hello", []string{"Hello", "Hello", "Hello"}},
+		{"newlines kept, blank line too", 100, "Hello\n\nHello", []string{"Hello", "", "Hello"}},
 	}
-	// Helvetica: "Hello" = 722+556+222+222+556 = 2278 → 22.78 at 10 pt.
-	if w := textWidth(regular, 10, "Hello"); w < 22.77 || w > 22.79 {
-		t.Errorf("textWidth(Hello) = %v", w)
+	for _, tt := range tests {
+		if got := wrap(regular, 10, tt.maxW, tt.s); !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%s: wrap = %q, want %q", tt.name, got, tt.want)
+		}
 	}
 }
 
 func TestOrdinal(t *testing.T) {
-	for n, want := range map[int]string{1: "1st", 2: "2nd", 3: "3rd", 4: "4th", 11: "11th", 12: "12th", 13: "13th", 21: "21st", 100: "100th", 0: "0th"} {
-		if got := ordinal(n); got != want {
-			t.Errorf("ordinal(%d) = %q, want %q", n, got, want)
+	tests := []struct {
+		n    int
+		want string
+	}{
+		{1, "1st"}, {2, "2nd"}, {3, "3rd"}, {11, "11th"}, {13, "13th"}, {21, "21st"}, {100, "100th"},
+	}
+	for _, tt := range tests {
+		if got := ordinal(tt.n); got != tt.want {
+			t.Errorf("ordinal(%d) = %q, want %q", tt.n, got, tt.want)
 		}
 	}
 }

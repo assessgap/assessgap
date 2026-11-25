@@ -1,0 +1,48 @@
+# Fails while the PR description leaves "Numbers impact" or "Risk and rollback"
+# empty or as the template's placeholder (.github/pull_request_template.md), or
+# says "None" for numbers while the PR changes testdata/golden/.
+#
+# pull_request_target runs this file and tools/prcheck/main.go as they are on the
+# default branch, so a PR can't change the check that judges it. That is safe
+# here because nothing from the PR is checked out or run: the description goes
+# in through an environment variable and the file list through the API.
+name: pr-description
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+concurrency:
+  group: pr-description-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  sections:
+    name: required sections
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+      - name: Check Numbers impact and Risk
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TRUSTED_REF: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/prcheck"
+          mkdir -p "$dir"
+          gh api "repos/${GITHUB_REPOSITORY}/contents/tools/prcheck/main.go?ref=${TRUSTED_REF}" \
+            --jq .content | base64 --decode > "$dir/main.go"
+          CHANGED_FILES=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" --jq '.[].filename')
+          export CHANGED_FILES
+          cd "$dir"
+          go run main.go

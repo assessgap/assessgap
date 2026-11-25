@@ -213,9 +213,9 @@ func explain(ctx context.Context, local, remote *sql.DB, r *comps.Report) string
 		parts = append(parts, fmt.Sprintf("appeal records differ (%d local, %d API)", len(bl), len(br)))
 	}
 	var ln, rn int
-	local.QueryRowContext(ctx, `SELECT COUNT(*) FROM parcel WHERE nbhd = ?`, r.Nbhd).Scan(&ln)
-	remote.QueryRowContext(ctx, `SELECT COUNT(*) FROM parcel WHERE nbhd = ?`, r.Nbhd).Scan(&rn)
-	if ln != rn {
+	errL := local.QueryRowContext(ctx, `SELECT COUNT(*) FROM parcel WHERE nbhd = ?`, r.Nbhd).Scan(&ln)
+	errR := remote.QueryRowContext(ctx, `SELECT COUNT(*) FROM parcel WHERE nbhd = ?`, r.Nbhd).Scan(&rn)
+	if errL == nil && errR == nil && ln != rn {
 		parts = append(parts, fmt.Sprintf("neighborhood parcels %d local vs %d API", ln, rn))
 	}
 	if len(parts) == 0 {

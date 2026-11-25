@@ -1,0 +1,13 @@
+# assessgap check -json 13331000020000
+# Regenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update
+exit = 0
+address = "5411 W FULLERTON AVE"
+av_stage = "mailed"
+city = "CHICAGO"
+class = "EX"
+disclaimer = "This compares Cook County assessed values (AV) and AV per building square foot among similar homes, using public Assessor data. It is not an appraisal and does not estimate what any property would sell for."
+nbhd = "71280"
+pin = "13331000020000"
+township = "Jefferson"
+unsupported = "Class EX is not residential; only homes (classes 202–210, 234, 278, 295) are supported."
+year = 2026

@@ -32,26 +32,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-// columns are the fields build.sql reads from each dataset. Selecting only
-// these keeps responses small, and lets us create an empty raw table when a
-// query matches no rows.
-var columns = map[string][]string{
-	"parcel_universe": {"pin", "year", "class", "township_code", "township_name", "nbhd_code", "tax_code",
-		"tax_municipality_name", "lat", "lon"},
-	"addresses":       {"pin", "year", "prop_address_full", "prop_address_city_name", "prop_address_zipcode_1"},
-	"assessed_values": {"pin", "year", "class", "nbhd", "mailed_tot", "certified_tot", "board_tot"},
-	"sales": {"pin", "year", "sale_date", "sale_price", "doc_no", "deed_type", "class", "nbhd", "is_multisale",
-		"sale_filter_same_sale_within_365", "sale_filter_less_than_10k", "sale_filter_deed_type"},
-	"res_chars": {"pin", "year", "card", "class", "char_bldg_sf", "char_land_sf", "char_yrblt", "char_beds",
-		"char_fbath", "char_hbath", "char_rooms", "char_apts", "char_type_resd", "char_ext_wall", "char_bsmt",
-		"char_bsmt_fin", "char_gar1_size", "char_air", "char_frpl", "char_cnst_qlty", "char_repair_cnd"},
-	"condo_chars": {"pin", "year", "card", "pin10", "char_unit_sf", "char_building_sf", "char_bedrooms",
-		"char_full_baths", "char_yrblt", "is_parking_space", "is_common_area", "tieback_proration_rate"},
-	"bor_appeals": {"pin", "tax_year", "class", "majorclass", "appealtypedescription", "result", "attorneycode",
-		"assessor_totalvalue", "bor_totalvalue", "changereasondescription", "nochangereasondescription"},
-	"ccao_appeals": {"pin", "year", "class", "status", "change", "agent_name", "mailed_tot", "certified_tot", "reason_desc1"},
-}
-
 // maxBlocksPerQuery keeps request URLs to a few kilobytes.
 const maxBlocksPerQuery = 150
 
@@ -219,15 +199,15 @@ type queries struct {
 	parts map[string][]string // dataset name -> fetched part dirs
 }
 
-func (q *queries) dataset(name, where string) socrata.Dataset {
+func dataset(name, where string) (socrata.Dataset, error) {
 	for _, d := range ingest.Datasets {
 		if d.Name == name {
 			d.Where = ingest.And(d.Where, where)
-			d.Select = strings.Join(columns[name], ", ")
-			return d
+			d.Select = strings.Join(ingest.Columns[name], ", ")
+			return d, nil
 		}
 	}
-	panic("live: unknown dataset " + name)
+	return socrata.Dataset{}, fmt.Errorf("live: unknown dataset %q", name)
 }
 
 func (q *queries) fetch(ctx context.Context, name, where string) error {
@@ -235,8 +215,12 @@ func (q *queries) fetch(ctx context.Context, name, where string) error {
 }
 
 func (q *queries) fetchAs(ctx context.Context, name, part, where string) error {
+	d, err := dataset(name, where)
+	if err != nil {
+		return err
+	}
 	dir := filepath.Join(q.dir, part)
-	if _, err := q.client.Fetch(ctx, q.dataset(name, where), dir); err != nil {
+	if _, err := q.client.Fetch(ctx, d, dir); err != nil {
 		return err
 	}
 	q.mu.Lock()
@@ -295,7 +279,7 @@ func (q *queries) loadFetched(names ...string) error {
 
 func emptyRaw(db *sql.DB, name string) error {
 	t := "raw_" + name
-	_, err := db.Exec(fmt.Sprintf(`DROP TABLE IF EXISTS %s; CREATE TABLE %s ("%s")`, t, t, strings.Join(columns[name], `", "`)))
+	_, err := db.Exec(fmt.Sprintf(`DROP TABLE IF EXISTS %s; CREATE TABLE %s ("%s")`, t, t, strings.Join(ingest.Columns[name], `", "`)))
 	return err
 }
 
@@ -381,7 +365,7 @@ func isDigits(s string) bool {
 	return s != ""
 }
 
-// group runs functions concurrently and keeps the first error, cancelling
+// group runs functions concurrently and keeps the first error, canceling
 // the others' context when one fails.
 type group struct {
 	wg     sync.WaitGroup

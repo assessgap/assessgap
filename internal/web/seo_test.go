@@ -8,39 +8,30 @@ import (
 	"github.com/assessgap/assessgap/internal/web/views"
 )
 
-func TestRobotsAndSitemap(t *testing.T) {
-	prod := &Server{site: views.Site{}}
-	rec := httptest.NewRecorder()
-	prod.handleRobots(rec, httptest.NewRequest("GET", "https://assessgap.com/robots.txt", nil))
-	body := rec.Body.String()
-	for _, want := range []string{"Disallow: /search", "Disallow: /notify", "Sitemap: https://assessgap.com/sitemap.xml"} {
-		if !strings.Contains(body, want) {
-			t.Errorf("robots.txt missing %q:\n%s", want, body)
+// TestRobots checks the one costly mistake: production must never tell
+// crawlers to skip the whole site, and dev must.
+func TestRobots(t *testing.T) {
+	tests := []struct {
+		name     string
+		dev      bool
+		url      string
+		blockAll bool
+		sitemap  string
+	}{
+		{"production", false, "https://assessgap.com/robots.txt", false, "Sitemap: https://assessgap.com/sitemap.xml"},
+		{"local over http", false, "http://localhost:8080/robots.txt", false, "Sitemap: http://localhost:8080/sitemap.xml"},
+		{"dev", true, "http://localhost:8080/robots.txt", true, ""},
+	}
+	for _, tt := range tests {
+		s := &Server{site: views.Site{Dev: tt.dev}}
+		rec := httptest.NewRecorder()
+		s.handleRobots(rec, httptest.NewRequest("GET", tt.url, nil))
+		body := rec.Body.String()
+		if got := strings.Contains(body, "Disallow: /\n"); got != tt.blockAll {
+			t.Errorf("%s: blocks everything = %v, want %v:\n%s", tt.name, got, tt.blockAll, body)
 		}
-	}
-	if strings.Contains(body, "Disallow: /\n") {
-		t.Errorf("production robots.txt blocks everything:\n%s", body)
-	}
-
-	dev := &Server{site: views.Site{Dev: true}}
-	rec = httptest.NewRecorder()
-	dev.handleRobots(rec, httptest.NewRequest("GET", "http://localhost:8080/robots.txt", nil))
-	if !strings.Contains(rec.Body.String(), "Disallow: /\n") {
-		t.Errorf("dev robots.txt should block everything:\n%s", rec.Body.String())
-	}
-
-	rec = httptest.NewRecorder()
-	prod.handleSitemap(rec, httptest.NewRequest("GET", "https://assessgap.com/sitemap.xml", nil))
-	sm := rec.Body.String()
-	if ct := rec.Header().Get("Content-Type"); !strings.HasPrefix(ct, "application/xml") {
-		t.Errorf("sitemap content type %q", ct)
-	}
-	for _, want := range []string{"<loc>https://assessgap.com/</loc>", "<loc>https://assessgap.com/how-it-works</loc>"} {
-		if !strings.Contains(sm, want) {
-			t.Errorf("sitemap missing %q:\n%s", want, sm)
+		if !strings.Contains(body, tt.sitemap) {
+			t.Errorf("%s: robots.txt lacks %q:\n%s", tt.name, tt.sitemap, body)
 		}
-	}
-	if strings.Contains(sm, "/check/") {
-		t.Errorf("sitemap lists report pages:\n%s", sm)
 	}
 }

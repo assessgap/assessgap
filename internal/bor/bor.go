@@ -41,7 +41,8 @@ func mustLoc(name string) *time.Location {
 func d(s string) time.Time {
 	t, err := time.ParseInLocation("2006-01-02", s, chicago)
 	if err != nil {
-		panic(err)
+		panic(err) //nolint:forbidigo // d parses the hardcoded schedule at init; a bad literal must stop the program
+
 	}
 	return t
 }

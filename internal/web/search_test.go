@@ -18,9 +18,12 @@ func TestSearchHandler(t *testing.T) {
 		location string // redirect target, if any
 		contains string
 	}{
-		{"13-28-100-029-0000", false, http.StatusSeeOther, "/check/13281000290000", ""},
-		{"5555 w belmont", true, http.StatusOK, "", "/check/"},
-		{"zz", true, http.StatusOK, "", ""},
+		// A full-page search with one match redirects to the report.
+		{"13-33-103-013-0000", false, http.StatusSeeOther, "/check/13331030130000", ""},
+		// htmx gets the results fragment, never a redirect.
+		{"13-33-103-013-0000", true, http.StatusOK, "", "/check/13331030130000"},
+		// A full-page search with several matches lists them.
+		{"2106 n laramie", false, http.StatusOK, "", "/check/13331120411002"},
 	}
 	for _, tt := range tests {
 		req, _ := http.NewRequest("GET", ts.URL+"/search?q="+url.QueryEscape(tt.q), nil)

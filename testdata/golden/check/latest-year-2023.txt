@@ -1,0 +1,10 @@
+# assessgap check -json 13331120380000
+# Regenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update
+exit = 0
+av_stage = "certified"
+class = "201"
+disclaimer = "This compares Cook County assessed values (AV) and AV per building square foot among similar homes, using public Assessor data. It is not an appraisal and does not estimate what any property would sell for."
+nbhd = "71280"
+pin = "13331120380000"
+unsupported = "Class 201 is not supported; only homes (classes 202–210, 234, 278, 295) are supported."
+year = 2023

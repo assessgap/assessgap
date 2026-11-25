@@ -1,0 +1,121 @@
+# golangci-lint v2. The version is pinned in scripts/check.sh and CI.
+#
+# A curated set aimed at what goes wrong quietly in this codebase (and in
+# AI-written Go generally): ignored errors, unclosed rows, swallowed errors,
+# dead code, and stray debugging output. Disable a rule here with a one-line
+# reason rather than sprinkling //nolint; any //nolint needs a reason too.
+version: "2"
+
+run:
+  tests: true
+
+linters:
+  default: none
+  enable:
+    - govet          # go vet's analyzers
+    - errcheck       # unchecked errors
+    - staticcheck    # bugs, simplifications, deprecated APIs
+    - unused         # dead code
+    - ineffassign    # assignments that are never read
+    - unparam        # parameters and results that are always the same or unused
+    - gocritic       # a few chosen checks, below
+    - misspell       # typos in comments and strings homeowners read
+    - bodyclose      # HTTP response bodies left open (the Socrata client, the web tests)
+    - nilerr         # returning nil after checking err != nil
+    - errorlint      # == on errors and %v instead of %w, which break errors.Is
+    - rowserrcheck   # sql.Rows.Err() not checked: a truncated result looks like a short one
+    - sqlclosecheck  # sql.Rows and statements not closed
+    - forbidigo      # banned calls, below
+
+  settings:
+    errcheck:
+      exclude-functions:
+        # Terminal output and HTTP responses: a failed write means the reader went
+        # away, and there is no one left to tell.
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - (*text/tabwriter.Writer).Flush
+        - (net/http.ResponseWriter).Write
+        # Best-effort cleanup of temporary files.
+        - os.Remove
+        - os.RemoveAll
+        # Close on a read-only database or a finished response has nothing useful to report.
+        - (*database/sql.DB).Close
+        - (*database/sql.Rows).Close
+        - (*database/sql.Stmt).Close
+        - (*os.File).Close
+        - (io.Closer).Close
+        - (*database/sql.Tx).Rollback
+        - (*github.com/assessgap/assessgap/internal/live.Result).Close # closes an in-memory database
+
+    staticcheck:
+      checks:
+        - all
+        # staticcheck's own defaults leave these off:
+        - -ST1000
+        - -ST1003
+        - -ST1016
+        - -ST1020
+        - -ST1021
+        - -ST1022
+        # The CLI's errors are full sentences, some with usage hints on later lines.
+        - -ST1005
+
+    gocritic:
+      disable-all: true
+      enabled-checks:
+        - appendAssign
+        - badCond
+        - boolExprSimplify
+        - deferInLoop
+        - dupArg
+        - dupBranchBody
+        - dupCase
+        - dupSubExpr
+        - flagDeref
+        - nilValReturn
+        - offBy1
+        - sloppyLen
+        - sloppyReassign
+        - truncateCmp
+        - weakCond
+
+    misspell:
+      locale: US
+
+    forbidigo:
+      analyze-types: true
+      forbid:
+        - pattern: ^fmt\.Print(f|ln)?$
+          msg: write to an io.Writer you were given (the CLI's Env.Stdout, a logger); stray prints corrupt -json output
+        - pattern: ^panic$
+          msg: return an error; panics are for main, tests and impossible states in init
+        - pattern: ^time\.Sleep$
+          msg: tests must not wait on real time; pass a time.Time or a fake clock
+
+  exclusions:
+    generated: lax # templ's *_templ.go files carry "Code generated ... DO NOT EDIT"
+    paths:
+      - ^data-  # git-ignored local data and scratch directories
+    rules:
+      # fmt.Print* is fine in the commands themselves.
+      - path: ^(cmd|tools)/
+        linters: [forbidigo]
+        text: fmt\.Print
+      # panic is fine in main packages and tests.
+      - path: (^(cmd|tools)/|_test\.go$)
+        linters: [forbidigo]
+        text: panic
+      # time.Sleep is banned in tests only; production code may back off (e.g. API retries).
+      - path-except: _test\.go$
+        linters: [forbidigo]
+        text: time\.Sleep
+      # Test code may ignore errors from setup helpers whose failure fails the test anyway.
+      - path: _test\.go$
+        linters: [errcheck]
+        text: Error return value of `(rows\.Scan|resp\.Body\.Close)`
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

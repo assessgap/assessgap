@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -63,7 +64,10 @@ func lookup(ctx context.Context, env *Env, dbFlag string, live bool, q string, y
 		return nil, err
 	}
 	r, err := comps.New(db).Report(ctx, pin, year)
-	if err == comps.ErrNotFound {
+	if errors.Is(err, comps.ErrNotFound) {
+		if year != 0 {
+			return nil, fmt.Errorf("PIN %s has no assessed value on record for tax year %d", search.FormatPIN(pin), year)
+		}
 		return nil, fmt.Errorf("PIN %s has no assessed value on record", search.FormatPIN(pin))
 	}
 	return r, err

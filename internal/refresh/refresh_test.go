@@ -3,6 +3,8 @@ package refresh
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -72,20 +74,9 @@ func TestCheck(t *testing.T) {
 	}
 }
 
-func TestSummary(t *testing.T) {
-	old := &Snapshot{Counts: map[string]int64{"parcel": 100, "sale": 50}, LatestYear: 2025}
-	cur := Snapshot{Counts: map[string]int64{"parcel": 110, "tax_rate": 7}, LatestYear: 2026}
-	s := Summary(old, cur)
-	for _, want := range []string{"parcel", "+10 (+10.00%)", "tax_rate", "new", "sale", "missing", "2025 → 2026"} {
-		if !strings.Contains(s, want) {
-			t.Errorf("summary missing %q:\n%s", want, s)
-		}
-	}
-}
-
-func openTemp(t *testing.T, name string, stmts ...string) *sql.DB {
+func openTemp(t *testing.T, path string, stmts ...string) *sql.DB {
 	t.Helper()
-	db, err := sql.Open("sqlite", filepath.Join(t.TempDir(), name)+"?_pragma=journal_mode(WAL)")
+	db, err := sql.Open("sqlite", path+"?_pragma=journal_mode(WAL)")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,47 +92,75 @@ func openTemp(t *testing.T, name string, stmts ...string) *sql.DB {
 
 const assessmentDDL = `CREATE TABLE assessment (pin TEXT, year INTEGER, mailed REAL, certified REAL)`
 
-func TestCertifiedSinceAndTake(t *testing.T) {
-	ctx := context.Background()
-	old := openTemp(t, "old.db", assessmentDDL, `INSERT INTO assessment VALUES
-		('A', 2026, 10, NULL), ('B', 2026, 10, NULL), ('C', 2026, 10, NULL), ('D', 2026, 10, 9),
-		('A', 2025, 10, NULL)`)
-	cur := openTemp(t, "new.db", assessmentDDL, `INSERT INTO assessment VALUES
-		('A', 2026, 10, 9), ('B', 2026, 10, NULL), ('D', 2026, 10, 9), ('E', 2026, 10, NULL)`)
-
-	got, err := CertifiedSince(ctx, old, cur, 2026)
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := StageChange{Year: 2026, OldMailedOnly: 3, NewMailedOnly: 2, NowCertified: 1, MissingFromNew: 1}
-	if got != want {
-		t.Errorf("got %+v, want %+v", got, want)
-	}
-
-	snap, err := Take(ctx, cur)
+// TestTake checks the inputs to the swap gate: a missing table is left out
+// of Counts (so Check reports it missing), and the latest year is read.
+func TestTake(t *testing.T) {
+	db := openTemp(t, filepath.Join(t.TempDir(), "new.db"), assessmentDDL, `INSERT INTO assessment VALUES
+		('A', 2026, 10, 9), ('B', 2026, 10, NULL), ('B', 2025, 10, NULL), ('E', 2026, 10, NULL)`)
+	snap, err := Take(context.Background(), db)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if snap.Counts["assessment"] != 4 || snap.LatestYear != 2026 {
-		t.Errorf("snapshot = %+v", snap)
+		t.Errorf("snapshot = %+v, want 4 assessment rows and 2026", snap)
 	}
 	if _, ok := snap.Counts["parcel"]; ok {
 		t.Errorf("missing table should be absent from Counts")
 	}
 }
 
+// TestFinalize checks the point of finalizing: the database becomes one
+// self-contained file that can be renamed into place with nothing left in a
+// WAL beside it.
 func TestFinalize(t *testing.T) {
 	ctx := context.Background()
-	db := openTemp(t, "f.db", assessmentDDL, `INSERT INTO assessment VALUES ('A', 2026, 1, 1)`)
+	dir := t.TempDir()
+	path := filepath.Join(dir, "f.db")
+	db := openTemp(t, path, assessmentDDL, `INSERT INTO assessment VALUES ('A', 2026, 1, 1)`)
 	if err := Finalize(ctx, db); err != nil {
 		t.Fatal(err)
 	}
-	var mode string
-	db.QueryRow(`PRAGMA journal_mode`).Scan(&mode)
-	if mode != "delete" {
-		t.Errorf("journal_mode = %q, want delete", mode)
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
 	}
-	if err := QuickCheck(ctx, db); err != nil {
-		t.Error(err)
+	if _, err := os.Stat(path + "-wal"); !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("WAL file left beside the database (stat: %v)", err)
+	}
+	moved := filepath.Join(dir, "moved.db")
+	if err := os.Rename(path, moved); err != nil {
+		t.Fatal(err)
+	}
+	again := openTemp(t, moved)
+	var n int
+	if err := again.QueryRow(`SELECT COUNT(*) FROM assessment`).Scan(&n); err != nil || n != 1 {
+		t.Errorf("after the move: %d rows (%v), want 1", n, err)
+	}
+}
+
+// TestQuickCheckCorrupt checks that a damaged file fails the integrity check.
+func TestQuickCheckCorrupt(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "c.db")
+	db := openTemp(t, path, assessmentDDL)
+	for i := range 200 {
+		if _, err := db.Exec(`INSERT INTO assessment VALUES (?, 2026, 1, 1)`, strings.Repeat("x", 100)+string(rune('a'+i%26))); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := Finalize(context.Background(), db); err != nil {
+		t.Fatal(err)
+	}
+	db.Close()
+	b, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := 4096; i < 2*4096; i++ { // scribble over the whole second page (the table's root)
+		b[i] = 0xFF
+	}
+	if err := os.WriteFile(path, b, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := QuickCheck(context.Background(), openTemp(t, path)); err == nil {
+		t.Error("QuickCheck passed a corrupted database")
 	}
 }

@@ -5,30 +5,42 @@ import (
 	"time"
 )
 
+// TestStatusOf uses Hyde Park's 2026 window (Nov 9 – Dec 8, 2026). Update the
+// dates with the schedule.
 func TestStatusOf(t *testing.T) {
-	at := func(s string) time.Time { return d(s).Add(15 * time.Hour) }
+	at := func(s string) time.Time { return d(s).Add(15 * time.Hour) } // 3 pm in Chicago
 	tests := []struct {
+		name string
 		town string
-		now  string
+		now  time.Time
 		want State
 		days int
 	}{
-		{"Hyde Park", "2026-11-24", Open, 15},
-		{"hyde park", "2026-12-08", Open, 1},
-		{"Hyde Park", "2026-12-09", Closed, 0},
-		{"Hyde Park", "2026-11-08", Upcoming, 0},
-		{"Jefferson", "2026-11-24", Unscheduled, 0},
-		{"Lake View", "2026-11-24", Closed, 0},
+		{"first day", "Hyde Park", at("2026-11-09"), Open, 30},
+		{"mid-window", "Hyde Park", at("2026-11-24"), Open, 15},
+		{"last day, any case", "hyde park", at("2026-12-08"), Open, 1},
+		// 03:00 UTC on Dec 9 is still 9 pm on Dec 8 in Chicago.
+		{"UTC instant on the last evening", "Hyde Park", time.Date(2026, 12, 9, 3, 0, 0, 0, time.UTC), Open, 1},
+		{"day after", "Hyde Park", at("2026-12-09"), Closed, 0},
+		{"day before", "Hyde Park", at("2026-11-08"), Upcoming, 0},
+		{"not posted", "Jefferson", at("2026-11-24"), Unscheduled, 0},
 	}
 	for _, tt := range tests {
-		got := StatusOf(tt.town, at(tt.now))
+		got := StatusOf(tt.town, tt.now)
 		if got.State != tt.want || got.DaysLeft != tt.days {
-			t.Errorf("StatusOf(%q, %s) = %v/%d, want %v/%d", tt.town, tt.now, got.State, got.DaysLeft, tt.want, tt.days)
+			t.Errorf("%s: StatusOf(%q, %s) = %v/%d, want %v/%d", tt.name, tt.town, tt.now, got.State, got.DaysLeft, tt.want, tt.days)
 		}
 	}
 }
 
-func TestScheduleTownshipsUnique(t *testing.T) {
+// TestScheduleValid checks the hand-edited schedule: dates in order, no
+// township twice, and every name spelled exactly as in Townships (StatusOf
+// matches names exactly, so "Lakeview" would silently read as not posted).
+func TestScheduleValid(t *testing.T) {
+	known := map[string]bool{}
+	for _, n := range Townships {
+		known[n] = true
+	}
 	seen := map[string]bool{}
 	for _, g := range Schedule {
 		if g.Close.Before(g.Open) || g.EvidenceDue.Before(g.Close) {
@@ -39,17 +51,14 @@ func TestScheduleTownshipsUnique(t *testing.T) {
 				t.Errorf("%s listed twice", n)
 			}
 			seen[n] = true
-			if _, ok := LookupTownship(n); !ok {
-				t.Errorf("scheduled township %q is not in Townships", n)
+			if !known[n] {
+				t.Errorf("scheduled township %q is not spelled as in Townships", n)
 			}
 		}
 	}
 }
 
 func TestLookupTownship(t *testing.T) {
-	if len(Townships) != 38 {
-		t.Errorf("%d townships, want 38", len(Townships))
-	}
 	tests := []struct {
 		in, want string
 		ok       bool

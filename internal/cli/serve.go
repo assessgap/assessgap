@@ -44,15 +44,22 @@ func runServe(ctx context.Context, env *Env, args []string) error {
 		ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second,
 		WriteTimeout: 30 * time.Second, IdleTimeout: 120 * time.Second,
 	}
+	// ListenAndServe returns as soon as Shutdown starts, so wait for in-flight
+	// requests to finish before the deferred database closes run.
+	drained := make(chan struct{})
 	go func() {
+		defer close(drained)
 		<-ctx.Done()
 		shut, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		srv.Shutdown(shut)
+		if err := srv.Shutdown(shut); err != nil {
+			log.Error("shutdown", "err", err)
+		}
 	}()
 	log.Info("listening", "addr", *addr, "dev", *dev)
 	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
+	<-drained
 	return nil
 }
