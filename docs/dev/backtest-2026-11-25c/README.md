@@ -1,6 +1,6 @@
 # Backtest, 2026-11-25c: building-only comparison and distance
 
-Same backtest as [docs/methodology.md](../../methodology.md): every supported Board of Review appeal for tax years 2024 and 2025 that ended in a decrease or no change (406,838 PIN-years), scored with the certified value the Board started from. Win = any reduction. "Pro se" = filed by the homeowner.
+Same backtest as [docs/methodology.md](../../methodology.md): every in-scope Board of Review appeal for tax years 2024 and 2025 that ended in a decrease or no change (406,838 PIN-years; the 404,578 the engine supports are scored, and the rest are counted as unsupported), scored with the certified value the Board started from. Win = any reduction. "Pro se" = filed by the homeowner.
 
 - `baseline/`: the method before this run (total AV ÷ building sq ft, no distance), on the full database.
 - `new/`: everything in this run (building AV ÷ building sq ft, land added back in the uniformity figure, distance weight 1 per mile capped at 1 mile), on a copy of the same database rebuilt with the building/land columns. The raw tables are identical: the copy was made from the same file, read-only.
@@ -79,6 +79,8 @@ Homes that rise into the top tier have ordinary land shares. They rise because t
 | 29042020210000 / 2024 | −18.6% | +137.6% | 26% | 4,687 |
 
 The task's example, PIN 13124210120000 (2026, mailed): land $14,200 on 4,000 sq ft ($3.55, the neighborhood rate) and building $52,800 on 1,389 sq ft = **$38.01** building-only, against $48.24 total ÷ building sq ft. Its six evidence comps are now $29.40–$35.72, all within 0.3 mile. The land check stays quiet, because its land rate matches its comps'.
+
+The `sample.txt` outputs here end before their "example PINs" lists. Those named real homes under the engine's internal tiers, which are never shown as labels; the review removed them from the published copy.
 
 ## Share of homes that get an evidence report
 

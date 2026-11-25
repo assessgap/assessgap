@@ -42,7 +42,7 @@ We state facts and don't tell anyone whether to appeal. Internally, a report is 
 - everything else.
 
 ## Backtest
-We ran the method on every supported Board of Review appeal for tax years 2024 and 2025 that ended in a decrease or no change (406,838 PIN-years), using the certified value the Board started from, and compared with the actual outcome. Win = any reduction.
+We ran the method on every in-scope Board of Review appeal for tax years 2024 and 2025 that ended in a decrease or no change (406,838 PIN-years, of which the 404,578 the method supports were scored), using the certified value the Board started from, and compared with the actual outcome. Win = any reduction.
 
 | Building AV/sq ft vs similar homes' median | Self-filed n | Got a reduction | Avg cut | Attorney n | Got a reduction |
 |---|--:|--:|--:|--:|--:|
