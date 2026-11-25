@@ -40,6 +40,14 @@ const (
 	wLand     = 0.5  // per 100% land sqft difference, capped at 1
 	wCategory = 0.5  // each mismatch: type_resd, ext_wall, basement
 	wClass    = 0.25 // different class within the same group
+	// wMiles is per mile between parcel centers, capped at 1 mile (an unknown
+	// location counts as the cap). The Board prefers comps on the same block
+	// or within ¼ mile. In the backtest, pro se AUC was 0.769 at 0, 0.784 at
+	// 0.5, 0.792 at 1 and 0.799 at 2; 1 keeps most of the gain while a mile
+	// still weighs no more than one noticeable difference in size or age
+	// (docs/dev/backtest-2026-11-25c/README.md).
+	wMiles   = 1.0
+	capMiles = 1.0
 )
 
 // distance scores how different c is from s; 0 = identical on every measure.
@@ -64,12 +72,35 @@ func distance(s, c Home) float64 {
 	if s.Class != c.Class {
 		d += wClass
 	}
+	// An unknown location counts as far, so it can't jump ahead of near homes.
+	mi := miles(s, c)
+	if mi < 0 {
+		mi = capMiles
+	}
+	d += float64(wMiles * math.Min(capMiles, mi))
 	return d
 }
 
-// usable reports whether a home can serve as a comp at all.
+// miles is the great-circle distance between two homes' parcel centers
+// (haversine), or -1 when either has no location on record.
+func miles(a, b Home) float64 {
+	if (a.Lat == 0 && a.Lon == 0) || (b.Lat == 0 && b.Lon == 0) {
+		return -1
+	}
+	const earthMiles = 3958.8
+	rad := math.Pi / 180
+	dLat := (b.Lat - a.Lat) * rad
+	dLon := (b.Lon - a.Lon) * rad
+	// float64() on each product keeps arm64 from fusing it into the sum (see distance).
+	h := float64(math.Sin(dLat/2)*math.Sin(dLat/2)) +
+		float64(math.Cos(a.Lat*rad)*math.Cos(b.Lat*rad)*math.Sin(dLon/2)*math.Sin(dLon/2))
+	return 2 * earthMiles * math.Asin(math.Min(1, math.Sqrt(h)))
+}
+
+// usable reports whether a home can serve as a comp at all. A home without a
+// building/land split has no building rate, so it can't be one.
 func usable(subject, h Home) bool {
-	return h.PIN != subject.PIN && h.NumCards == 1 && h.BldgSF > 0 && h.AV > 0
+	return h.PIN != subject.PIN && h.NumCards == 1 && h.BldgSF > 0 && h.AV > 0 && h.HasSplit
 }
 
 func (s Search) admits(subject, h Home) bool {
@@ -112,13 +143,25 @@ func selectComps(subject Home, pool []Home) ([]Comp, Search) {
 
 	comps := make([]Comp, len(cands))
 	for i, h := range cands {
-		comps[i] = Comp{Home: h, Distance: round(distance(subject, h), 3)}
-	}
-	sort.Slice(comps, func(i, j int) bool {
-		if comps[i].Distance != comps[j].Distance {
-			return comps[i].Distance < comps[j].Distance
+		mi := miles(subject, h)
+		if mi >= 0 {
+			mi = round(mi, 2)
 		}
-		return comps[i].PIN < comps[j].PIN
+		comps[i] = Comp{Home: h, Distance: round(distance(subject, h), 3), Miles: mi}
+	}
+	// Equally similar homes: the closer one first (unknown locations last).
+	sort.Slice(comps, func(i, j int) bool {
+		a, b := comps[i], comps[j]
+		if a.Distance != b.Distance {
+			return a.Distance < b.Distance
+		}
+		if a.Miles != b.Miles {
+			if a.Miles < 0 || b.Miles < 0 {
+				return b.Miles < 0
+			}
+			return a.Miles < b.Miles
+		}
+		return a.PIN < b.PIN
 	})
 	if len(comps) > maxComps {
 		comps = comps[:maxComps]

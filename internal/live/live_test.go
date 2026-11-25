@@ -39,6 +39,40 @@ func TestDatasetWhere(t *testing.T) {
 	}
 }
 
+// TestSubjectYearNeighborhood guards the one county-supplied value that is
+// pasted into the next query: it must be exactly 5 digits.
+func TestSubjectYearNeighborhood(t *testing.T) {
+	tests := []struct {
+		name, nbhd string
+		ok         bool
+	}{
+		{"5 digits", "71280", true},
+		{"4 digits", "7128", false},
+		{"quote", "71280' OR '1'='1", false},
+		{"letters", "7128A", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, err := store.Open(":memory:")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer db.Close()
+			if _, err := db.Exec(`CREATE TABLE raw_assessed_values (pin, year, nbhd, mailed_tot, certified_tot);
+				INSERT INTO raw_assessed_values VALUES ('13331030130000', '2026', ?, '30000', NULL)`, tt.nbhd); err != nil {
+				t.Fatal(err)
+			}
+			y, nbhd, err := subjectYear(context.Background(), db, "13331030130000", 0)
+			if tt.ok != (err == nil) {
+				t.Fatalf("err = %v, want ok=%v", err, tt.ok)
+			}
+			if tt.ok && (y != 2026 || nbhd != tt.nbhd) {
+				t.Errorf("got %d, %q; want 2026, %q", y, nbhd, tt.nbhd)
+			}
+		})
+	}
+}
+
 // TestChunks guards the PIN-block batching: a lost remainder would silently
 // drop homes from the comparison pool, and an empty chunk would become an
 // empty filter that downloads a whole dataset.

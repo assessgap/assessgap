@@ -29,22 +29,30 @@ var fontNames = [...]string{regular: "Helvetica", bold: "Helvetica-Bold"}
 
 type doc struct {
 	title string
-	pages []*bytes.Buffer
-	cur   *bytes.Buffer
+	pages []*page
+	cur   *page
 	texts []string // every string drawn, in order; for tests and text checks
+}
+
+// page is one page's content stream and size in points.
+type page struct {
+	bytes.Buffer
+	w, h float64
 }
 
 func newDoc(title string) *doc { return &doc{title: title} }
 
-func (d *doc) addPage() {
-	d.cur = &bytes.Buffer{}
+// addPage starts a page of the given size: pageW × pageH is portrait letter,
+// pageH × pageW landscape.
+func (d *doc) addPage(w, h float64) {
+	d.cur = &page{w: w, h: h}
 	d.pages = append(d.pages, d.cur)
 }
 
 // text draws s with its baseline at y.
 func (d *doc) text(x, y float64, f font, size float64, s string) {
 	d.texts = append(d.texts, s)
-	fmt.Fprintf(d.cur, "BT /F%d %.2f Tf %.2f %.2f Td (%s) Tj ET\n", f+1, size, x, pageH-y, pdfString(s))
+	fmt.Fprintf(d.cur, "BT /F%d %.2f Tf %.2f %.2f Td (%s) Tj ET\n", f+1, size, x, d.cur.h-y, pdfString(s))
 }
 
 // textRight draws s so that it ends at x.
@@ -53,16 +61,16 @@ func (d *doc) textRight(x, y float64, f font, size float64, s string) {
 }
 
 func (d *doc) line(x1, y1, x2, y2, width float64) {
-	fmt.Fprintf(d.cur, "%.2f w %.2f %.2f m %.2f %.2f l S\n", width, x1, pageH-y1, x2, pageH-y2)
+	fmt.Fprintf(d.cur, "%.2f w %.2f %.2f m %.2f %.2f l S\n", width, x1, d.cur.h-y1, x2, d.cur.h-y2)
 }
 
 // fillRect fills a rectangle with a gray level (0 black … 1 white).
 func (d *doc) fillRect(x, y, w, h, gray float64) {
-	fmt.Fprintf(d.cur, "%.3f g %.2f %.2f %.2f %.2f re f 0 g\n", gray, x, pageH-y-h, w, h)
+	fmt.Fprintf(d.cur, "%.3f g %.2f %.2f %.2f %.2f re f 0 g\n", gray, x, d.cur.h-y-h, w, h)
 }
 
 func (d *doc) strokeRect(x, y, w, h, width float64) {
-	fmt.Fprintf(d.cur, "%.2f w %.2f %.2f %.2f %.2f re S\n", width, x, pageH-y-h, w, h)
+	fmt.Fprintf(d.cur, "%.2f w %.2f %.2f %.2f %.2f re S\n", width, x, d.cur.h-y-h, w, h)
 }
 
 // writeTo serializes the document.
@@ -98,7 +106,7 @@ func (d *doc) writeTo(w io.Writer) error {
 		}
 		obj(fmt.Sprintf("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 %.0f %.0f] "+
 			"/Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents %d 0 R >>",
-			pageW, pageH, firstPage+2*i+1))
+			p.w, p.h, firstPage+2*i+1))
 		obj(fmt.Sprintf("<< /Length %d /Filter /FlateDecode >>\nstream\n%s\nendstream", z.Len(), z.Bytes()))
 	}
 

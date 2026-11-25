@@ -39,7 +39,7 @@ func toView(r *comps.Report) views.ReportData {
 	s, st := *r.Subject, r.Stats
 	v.Verdict, v.Reasons = r.Verdict, r.Reasons
 	v.Headline, v.Badge = headline(r), badge(r)
-	v.SubjectAVPerSF, v.MedianAVPerSF = perSF(st.SubjectAVPerSF), perSF(st.MedianAVPerSF)
+	v.SubjectBldgAVPerSF, v.MedianBldgAVPerSF = perSF(st.SubjectBldgAVPerSF), perSF(st.MedianBldgAVPerSF)
 	switch {
 	case st.PctAboveMedian >= 0.005:
 		v.GapLabel = pct(st.PctAboveMedian) + " above"
@@ -53,17 +53,19 @@ func toView(r *comps.Report) views.ReportData {
 		v.SearchDesc = r.Search.Description
 	}
 	v.SubjectAV, v.UniformityAV = money(s.AV), money(st.UniformityAV)
+	v.SubjectBldgAV, v.SubjectLandAV, v.LandNote = money(s.BldgAV), money(s.LandAV), comps.LandNote
 	if st.PotentialAVReduction >= 1 {
 		v.Reduction = money(st.PotentialAVReduction)
 	}
-	v.Subject = homeRow(s, false)
+	v.Subject = homeRow(comps.Comp{Home: s, Miles: 0}, false)
+	v.Subject.Away = ""
 	ev := map[string]bool{}
 	for _, c := range r.Evidence {
 		ev[c.PIN] = true
-		v.Evidence = append(v.Evidence, homeRow(c.Home, true))
+		v.Evidence = append(v.Evidence, homeRow(c, true))
 	}
 	for _, c := range r.Comps {
-		v.Comps = append(v.Comps, homeRow(c.Home, ev[c.PIN]))
+		v.Comps = append(v.Comps, homeRow(c, ev[c.PIN]))
 	}
 	for _, fl := range r.Flags {
 		v.Flags = append(v.Flags, fl.Message)
@@ -71,21 +73,41 @@ func toView(r *comps.Report) views.ReportData {
 	for _, sa := range r.Sales {
 		v.Sales = append(v.Sales, views.SaleRow{Date: shortDate(sa.Date), Price: money(sa.Price)})
 	}
-	v.Chart = newChart(s, r.Comps, r.Evidence, st.MedianAVPerSF, wideChart)
-	v.ChartNarrow = newChart(s, r.Comps, r.Evidence, st.MedianAVPerSF, narrowChart)
+	v.Chart = newChart(s, r.Comps, r.Evidence, st.MedianBldgAVPerSF, wideChart)
+	v.ChartNarrow = newChart(s, r.Comps, r.Evidence, st.MedianBldgAVPerSF, narrowChart)
 	return v
 }
 
-func homeRow(h comps.Home, evidence bool) views.HomeRow {
+func homeRow(c comps.Comp, evidence bool) views.HomeRow {
+	h := c.Home
 	yr := ""
 	if h.YearBuilt > 0 {
 		yr = fmt.Sprint(h.YearBuilt)
 	}
+	land := ""
+	if h.LandSF > 0 {
+		land = num(h.LandSF)
+	}
+	f := h.Features()
 	return views.HomeRow{
 		Address: titleCase(h.Address), PIN: h.PIN, PINFmt: formatPIN(h.PIN),
+		Away: milesText(c.Miles), Class: h.Class, Stories: f.Stories, Construction: f.Construction,
 		SqFt: num(h.BldgSF), YearBuilt: yr, Beds: fmt.Sprint(h.Beds), Baths: baths(h),
-		AV: money(h.AV), PerSF: fmt.Sprintf("$%.2f", h.AVPerSF), Evidence: evidence,
+		Basement: f.Basement, Air: f.Air, Fireplaces: f.Fireplaces, Garage: f.Garage,
+		LandSqFt: land, BldgAV: money(h.BldgAV), LandAV: money(h.LandAV), AV: money(h.AV),
+		PerSF: fmt.Sprintf("$%.2f", h.BldgAVPerSF), Differences: c.Differences, Evidence: evidence,
 	}
+}
+
+// milesText is a comp's distance from the subject; "" when unknown.
+func milesText(mi float64) string {
+	switch {
+	case mi < 0:
+		return ""
+	case mi < 0.1:
+		return "<0.1 mi"
+	}
+	return fmt.Sprintf("%.1f mi", mi)
 }
 
 // headline states the comparison as a fact, with no verdict.
@@ -110,7 +132,7 @@ func badge(r *comps.Report) string {
 	}
 	lower := 0
 	for _, c := range r.Comps {
-		if c.AVPerSF < r.Subject.AVPerSF {
+		if c.BldgAVPerSF < r.Subject.BldgAVPerSF {
 			lower++
 		}
 	}
@@ -148,9 +170,9 @@ var (
 const chartRows = 5
 
 func newChart(s comps.Home, cs []comps.Comp, ev []comps.Comp, median float64, l views.ChartLayout) views.Chart {
-	lo, hi := s.AVPerSF, s.AVPerSF
+	lo, hi := s.BldgAVPerSF, s.BldgAVPerSF
 	for _, c := range cs {
-		lo, hi = math.Min(lo, c.AVPerSF), math.Max(hi, c.AVPerSF)
+		lo, hi = math.Min(lo, c.BldgAVPerSF), math.Max(hi, c.BldgAVPerSF)
 	}
 	pad := (hi - lo) * 0.08
 	if pad == 0 {
@@ -166,9 +188,9 @@ func newChart(s comps.Home, cs []comps.Comp, ev []comps.Comp, median float64, l 
 	}
 	ch := views.Chart{
 		L:          l,
-		SubjectX:   x(s.AVPerSF),
+		SubjectX:   x(s.BldgAVPerSF),
 		MedianX:    x(median),
-		SubjectLbl: "Your home " + perSF(s.AVPerSF),
+		SubjectLbl: "Your home " + perSF(s.BldgAVPerSF),
 		MedLbl:     "Median " + perSF(median),
 		MedAnchor:  "middle",
 	}
@@ -181,8 +203,8 @@ func newChart(s comps.Home, cs []comps.Comp, ev []comps.Comp, median float64, l 
 	// Stack dots that would overlap into rows so each stays visible.
 	minDX := l.DotR * 2.3
 	for _, c := range cs {
-		d := views.Dot{X: x(c.AVPerSF), Evidence: isEv[c.PIN],
-			Title: fmt.Sprintf("%s: %s", titleCase(c.Address), perSF(c.AVPerSF))}
+		d := views.Dot{X: x(c.BldgAVPerSF), Evidence: isEv[c.PIN],
+			Title: fmt.Sprintf("%s: %s", titleCase(c.Address), perSF(c.BldgAVPerSF))}
 		row := 0
 		for ; row < chartRows-1; row++ {
 			if !occupied(ch.Dots, d.X, rowY(row), minDX) {

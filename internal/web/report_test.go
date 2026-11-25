@@ -11,10 +11,10 @@ import (
 // the same AV per sq ft: the range is padded to $24–$26 instead of dividing
 // by zero, and 20 dots at one x stack into at most chartRows rows.
 func TestChartIdenticalValues(t *testing.T) {
-	s := comps.Home{PIN: "S", AVPerSF: 25}
+	s := comps.Home{PIN: "S", BldgAVPerSF: 25}
 	var cs []comps.Comp
 	for i := range 20 {
-		cs = append(cs, comps.Comp{Home: comps.Home{PIN: string(rune('a' + i)), AVPerSF: 25}})
+		cs = append(cs, comps.Comp{Home: comps.Home{PIN: string(rune('a' + i)), BldgAVPerSF: 25}})
 	}
 	tests := []struct {
 		name  string

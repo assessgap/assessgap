@@ -8,6 +8,27 @@ import (
 	"testing"
 )
 
+func TestTruncate(t *testing.T) {
+	tests := []struct {
+		name, in string
+		n        int
+		want     string
+	}{
+		{"short enough", "abc", 3, "abc"},
+		{"ascii cut", "abcd", 3, "abc"},
+		// "é" is 2 bytes (C3 A9); cutting at 2 would leave half of it.
+		{"inside a 2-byte character", "aéb", 2, "a"},
+		{"after a 2-byte character", "aéb", 3, "aé"},
+		// "€" is 3 bytes; byte 3 is its last continuation byte.
+		{"inside a 3-byte character", "a€", 3, "a"},
+	}
+	for _, tt := range tests {
+		if got := truncate(tt.in, tt.n); got != tt.want {
+			t.Errorf("%s: truncate(%q, %d) = %q, want %q", tt.name, tt.in, tt.n, got, tt.want)
+		}
+	}
+}
+
 func TestSearchHandler(t *testing.T) {
 	ts := newTestServer(t)
 	noRedirect := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}

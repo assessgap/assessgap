@@ -11,14 +11,18 @@ import (
 var ErrNotFound = errors.New("comps: PIN/year not found")
 
 // homeColumns selects a Home. AV is the certified value when the Assessor has
-// certified the year, else the mailed (first-pass) value.
+// certified the year, else the mailed (first-pass) value; the building and
+// land split come from the same stage.
 const homeColumns = `
 	a.pin,
 	COALESCE(p.address, ''),
 	a.class,
 	COALESCE(a.certified, a.mailed),
+	CASE WHEN a.certified IS NOT NULL THEN a.certified_bldg ELSE a.mailed_bldg END,
+	CASE WHEN a.certified IS NOT NULL THEN a.certified_land ELSE a.mailed_land END,
 	r.bldg_sf, r.land_sf, r.yrblt, r.rooms, r.beds, r.fbath, r.hbath,
-	r.type_resd, r.ext_wall, r.bsmt, r.num_cards`
+	r.type_resd, r.ext_wall, r.bsmt, r.bsmt_fin, r.air, r.frpl, r.garage, r.num_cards,
+	p.lat, p.lon`
 
 // subjectSQL loads the subject, its location, and whether its AV is certified.
 // res_char is LEFT JOINed so out-of-scope parcels still produce a report.
@@ -74,21 +78,30 @@ type scanner interface{ Scan(...any) error }
 // hasChars reports whether a res_char row existed.
 func scanHome(s scanner, extra ...any) (h Home, hasChars bool, err error) {
 	var (
-		av, bldg, land                    sql.NullFloat64
-		yrblt, rooms, beds, fb, hb, cards sql.NullInt64
-		typ, wall, bsmt                   sql.NullString
+		av, bldgAV, landAV, bldg, land, lat, lon sql.NullFloat64
+		yrblt, rooms, beds, fb, hb, frpl, cards  sql.NullInt64
+		typ, wall, bsmt, fin, air, garage        sql.NullString
 	)
-	dest := append([]any{&h.PIN, &h.Address, &h.Class, &av,
-		&bldg, &land, &yrblt, &rooms, &beds, &fb, &hb, &typ, &wall, &bsmt, &cards}, extra...)
+	dest := append([]any{&h.PIN, &h.Address, &h.Class, &av, &bldgAV, &landAV,
+		&bldg, &land, &yrblt, &rooms, &beds, &fb, &hb, &typ, &wall, &bsmt, &fin, &air, &frpl, &garage, &cards,
+		&lat, &lon}, extra...)
 	if err := s.Scan(dest...); err != nil {
 		return h, false, err
 	}
-	h.AV, h.BldgSF, h.LandSF = av.Float64, bldg.Float64, land.Float64
+	h.AV, h.BldgAV, h.LandAV = av.Float64, bldgAV.Float64, landAV.Float64
+	h.BldgSF, h.LandSF = bldg.Float64, land.Float64
 	h.YearBuilt, h.Rooms, h.Beds = int(yrblt.Int64), int(rooms.Int64), int(beds.Int64)
 	h.FullBaths, h.HalfBaths, h.NumCards = int(fb.Int64), int(hb.Int64), int(cards.Int64)
 	h.TypeResd, h.ExtWall, h.Basement = typ.String, wall.String, bsmt.String
-	if h.BldgSF > 0 {
-		h.AVPerSF = h.AV / h.BldgSF
+	h.BsmtFin, h.Air, h.Fireplaces, h.Garage = fin.String, air.String, int(frpl.Int64), garage.String
+	if lat.Valid && lon.Valid && lat.Float64 != 0 && lon.Float64 != 0 {
+		h.Lat, h.Lon = lat.Float64, lon.Float64
+	}
+	// A $0 building value happens on vacant or newly split parcels; such a
+	// home has no building rate to compare.
+	h.HasSplit = bldgAV.Valid && landAV.Valid && bldgAV.Float64 > 0
+	if h.BldgSF > 0 && h.HasSplit {
+		h.BldgAVPerSF = h.BldgAV / h.BldgSF
 	}
 	return h, cards.Valid, nil
 }

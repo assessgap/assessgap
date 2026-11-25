@@ -75,7 +75,7 @@ templ chart(wide, narrow Chart) {
 		</div>
 		<figcaption class="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-500">
 			<span class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-rose-500"></span>{ wide.SubjectLbl }</span>
-			<span class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-emerald-500"></span>Similar homes assessed lower per sq ft</span>
+			<span class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-emerald-500"></span>Similar homes with the building assessed lower per sq ft</span>
 			<span class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-slate-300"></span>Other similar homes</span>
 		</figcaption>
 	</figure>
@@ -101,17 +101,20 @@ templ chartSVG(c Chart) {
 }
 
 templ numbers(r ReportData) {
-	if r.Reduction != "" {
-		<section class="grid gap-4 sm:grid-cols-3">
-			@numberCard("Your assessed value", r.SubjectAV, "What the Assessor has on record for "+fmt.Sprint(r.Year)+".")
-			@numberCard("At similar homes' median rate", r.UniformityAV, "The median assessed value per sq ft of similar homes, times your square footage.")
-			@numberCard("Difference", r.Reduction, "How much higher your assessed value is than that. A reduction lowers your assessed value, and your tax bill with it.")
-		</section>
-	} else {
-		<section class="grid gap-4 sm:grid-cols-3">
-			@numberCard("Your assessed value", r.SubjectAV, "What the Assessor has on record for "+fmt.Sprint(r.Year)+".")
-		</section>
-	}
+	<section class="space-y-3">
+		if r.Reduction != "" {
+			<div class="grid gap-4 sm:grid-cols-3">
+				@numberCard("Your assessed value", r.SubjectAV, "What the Assessor has on record for "+fmt.Sprint(r.Year)+": building "+r.SubjectBldgAV+" plus land "+r.SubjectLandAV+".")
+				@numberCard("At similar homes' median rate", r.UniformityAV, "Similar homes' median building assessment per sq ft, times your square footage, plus your land's "+r.SubjectLandAV+".")
+				@numberCard("Difference", r.Reduction, "How much higher your assessed value is than that. A reduction lowers your assessed value, and your tax bill with it.")
+			</div>
+		} else {
+			<div class="grid gap-4 sm:grid-cols-3">
+				@numberCard("Your assessed value", r.SubjectAV, "What the Assessor has on record for "+fmt.Sprint(r.Year)+": building "+r.SubjectBldgAV+" plus land "+r.SubjectLandAV+".")
+			</div>
+		}
+		<p class="text-sm text-slate-500">{ r.LandNote }</p>
+	</section>
 }
 
 templ numberCard(label, value, note string) {
@@ -144,22 +147,50 @@ templ nbhd(r ReportData) {
 }
 
 templ evidence(r ReportData) {
+	if len(r.Evidence) > 0 {
+		<section class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
+			<h2 class="text-lg font-semibold text-slate-900">Similar homes with the building assessed lower</h2>
+			<p class="mt-1 text-sm text-slate-500">The most similar homes whose building is assessed lower per square foot than yours ({ r.Subject.PerSF }), with how each differs from your home.</p>
+			<ol class="mt-4 divide-y divide-stone-100">
+				for _, c := range r.Evidence {
+					<li class="py-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+						<div>
+							<p class="font-medium text-slate-900">{ c.Address } <span class="whitespace-nowrap text-xs font-normal text-slate-400">{ c.PINFmt }</span></p>
+							<p class="text-sm text-slate-600">{ c.Differences }</p>
+						</div>
+						<p class="shrink-0 tabular-nums font-medium text-slate-900">{ c.PerSF }<span class="text-sm font-normal text-slate-500"> per sq ft</span></p>
+					</li>
+				}
+			</ol>
+		</section>
+	}
 	<section class="rounded-2xl bg-white ring-1 ring-stone-200 overflow-hidden">
 		<div class="p-6 pb-3">
 			<h2 class="text-lg font-semibold text-slate-900">Similar homes</h2>
-			<p class="mt-1 text-sm text-slate-500">Compared on: { r.SearchDesc }. Highlighted rows are similar homes assessed lower per square foot than yours.</p>
+			<p class="mt-1 text-sm text-slate-500">Compared on: { r.SearchDesc }. Highlighted rows are similar homes whose building is assessed lower per square foot than yours. Scroll sideways for every detail.</p>
 		</div>
 		<div class="overflow-x-auto">
-			<table class="w-full text-sm">
+			<table class="w-full text-sm whitespace-nowrap">
 				<thead class="bg-stone-50 text-left text-slate-500">
 					<tr>
-						<th class="px-4 sm:px-6 py-2 font-medium">Address</th>
+						<th class="sticky left-0 z-10 bg-stone-50 px-4 sm:px-6 py-2 font-medium">Address</th>
+						<th class="px-3 py-2 font-medium text-right">Building per sq ft</th>
+						<th class="px-3 py-2 font-medium text-right">Away</th>
 						<th class="px-3 py-2 font-medium text-right">Sq ft</th>
-						<th class="hidden sm:table-cell px-3 py-2 font-medium text-right">Built</th>
-						<th class="hidden sm:table-cell px-3 py-2 font-medium text-right">Beds</th>
-						<th class="hidden sm:table-cell px-3 py-2 font-medium text-right">Baths</th>
-						<th class="hidden sm:table-cell px-3 py-2 font-medium text-right">Assessed value</th>
-						<th class="px-4 sm:px-6 py-2 font-medium text-right">Per sq ft</th>
+						<th class="px-3 py-2 font-medium text-right">Built</th>
+						<th class="px-3 py-2 font-medium">Class</th>
+						<th class="px-3 py-2 font-medium">Stories</th>
+						<th class="px-3 py-2 font-medium">Construction</th>
+						<th class="px-3 py-2 font-medium text-right">Beds</th>
+						<th class="px-3 py-2 font-medium text-right">Baths</th>
+						<th class="px-3 py-2 font-medium">Basement</th>
+						<th class="px-3 py-2 font-medium">Central air</th>
+						<th class="px-3 py-2 font-medium text-right">Fireplaces</th>
+						<th class="px-3 py-2 font-medium">Garage</th>
+						<th class="px-3 py-2 font-medium text-right">Land sq ft</th>
+						<th class="px-3 py-2 font-medium text-right">Building AV</th>
+						<th class="px-3 py-2 font-medium text-right">Land AV</th>
+						<th class="px-4 sm:px-6 py-2 font-medium text-right">Total AV</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-stone-100">
@@ -173,22 +204,44 @@ templ evidence(r ReportData) {
 	</section>
 }
 
+func rowBG(h HomeRow, subject bool) string {
+	switch {
+	case subject:
+		return "bg-rose-50"
+	case h.Evidence:
+		return "bg-emerald-50"
+	default:
+		return "bg-white"
+	}
+}
+
 templ homeTR(h HomeRow, subject bool) {
-	<tr class={ templ.KV("bg-rose-50 font-medium", subject), templ.KV("bg-emerald-50/70", h.Evidence) }>
-		<td class="px-4 sm:px-6 py-2.5">
+	<tr class={ rowBG(h, subject), templ.KV("font-medium", subject) }>
+		<td class={ "sticky left-0 z-10 px-4 sm:px-6 py-2.5", rowBG(h, subject) }>
 			if subject {
 				Your home
 			} else {
 				{ h.Address }
 			}
-			<span class="block whitespace-nowrap text-xs font-normal text-slate-400">{ h.PINFmt }</span>
+			<span class="block text-xs font-normal text-slate-400">{ h.PINFmt }</span>
 		</td>
+		<td class="px-3 py-2.5 text-right tabular-nums font-medium">{ h.PerSF }</td>
+		<td class="px-3 py-2.5 text-right tabular-nums">{ h.Away }</td>
 		<td class="px-3 py-2.5 text-right tabular-nums">{ h.SqFt }</td>
-		<td class="hidden sm:table-cell px-3 py-2.5 text-right tabular-nums">{ h.YearBuilt }</td>
-		<td class="hidden sm:table-cell px-3 py-2.5 text-right tabular-nums">{ h.Beds }</td>
-		<td class="hidden sm:table-cell px-3 py-2.5 text-right tabular-nums">{ h.Baths }</td>
-		<td class="hidden sm:table-cell px-3 py-2.5 text-right tabular-nums">{ h.AV }</td>
-		<td class="px-4 sm:px-6 py-2.5 text-right tabular-nums font-medium">{ h.PerSF }</td>
+		<td class="px-3 py-2.5 text-right tabular-nums">{ h.YearBuilt }</td>
+		<td class="px-3 py-2.5">{ h.Class }</td>
+		<td class="px-3 py-2.5">{ h.Stories }</td>
+		<td class="px-3 py-2.5">{ h.Construction }</td>
+		<td class="px-3 py-2.5 text-right tabular-nums">{ h.Beds }</td>
+		<td class="px-3 py-2.5 text-right tabular-nums">{ h.Baths }</td>
+		<td class="px-3 py-2.5">{ h.Basement }</td>
+		<td class="px-3 py-2.5">{ h.Air }</td>
+		<td class="px-3 py-2.5 text-right tabular-nums">{ h.Fireplaces }</td>
+		<td class="px-3 py-2.5">{ h.Garage }</td>
+		<td class="px-3 py-2.5 text-right tabular-nums">{ h.LandSqFt }</td>
+		<td class="px-3 py-2.5 text-right tabular-nums">{ h.BldgAV }</td>
+		<td class="px-3 py-2.5 text-right tabular-nums">{ h.LandAV }</td>
+		<td class="px-4 sm:px-6 py-2.5 text-right tabular-nums">{ h.AV }</td>
 	</tr>
 }
 

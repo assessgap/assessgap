@@ -18,86 +18,162 @@ Jefferson
 Tax year
 2026
 Assessed value
-$57,000
+$57,000 (building $51,219 + land $5,781)
 Value stage
 Mailed: the Assessor's initial value; not yet certified, and it may change
 Building
 2,172 sq ft, built 2014, 4 bedrooms, 3.5 baths
 Comparison with similar homes
-The property is assessed at $26.24 per square foot of building area. The median of 4 similar homes in the
-same Assessor neighborhood is $24.48 per square foot, so the property is 7% above the median.
-3 of the 4 comparable homes are assessed lower per square foot than the property. The property ranks at
-the 75th percentile of the comparable homes by AV per square foot.
+The property's building is assessed at $23.58 per square foot of building area (building AV $51,219 ÷ 2,172
+sq ft). The median of 4 similar homes in the same Assessor neighborhood is $22.05 per square foot, so the
+property is 7% above the median.
+The building part of the assessment is compared, per square foot, because the Assessor values land
+separately at a neighborhood rate per square foot of land.
+3 of the 4 comparable homes have a building assessed lower per square foot than the property. The
+property ranks at the 75th percentile of the comparable homes by building AV per square foot.
 How comparable homes were chosen: same neighborhood, multi-story homes, building sqft within ±50%,
 built within ±40 years (Assessor neighborhood 71280), excluding multi-building parcels and homes without
-recorded square footage. The 4 most similar by size, age, baths, land and construction are listed on page 2.
+recorded square footage or a building assessment. The 4 most similar by size, age, baths, lot, design,
+construction and basement (the nearer home first when two are equally similar) are listed on page 2.
 Uniformity figure
-Applying the comparable homes' median of $24.48 per square foot to the property's 2,172 square feet gives
-an assessed value of $53,167. That is $3,833 less than the current assessed value of $57,000.
-This compares Cook County assessed values (AV) and AV per building square foot among similar homes, using public
-Assessor data. It is not an appraisal and does not estimate what any property would sell for. AssessGap is not affiliated
-with Cook County. You file and sign your own appeal.
+Applying the comparable homes' median building rate of $22.05 per square foot to the property's 2,172
+square feet, and adding the property's land AV of $5,781, gives an assessed value of $53,667. That is
+$3,333 less than the current assessed value of $57,000.
+This compares Cook County assessed values (AV), and the building's AV per square foot, among similar homes, using
+public Assessor data. It is not an appraisal and does not estimate what any property would sell for. AssessGap is not
+affiliated with Cook County. You file and sign your own appeal.
 Comparable property grid
 PIN 13-33-225-011-0000 · Tax year 2026
 Page 2 of 3
 AssessGap is not affiliated with Cook County. You file and sign your own appeal.
-Tax year 2026 assessed values from the Cook County Assessor, mailed stage. Building characteristics are the
-Assessor's records. Evidence comparables are the most similar homes assessed lower per square foot than the
-subject. AV / sq ft = assessed value ÷ building square feet.
+Tax year 2026 assessed values from the Cook County Assessor, mailed stage; building characteristics are the Assessor's records. Homes are compared on building AV per square foot
+(building AV ÷ building square feet), because the Assessor values land separately at a neighborhood rate. Evidence comparables are the most similar homes whose building is assessed lower
+per square foot than the subject's. Away = straight-line distance from the subject.
 PIN
 Address
+Away
 Class
-Bldg sq ft
+Stories
+Construction
+Bldg
+sq ft
 Built
-Beds/baths
-Assessed value
-AV / sq ft
+Beds /
+baths
+Basement
+Central
+air
+Fire-
+places
+Garage
+Land
+sq ft
+Building
+AV
+Land
+AV
+Total
+AV
+Bldg AV
+/ sq ft
 Subject property
 13-33-225-011-0000
 2023 N Leclaire Ave
+–
 278
+2-story
+Frame and masonry
 2,172
 2014
 4 / 3.5
+Full, finished
+Yes
+0
+2-car
+3,125
+$51,219
+$5,781
 $57,000
-$26.24
-Evidence comparables (3): similar homes assessed lower per sq ft
-13-33-230-006-0000
-2045 N La Crosse Ave 1
-278
-2,492
-2018
-4 / 3.5
-$61,000
-$24.48
+$23.58
+Evidence comparables (3): similar homes with the building assessed lower per sq ft
 13-33-230-007-0000
-2043 N La Crosse Ave
+2043 N La Crosse...
+0.3 mi
 278
+2-story
+Frame
 2,492
 2018
 4 / 3.5
+Full, finished
+Yes
+0
+2-car
+3,275
+$54,941
+$6,059
 $61,000
-$24.48
+$22.05
+13-33-230-006-0000
+2045 N La Crosse...
+0.3 mi
+278
+2-story
+Frame
+2,492
+2018
+4 / 3.5
+Full, finished
+Yes
+0
+2-car
+3,275
+$54,941
+$6,059
+$61,000
+$22.05
 13-33-102-013-0000
 2337 N Lorel Ave
+0.5 mi
 207
+2-story
+Frame
 1,708
 1990
 3 / 2
+Slab
+Yes
+0
+1-car
+3,150
+$28,173
+$5,828
 $34,001
-$19.91
+$16.49
 Other comparable homes (1)
 13-33-203-027-0000
 4938 W Medill Ave
+0.4 mi
 207
+2-story
+Frame
 1,791
 2026
 4 / 3.5
+Full, finished
+Yes
+0
+2-car
+2,950
+$64,543
+$5,458
 $70,001
-$39.08
-Median AV / sq ft of the 4 comparable homes: $24.48. Subject: $26.24 (7% above the median).
-Selection: same neighborhood, multi-story homes, building sqft within ±50%, built within ±40 years (Assessor neighborhood
-71280). Multi-building parcels and homes without recorded square footage are excluded.
+$36.04
+Median building AV / sq ft of the 4 comparable homes: $22.05. Subject: $23.58 (7% above the median).
+Differences of each evidence comparable from the subject (theirs vs the subject's):
+1. 2043 N La Crosse Ave: 0.3 mi away · frame vs frame and masonry · 15% larger
+2. 2045 N La Crosse Ave 1: 0.3 mi away · frame vs frame and masonry · 15% larger
+3. 2337 N Lorel Ave: 0.5 mi away · class 207 vs 278 · frame vs frame and masonry · 21% smaller · built 24 years earlier · 1 fewer full bath · 1 fewer half bath · slab vs full basement · 1-car garage vs 2-car
 Filing steps: Cook County Board of Review
 PIN 13-33-225-011-0000 · Tax year 2026
 Page 3 of 3
@@ -141,5 +217,5 @@ https://apps.cookcountyil.gov/BORDecisionSearch/. A re-review must be requested 
 the decision letter. If you disagree with the decision, you can appeal to the state Property Tax
 Appeal Board within 30 days, and you can appeal again next year.
 AssessGap is not affiliated with Cook County. You file and sign your own appeal. This compares Cook County assessed
-values (AV) and AV per building square foot among similar homes, using public Assessor data. It is not an appraisal and
-does not estimate what any property would sell for.
+values (AV), and the building's AV per square foot, among similar homes, using public Assessor data. It is not an appraisal
+and does not estimate what any property would sell for.

@@ -38,7 +38,7 @@ func Home(s Site) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section id=\"check\" class=\"relative overflow-visible\"><div class=\"absolute inset-x-0 top-0 -z-10 h-[32rem] bg-gradient-to-b from-emerald-50 to-transparent\"></div><div class=\"mx-auto max-w-3xl px-5 pt-20 pb-16 text-center\"><p class=\"inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-emerald-800 ring-1 ring-emerald-200\"><span class=\"size-1.5 rounded-full bg-emerald-500\"></span> Free · Cook County homes · No sign-up</p><h1 class=\"mt-6 text-4xl sm:text-5xl font-semibold tracking-tight text-slate-900 text-balance\">Is your home assessed higher than similar homes nearby?</h1><p class=\"mt-5 text-lg text-slate-600 text-pretty\">We compare your assessed value per square foot with similar homes in your Assessor neighborhood and show you the numbers, so you can decide whether an appeal is worth your time.</p><div class=\"mt-10 text-left\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section id=\"check\" class=\"relative overflow-visible\"><div class=\"absolute inset-x-0 top-0 -z-10 h-[32rem] bg-gradient-to-b from-emerald-50 to-transparent\"></div><div class=\"mx-auto max-w-3xl px-5 pt-20 pb-16 text-center\"><p class=\"inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-emerald-800 ring-1 ring-emerald-200\"><span class=\"size-1.5 rounded-full bg-emerald-500\"></span> Free · Cook County homes · No sign-up</p><h1 class=\"mt-6 text-4xl sm:text-5xl font-semibold tracking-tight text-slate-900 text-balance\">Is your home assessed higher than similar homes nearby?</h1><p class=\"mt-5 text-lg text-slate-600 text-pretty\">We compare your building's assessed value per square foot with similar homes in your Assessor neighborhood and show you the numbers, so you can decide whether an appeal is worth your time.</p><div class=\"mt-10 text-left\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -70,7 +70,7 @@ func Home(s Site) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = step("2", "See how you compare", "We find similar homes in your neighborhood (size, age, style) and compare assessed value per square foot.").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = step("2", "See how you compare", "We find similar homes nearby in your neighborhood (size, age, style) and compare the building's assessed value per square foot.").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

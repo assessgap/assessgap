@@ -78,7 +78,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /how-it-works", s.page(func(r *http.Request) templ.Component { return views.HowItWorks(s.site) }))
 	mux.HandleFunc("GET /terms", s.page(func(r *http.Request) templ.Component { return views.Terms(s.site) }))
 	mux.HandleFunc("GET /privacy", s.page(func(r *http.Request) templ.Component { return views.Privacy(s.site) }))
-	heavy := make(busy, 4)
+	heavy := newBusy(4)
 	mux.HandleFunc("GET /search", heavy.limit(s.handleSearch))
 	mux.HandleFunc("GET /check/{pin}", heavy.limit(s.handleCheck))
 	mux.HandleFunc("GET /check/{pin}/report.pdf", heavy.limit(s.handleReportPDF))

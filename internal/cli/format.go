@@ -30,6 +30,17 @@ func gapPhrase(g float64) string {
 	return "about equal to the median"
 }
 
+// milesText is a comp's distance from the subject, "?" when unknown.
+func milesText(mi float64) string {
+	switch {
+	case mi < 0:
+		return "?"
+	case mi < 0.1:
+		return "<0.1 mi"
+	}
+	return fmt.Sprintf("%.1f mi", mi)
+}
+
 func yearOr(y int) string {
 	if y <= 0 {
 		return "?"

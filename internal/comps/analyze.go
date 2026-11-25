@@ -10,8 +10,8 @@ import (
 
 // Verdict thresholds on how far the subject's AV/sqft sits above the comp median.
 const (
-	strongGap   = 0.05 // backtest: pro se win rate plateaus ~82% from +5% (docs/methodology.md)
-	possibleGap = 0.01 // 0–5% above median: ~72% pro se win rate; below 1% is "in line"
+	strongGap   = 0.05 // backtest: pro se win rate plateaus ~89% from +5% (docs/methodology.md)
+	possibleGap = 0.01 // 1–5% above median: ~84% pro se win rate; within ±1% is "in line" (~64%)
 	minEvidence = 3
 	maxEvidence = 6
 )
@@ -29,37 +29,50 @@ func median(xs []float64) float64 {
 	return (s[n/2-1] + s[n/2]) / 2
 }
 
+// computeStats compares the subject's building AV per sq ft with the comps'.
+// The Assessor values land separately at a neighborhood rate per land sq ft,
+// so the uniformity figure applies the comps' median building rate to the
+// subject's building and adds back the subject's own land AV.
 func computeStats(subject Home, comps []Comp) Stats {
 	vals := make([]float64, len(comps))
+	var land []float64
 	below, equal := 0, 0
 	for i, c := range comps {
-		vals[i] = c.AVPerSF
+		vals[i] = c.BldgAVPerSF
 		switch {
-		case c.AVPerSF < subject.AVPerSF:
+		case c.BldgAVPerSF < subject.BldgAVPerSF:
 			below++
-		case c.AVPerSF == subject.AVPerSF:
+		case c.BldgAVPerSF == subject.BldgAVPerSF:
 			equal++
 		}
+		if r := c.LandAVPerSF(); r > 0 {
+			land = append(land, r)
+		}
 	}
-	st := Stats{NumComps: len(comps), SubjectAVPerSF: round(subject.AVPerSF, 2)}
+	st := Stats{NumComps: len(comps), SubjectBldgAVPerSF: round(subject.BldgAVPerSF, 2)}
+	if r := subject.LandAVPerSF(); r > 0 && len(land) > 0 {
+		st.SubjectLandAVPerSF, st.MedianLandAVPerSF = round(r, 2), round(median(land), 2)
+	}
 	if len(comps) == 0 {
 		return st
 	}
 	med := median(vals)
-	st.MedianAVPerSF = round(med, 2)
-	st.PctAboveMedian = round(subject.AVPerSF/med-1, 4)
+	st.MedianBldgAVPerSF = round(med, 2)
+	st.PctAboveMedian = round(subject.BldgAVPerSF/med-1, 4)
 	st.SubjectPercentile = round(100*(float64(below)+0.5*float64(equal))/float64(len(comps)), 1)
-	st.UniformityAV = round(med*subject.BldgSF, 0)
+	st.UniformityAV = round(med*subject.BldgSF+subject.LandAV, 0)
 	st.PotentialAVReduction = max(0, round(subject.AV-st.UniformityAV, 0))
 	return st
 }
 
-// evidenceComps picks the most similar comps assessed lower per sqft than the
-// subject: the ones a homeowner would cite. comps must be sorted nearest first.
+// evidenceComps picks the most similar comps whose building is assessed lower
+// per sqft than the subject's: the ones a homeowner would cite. comps must be
+// sorted nearest first.
 func evidenceComps(subject Home, comps []Comp) []Comp {
 	var out []Comp
 	for _, c := range comps {
-		if c.AVPerSF < subject.AVPerSF {
+		if c.BldgAVPerSF < subject.BldgAVPerSF {
+			c.Differences = Differences(subject, c)
 			out = append(out, c)
 			if len(out) == maxEvidence {
 				break
@@ -67,6 +80,25 @@ func evidenceComps(subject Home, comps []Comp) []Comp {
 		}
 	}
 	return out
+}
+
+// landTolerance is how far the subject's land rate may sit from the comps'
+// median before we ask the owner to check it. Land rates are usually one
+// flat rate per neighborhood, so any real difference stands out.
+const landTolerance = 0.01
+
+// landFlag asks the owner to check the land assessment when its rate per land
+// sq ft differs from similar homes'. It states the figures only.
+func landFlag(s Home, st Stats) []Flag {
+	if st.SubjectLandAVPerSF <= 0 || st.MedianLandAVPerSF <= 0 ||
+		abs64(st.SubjectLandAVPerSF/st.MedianLandAVPerSF-1) <= landTolerance {
+		return nil
+	}
+	return []Flag{{Field: "land", Message: fmt.Sprintf(
+		"Please verify your land assessment. The Assessor records land AV of %s on %s sq ft of land, or %s per sq ft; "+
+			"the median for the similar homes is %s per sq ft. The Assessor values land separately from the building, "+
+			"usually at one rate per neighborhood.",
+		money(s.LandAV), humanize.Comma(int64(s.LandSF)), perSF(st.SubjectLandAVPerSF), perSF(st.MedianLandAVPerSF))}}
 }
 
 func pct(x float64) string { return fmt.Sprintf("%.0f%%", 100*x) }
@@ -97,9 +129,10 @@ func decide(r *Report) (string, []string) {
 		rel = pct(-gap) + " below the median"
 	}
 	why = append(why, fmt.Sprintf(
-		"Your home is assessed at %s per sq ft. The median of %d similar homes in your neighborhood is %s per sq ft, so yours is %s.",
-		perSF(s.AVPerSF), n, perSF(st.MedianAVPerSF), rel))
-	why = append(why, fmt.Sprintf("%d of the %d comparable homes are assessed lower per sq ft than yours.",
+		"Your home's building is assessed at %s per sq ft. The median of %d similar homes in your neighborhood is %s per sq ft, so yours is %s.",
+		perSF(s.BldgAVPerSF), n, perSF(st.MedianBldgAVPerSF), rel))
+	why = append(why, LandNote)
+	why = append(why, fmt.Sprintf("%d of the %d comparable homes have a building assessed lower per sq ft than yours.",
 		countBelow(*s, r.Comps), n))
 	if r.Search.Level > 0 {
 		why = append(why, "There weren't enough close matches, so we widened the search ("+
@@ -110,16 +143,19 @@ func decide(r *Report) (string, []string) {
 	// internal tier (styling, and whether we offer a packet), never shown as a label.
 	if gap >= possibleGap {
 		why = append(why, fmt.Sprintf(
-			"At similar homes' median rate per sq ft, your assessed value would be %s, which is %s lower than now.",
-			money(st.UniformityAV), money(st.PotentialAVReduction)))
+			"At similar homes' median building rate per sq ft, plus your land's assessed value of %s, your assessed value would be %s, which is %s lower than now.",
+			money(s.LandAV), money(st.UniformityAV), money(st.PotentialAVReduction)))
 	}
+	// Rates: pro se, by the report's cut points, 2024–2025 (docs/dev/backtest-2026-11-25c/new/backtest.txt).
 	switch {
 	case gap >= strongGap:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with homes assessed at least 5% above similar homes got a reduction about 82% of the time.")
+		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed at least 5% above similar homes' got a reduction about 89% of the time.")
 	case gap >= possibleGap:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with homes assessed 0–5% above similar homes got a reduction about 72% of the time.")
+		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed 1–5% above similar homes' got a reduction about 84% of the time.")
+	case gap > -possibleGap:
+		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed within 1% of similar homes' got a reduction about 64% of the time.")
 	default:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with homes assessed at or below similar homes got a reduction 27–53% of the time.")
+		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed more than 1% below similar homes' got a reduction about 36% of the time.")
 	}
 	switch {
 	case gap >= strongGap && n >= minComps && ev >= minEvidence:
@@ -137,7 +173,7 @@ func decide(r *Report) (string, []string) {
 func countBelow(s Home, comps []Comp) int {
 	n := 0
 	for _, c := range comps {
-		if c.AVPerSF < s.AVPerSF {
+		if c.BldgAVPerSF < s.BldgAVPerSF {
 			n++
 		}
 	}

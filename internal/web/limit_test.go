@@ -1,6 +1,7 @@
 package web
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -22,6 +23,38 @@ func TestPerIP(t *testing.T) {
 	}
 	if !l.allow("a", t0.Add(time.Minute)) {
 		t.Fatal("new window should reset")
+	}
+}
+
+func TestBusy(t *testing.T) {
+	ok := func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) }
+	tests := []struct {
+		name       string
+		taken      int // slots already in use
+		wait       time.Duration
+		status     int
+		retryAfter string
+	}{
+		// With the only slot taken, nothing can free it, so the wait runs out.
+		{"all slots taken", 1, time.Millisecond, http.StatusServiceUnavailable, "5"},
+		// A free slot is taken at once, long before the wait.
+		{"free slot", 0, time.Hour, http.StatusOK, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := &busy{slots: make(chan struct{}, 1), wait: tt.wait}
+			for range tt.taken {
+				b.slots <- struct{}{}
+			}
+			rec := httptest.NewRecorder()
+			b.limit(ok)(rec, httptest.NewRequest("GET", "/check/1", nil))
+			if rec.Code != tt.status || rec.Header().Get("Retry-After") != tt.retryAfter {
+				t.Errorf("status %d, Retry-After %q; want %d, %q", rec.Code, rec.Header().Get("Retry-After"), tt.status, tt.retryAfter)
+			}
+			if len(b.slots) != tt.taken {
+				t.Errorf("%d slots in use after the request, want %d (a served request must release its slot)", len(b.slots), tt.taken)
+			}
+		})
 	}
 }
 

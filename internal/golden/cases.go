@@ -13,16 +13,20 @@ type Case struct {
 }
 
 // Cases are the check goldens, in testdata/golden/check/<name>.txt.
+// Names were chosen in 2026-11-25b, when the gap was total AV per sq ft. Since
+// 2026-11-25c it is building AV per sq ft, so some names describe the old
+// shape; the comments give the current gap.
 var Cases = []Case{
 	// Where the home sits against the median.
-	{"well-above-mailed", []string{"13331030130000"}},      // +32%, 20 comps, recorded sales
-	{"well-above-certified", []string{"24293040050000"}},   // +11%, split-level 234, certified
-	{"above-5-to-10", []string{"13331030140000"}},          // +7.5%
-	{"slightly-above", []string{"13331030180000"}},         // +2%
-	{"above-but-few-comps", []string{"16171280200000"}},    // +17% with 7 comps: lower tier
-	{"in-line", []string{"13331110210000"}},                // gap exactly 0
-	{"below-none-lower", []string{"13331020180000"}},       // −25%, no lower-assessed homes, top-20 cut
-	{"below-widened-to-group", []string{"13331050110000"}}, // −5%, search level 1
+	{"well-above-mailed", []string{"13331030130000"}},      // +50% (was +32%), 20 comps, recorded sales
+	{"well-above-certified", []string{"24293040050000"}},   // +10%, split-level 234, certified
+	{"above-5-to-10", []string{"13331030140000"}},          // +14% (was +7.5%)
+	{"slightly-above", []string{"13331030180000"}},         // +7.7% (was +2%): now the top tier
+	{"above-but-few-comps", []string{"16171280200000"}},    // +23% with 7 comps: lower tier
+	{"in-line", []string{"13331110210000"}},                // +0.8%: within ±1%
+	{"below-none-lower", []string{"13331020180000"}},       // −29%, no lower-assessed homes, top-20 cut
+	{"below-widened-to-group", []string{"13331050110000"}}, // −1.5%, search level 1
+	{"land-rate-differs", []string{"13332060380000"}},      // land $1.79 vs $1.85 per land sq ft: the land check
 	{"few-comps-4", []string{"13332250110000"}},            // 4 comps after full widening
 	{"too-few-comps", []string{"13332280060000"}},          // 1 comp
 	{"townhome-identical-3", []string{"16171270490000"}},   // 295 with 3 identical comps (tie at median)
@@ -31,7 +35,7 @@ var Cases = []Case{
 	{"widened-level-3", []string{"16171220340000"}},        // ±50% / ±40 years
 	{"tie-with-subject", []string{"13331050170000"}},       // 2 comps at exactly the subject's AV/sq ft
 	{"class-202-small", []string{"13331050040000"}},        // one-story under 1,000 sq ft
-	{"exactly-8-comps", []string{"13332270190000"}},        // the minimum before widening
+	{"exactly-8-comps", []string{"13332270190000"}},        // the minimum before widening; also a big lot: +18% on total AV, −11% on the building
 	{"check-sqft-high", []string{"16171100190000"}},        // building sq ft far above peers
 	{"check-no-full-baths", []string{"16171210300000"}},    // zero full baths
 	{"check-beds-over-rooms", []string{"24294090450000"}},  // more bedrooms than rooms

@@ -9,16 +9,22 @@ import (
 )
 
 // busy caps concurrent expensive requests (reports, search) so a scraper
-// can't starve a 1-vCPU box. Requests wait briefly for a slot, then get 503.
-type busy chan struct{}
+// can't starve a 1-vCPU box. Requests wait up to wait for a slot, then get 503.
+type busy struct {
+	slots chan struct{}
+	wait  time.Duration
+}
 
-func (b busy) limit(next http.HandlerFunc) http.HandlerFunc {
+// newBusy allows n concurrent requests, each waiting up to 5 s for a slot.
+func newBusy(n int) *busy { return &busy{slots: make(chan struct{}, n), wait: 5 * time.Second} }
+
+func (b *busy) limit(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		t := time.NewTimer(5 * time.Second)
+		t := time.NewTimer(b.wait)
 		defer t.Stop()
 		select {
-		case b <- struct{}{}:
-			defer func() { <-b }()
+		case b.slots <- struct{}{}:
+			defer func() { <-b.slots }()
 			next(w, r)
 		case <-t.C:
 			w.Header().Set("Retry-After", "5")
