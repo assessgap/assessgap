@@ -60,4 +60,4 @@ changelog:
 release:
   draft: true
   footer: |
-    AssessGap compares assessed values only. It is not an appraisal and not legal advice. You file your own appeal with the Cook County Board of Review.
+    AssessGap compares assessed values only. It is not an appraisal and not legal advice. AssessGap never files an appeal for anyone.

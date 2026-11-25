@@ -12,7 +12,7 @@ templ Townships(s Site, x TownshipIndex) {
 			<header>
 				<h1 class="text-3xl font-semibold tracking-tight text-slate-900 text-balance">Board of Review appeal dates by township</h1>
 				<p class="mt-3 text-slate-600">
-					The Cook County Board of Review opens each of the county's 38 townships for appeals once a year, for at least 30 days.
+					The Cook County Board of Review opens each of the county's 38 townships for appeals each session, for at least 30 days.
 					Pick your township for its dates, recent appeal outcomes and how to file on your own.
 				</p>
 				<p class="mt-2 text-sm text-slate-500">
@@ -48,7 +48,7 @@ templ Townships(s Site, x TownshipIndex) {
 
 templ Township(s Site, t TownshipData) {
 	@Layout(s, t.Name+" Township property tax appeal deadline (Board of Review) · AssessGap",
-		t.Name+" Township, Cook County: Board of Review appeal dates, the evidence deadline, recent appeal outcomes, and how homeowners file on their own for free.") {
+		t.Name+" Township, Cook County: Board of Review appeal dates and evidence deadline (when posted), recent appeal outcomes, and how to file on your own.") {
 		@templ.Raw(breadcrumbJSON(ctx, t.Name, t.Slug))
 		<div class="mx-auto max-w-3xl px-5 py-10 space-y-8">
 			<header>
@@ -125,8 +125,8 @@ templ townshipFacts(t TownshipData) {
 	<section class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
 		<h2 class="text-lg font-semibold text-slate-900">{ t.Name } Township in the county data</h2>
 		<p class="mt-3 text-slate-700">
-			<strong class="font-semibold">{ t.Homes }</strong> homes in the property classes AssessGap checks
-			(single-family homes and townhomes, classes 202–210, 234, 278 and 295).
+			<strong class="font-semibold">{ t.Homes }</strong> parcels in classes 202–210, 234, 278 and 295, the single-family and
+			townhome classes AssessGap compares. A few, such as parcels with more than one building, can't be checked yet.
 		</p>
 		if t.ProSe != nil || t.Attorney != nil {
 			<h3 class="mt-6 font-semibold text-slate-900">Recent Board of Review outcomes</h3>
@@ -141,8 +141,8 @@ templ townshipFacts(t TownshipData) {
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-stone-100">
-						@appealsRow("Homeowners on their own", t.ProSe)
-						@appealsRow("Attorneys or tax firms", t.Attorney)
+						@appealsRow("Filed on their own (pro se)", t.ProSe)
+						@appealsRow("Filed by an attorney", t.Attorney)
 					</tbody>
 				</table>
 			</div>
@@ -183,14 +183,14 @@ templ fileSteps(t TownshipData) {
 	<section class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
 		<h2 class="text-lg font-semibold text-slate-900">How to file on your own</h2>
 		<p class="mt-2 text-slate-600">
-			{ "Filing at the Board of Review is free. Homeowners can file for a home in their own name; anyone else filing for you must be a licensed attorney (Board Rule 1)." }
+			{ "Board Rule 1: individual taxpayers “may represent properties titled in their own names”, and “a person who is not an attorney may not represent a taxpayer before the Board of Review.”" }
 		</p>
 		<ol class="mt-4 space-y-4 text-slate-700">
 			@fileStep("1", "Find your 14-digit PIN. It's on your tax bill, and the search above shows it too.")
 			@fileStep("2", "While "+t.Name+" is open, go to the Board's appeals portal and choose “Submit an Appeal”, then the appeal type “"+bor.AppealType+"”. You can file with an account or as a guest; guests get the decision by mail only.")
 			@fileStep("3", evidenceStep(t))
-			@fileStep("4", "You can ask for a hearing when you file. Homeowners' hearings are by phone, and you aren't penalized for skipping one. The Board says decisions come "+bor.DecisionWeeks+" weeks after the township closes.")
-			@fileStep("5", fmt.Sprintf("If you disagree with the decision, you can ask the Board for a re-review within %d days of the decision letter, or appeal to the state Property Tax Appeal Board within %d days of the decision.", bor.ReReviewDays, bor.PTABDays))
+			@fileStep("4", "You can ask for a hearing when you file. Hearings for people filing on their own are by phone, and you aren't penalized for skipping one. The Board says decisions come "+bor.DecisionWeeks+" weeks after the township closes.")
+			@fileStep("5", fmt.Sprintf("If you disagree with the decision, you can ask the Board for a re-review within %d days of the date on the decision letter, on one of the grounds in Board Rule 26 (no new arguments), or appeal to the state Property Tax Appeal Board within %d days of the Board's written decision.", bor.ReReviewDays, bor.PTABDays))
 		</ol>
 		<p class="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm">
 			<a href="/how-it-works" class="py-1 text-emerald-700 underline">How AssessGap's comparison works</a>

@@ -43,7 +43,7 @@ func Townships(s Site, x TownshipIndex) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mx-auto max-w-3xl px-5 py-10 space-y-8\"><header><h1 class=\"text-3xl font-semibold tracking-tight text-slate-900 text-balance\">Board of Review appeal dates by township</h1><p class=\"mt-3 text-slate-600\">The Cook County Board of Review opens each of the county's 38 townships for appeals once a year, for at least 30 days. Pick your township for its dates, recent appeal outcomes and how to file on your own.</p><p class=\"mt-2 text-sm text-slate-500\">From the Board's ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mx-auto max-w-3xl px-5 py-10 space-y-8\"><header><h1 class=\"text-3xl font-semibold tracking-tight text-slate-900 text-balance\">Board of Review appeal dates by township</h1><p class=\"mt-3 text-slate-600\">The Cook County Board of Review opens each of the county's 38 townships for appeals each session, for at least 30 days. Pick your township for its dates, recent appeal outcomes and how to file on your own.</p><p class=\"mt-2 text-sm text-slate-500\">From the Board's ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -408,7 +408,7 @@ func Township(s Site, t TownshipData) templ.Component {
 			return nil
 		})
 		templ_7745c5c3_Err = Layout(s, t.Name+" Township property tax appeal deadline (Board of Review) · AssessGap",
-			t.Name+" Township, Cook County: Board of Review appeal dates, the evidence deadline, recent appeal outcomes, and how homeowners file on their own for free.").Render(templ.WithChildren(ctx, templ_7745c5c3_Var14), templ_7745c5c3_Buffer)
+			t.Name+" Township, Cook County: Board of Review appeal dates and evidence deadline (when posted), recent appeal outcomes, and how to file on your own.").Render(templ.WithChildren(ctx, templ_7745c5c3_Var14), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -721,7 +721,7 @@ func townshipFacts(t TownshipData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "</strong> homes in the property classes AssessGap checks (single-family homes and townhomes, classes 202–210, 234, 278 and 295).</p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "</strong> parcels in classes 202–210, 234, 278 and 295, the single-family and townhome classes AssessGap compares. A few, such as parcels with more than one building, can't be checked yet.</p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -730,11 +730,11 @@ func townshipFacts(t TownshipData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = appealsRow("Homeowners on their own", t.ProSe).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = appealsRow("Filed on their own (pro se)", t.ProSe).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = appealsRow("Attorneys or tax firms", t.Attorney).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = appealsRow("Filed by an attorney", t.Attorney).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -903,9 +903,9 @@ func fileSteps(t TownshipData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var48 string
-		templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs("Filing at the Board of Review is free. Homeowners can file for a home in their own name; anyone else filing for you must be a licensed attorney (Board Rule 1).")
+		templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs("Board Rule 1: individual taxpayers “may represent properties titled in their own names”, and “a person who is not an attorney may not represent a taxpayer before the Board of Review.”")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `townships.templ`, Line: 186, Col: 166}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `townships.templ`, Line: 186, Col: 198}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 		if templ_7745c5c3_Err != nil {
@@ -927,11 +927,11 @@ func fileSteps(t TownshipData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = fileStep("4", "You can ask for a hearing when you file. Homeowners' hearings are by phone, and you aren't penalized for skipping one. The Board says decisions come "+bor.DecisionWeeks+" weeks after the township closes.").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = fileStep("4", "You can ask for a hearing when you file. Hearings for people filing on their own are by phone, and you aren't penalized for skipping one. The Board says decisions come "+bor.DecisionWeeks+" weeks after the township closes.").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = fileStep("5", fmt.Sprintf("If you disagree with the decision, you can ask the Board for a re-review within %d days of the decision letter, or appeal to the state Property Tax Appeal Board within %d days of the decision.", bor.ReReviewDays, bor.PTABDays)).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = fileStep("5", fmt.Sprintf("If you disagree with the decision, you can ask the Board for a re-review within %d days of the date on the decision letter, on one of the grounds in Board Rule 26 (no new arguments), or appeal to the state Property Tax Appeal Board within %d days of the Board's written decision.", bor.ReReviewDays, bor.PTABDays)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
