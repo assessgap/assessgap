@@ -41,6 +41,7 @@ func init() {
 		{"serve", "run the website", runServe},
 		{"backtest", "compare the method with actual Board of Review outcomes (full database)", runBacktest},
 		{"sample", "coverage and comparison mix on a random sample of homes (full database)", runSample},
+		{"live-eval", "compare live (API) reports with a full local database", runLiveEval},
 	}
 }
 

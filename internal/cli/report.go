@@ -16,6 +16,7 @@ func runReport(ctx context.Context, env *Env, args []string) error {
 	db := fs.String("db", "", "county database (default $ASSESSGAP_DB, else "+DefaultDB+")")
 	year := fs.Int("year", 0, "tax year (default: latest year with an assessed value)")
 	out := fs.String("o", "", "output PDF path (required)")
+	live := fs.Bool("live", false, "fetch this home's data from the county's open data API instead of a local database (PIN only)")
 	pos, err := parseArgs(fs, args)
 	if err != nil {
 		return err
@@ -25,7 +26,7 @@ func runReport(ctx context.Context, env *Env, args []string) error {
 		fs.Usage()
 		return errUsage
 	}
-	r, err := lookup(ctx, env, *db, q, *year)
+	r, err := lookup(ctx, env, *db, *live, q, *year)
 	if err != nil {
 		return err
 	}

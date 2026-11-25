@@ -67,6 +67,35 @@ func TestDBPath(t *testing.T) {
 	}
 }
 
+func TestUseLiveByDefault(t *testing.T) {
+	existing := filepath.Join(t.TempDir(), "cook.db")
+	if err := os.WriteFile(existing, nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	missing := filepath.Join(t.TempDir(), "none.db")
+	tests := []struct {
+		name, flag, env, path, q string
+		want                     bool
+	}{
+		{"no db anywhere, PIN", "", "", missing, "13281000270000", true},
+		{"no db anywhere, address", "", "", missing, "3134 N Luna Ave", false},
+		{"default db exists", "", "", existing, "13281000270000", false},
+		{"-db given", missing, "", missing, "13281000270000", false},
+		{"ASSESSGAP_DB set", "", missing, missing, "13281000270000", false},
+	}
+	for _, tt := range tests {
+		env := &Env{Getenv: func(k string) string {
+			if k == "ASSESSGAP_DB" {
+				return tt.env
+			}
+			return ""
+		}}
+		if got := useLiveByDefault(env, tt.flag, tt.path, tt.q); got != tt.want {
+			t.Errorf("%s: got %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
 // run executes the CLI with ASSESSGAP_DB set to db and returns status and output.
 func run(t *testing.T, db string, args ...string) (int, string, string) {
 	t.Helper()

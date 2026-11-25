@@ -19,6 +19,7 @@ func runCheck(ctx context.Context, env *Env, args []string) error {
 	fs := newFlags(env, "check", "[-db path] [-year N] [-json] <address-or-PIN>")
 	db := fs.String("db", "", "county database (default $ASSESSGAP_DB, else "+DefaultDB+")")
 	year := fs.Int("year", 0, "tax year (default: latest year with an assessed value)")
+	live := fs.Bool("live", false, "fetch this home's data from the county's open data API instead of a local database (PIN only)")
 	asJSON := fs.Bool("json", false, "print the full report as JSON")
 	brief := fs.Bool("brief", false, "with -json, omit the full list of similar homes (lower-assessed ones are kept)")
 	pos, err := parseArgs(fs, args)
@@ -30,7 +31,7 @@ func runCheck(ctx context.Context, env *Env, args []string) error {
 		fs.Usage()
 		return errUsage
 	}
-	r, err := lookup(ctx, env, *db, q, *year)
+	r, err := lookup(ctx, env, *db, *live, q, *year)
 	if err != nil {
 		return err
 	}
@@ -45,9 +46,14 @@ func runCheck(ctx context.Context, env *Env, args []string) error {
 	return writeText(env.Stdout, r, time.Now())
 }
 
-// lookup opens the database, resolves q to one PIN and builds its report.
-func lookup(ctx context.Context, env *Env, dbFlag, q string, year int) (*comps.Report, error) {
-	db, err := openCounty(dbPath(env, dbFlag))
+// lookup opens the database (or, with live, fetches one PIN's data from the
+// API), resolves q to one PIN and builds its report.
+func lookup(ctx context.Context, env *Env, dbFlag string, live bool, q string, year int) (*comps.Report, error) {
+	path := dbPath(env, dbFlag)
+	if live || useLiveByDefault(env, dbFlag, path, q) {
+		return lookupLive(ctx, env, q, year)
+	}
+	db, err := openCounty(path)
 	if err != nil {
 		return nil, err
 	}
