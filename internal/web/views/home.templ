@@ -1,0 +1,78 @@
+package views
+
+templ Home(s Site) {
+	@Layout(s, "AssessGap — Is your Cook County assessment higher than your neighbors'?",
+		"A free check that compares your home's assessed value with similar homes nearby, using public Cook County data.") {
+		<section id="check" class="relative overflow-visible">
+			<div class="absolute inset-x-0 top-0 -z-10 h-[32rem] bg-gradient-to-b from-emerald-50 to-transparent"></div>
+			<div class="mx-auto max-w-3xl px-5 pt-20 pb-16 text-center">
+				<p class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-emerald-800 ring-1 ring-emerald-200">
+					<span class="size-1.5 rounded-full bg-emerald-500"></span>
+					Free · Cook County homes · No sign-up
+				</p>
+				<h1 class="mt-6 text-4xl sm:text-5xl font-semibold tracking-tight text-slate-900 text-balance">
+					Is your home assessed higher than similar homes nearby?
+				</h1>
+				<p class="mt-5 text-lg text-slate-600 text-pretty">
+					We compare your assessed value per square foot with similar homes in your Assessor neighborhood
+					and show you the numbers, so you can decide whether an appeal is worth your time.
+				</p>
+				<div class="mt-10 text-left">
+					@SearchBox("", true)
+				</div>
+			</div>
+		</section>
+		<section class="mx-auto max-w-5xl px-5 pb-20">
+			<div class="grid gap-4 sm:grid-cols-3">
+				@stat(s.WinRate(), "of homeowners who appealed on their own at the Board of Review got a reduction", s.Years())
+				@stat(s.AppealsShort(), "self-filed residential appeals in the data we analyzed", "Board of Review, "+s.Years())
+				@stat("$0", "to file at the Board of Review. You don't need a lawyer or a paid service to appeal.", "")
+			</div>
+		</section>
+		<section class="border-y border-stone-200 bg-white">
+			<div class="mx-auto max-w-5xl px-5 py-16 grid gap-10 sm:grid-cols-3">
+				@step("1", "Find your home", "Search by address or PIN. We pull your home's details and assessed value from public Assessor data.")
+				@step("2", "See how you compare", "We find similar homes in your neighborhood (size, age, style) and compare assessed value per square foot.")
+				@step("3", "Decide and file yourself", "You can appeal at the Board of Review for free. We show you the similar homes assessed lower than yours, so you can decide.")
+			</div>
+		</section>
+		<section class="mx-auto max-w-3xl px-5 py-16">
+			<h2 class="text-2xl font-semibold tracking-tight text-slate-900">Common questions</h2>
+			<dl class="mt-6 divide-y divide-stone-200">
+				@faq("Does this tell me what my home is worth?",
+					"No. We compare assessed values between similar homes. That is a uniformity comparison, which is one of the grounds the Board of Review accepts. We never estimate what a home would sell for.")
+				@faq("Why would my assessment be out of line?",
+					"The Assessor values hundreds of thousands of homes with a model. Some homes end up assessed higher per square foot than near-identical neighbors. The Board of Review exists to correct that, and homeowners who show it with good comparables often get a reduction.")
+				@faq("Is this the Assessor's or the Board of Review's website?",
+					"No. AssessGap is independent. We use the county's public open data, and you file with the Board of Review yourself.")
+				@faq("When can I appeal?",
+					"The Board of Review opens each township for about 30 days. The remaining townships open between December and February. Leave your email on your report and we'll tell you when yours opens.")
+			</dl>
+		</section>
+	}
+}
+
+templ stat(big, label, foot string) {
+	<div class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
+		<p class="text-4xl font-semibold tracking-tight text-emerald-700">{ big }</p>
+		<p class="mt-2 text-slate-700">{ label }</p>
+		if foot != "" {
+			<p class="mt-2 text-xs text-slate-400">{ foot }</p>
+		}
+	</div>
+}
+
+templ step(n, title, body string) {
+	<div>
+		<span class="inline-flex size-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-800">{ n }</span>
+		<h3 class="mt-4 font-semibold text-slate-900">{ title }</h3>
+		<p class="mt-2 text-slate-600">{ body }</p>
+	</div>
+}
+
+templ faq(q, a string) {
+	<div class="py-5">
+		<dt class="font-medium text-slate-900">{ q }</dt>
+		<dd class="mt-2 text-slate-600">{ a }</dd>
+	</div>
+}

@@ -1,0 +1,15 @@
+# /etc/caddy/Caddyfile on the web server. Caddy gets and renews the TLS certs.
+assessgap.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8080
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 20MiB
+			roll_keep 5
+		}
+	}
+}
+
+www.assessgap.com {
+	redir https://assessgap.com{uri} permanent
+}

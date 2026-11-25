@@ -1,0 +1,12 @@
+# county data (rebuildable from public sources)
+/data/
+/data-sample/
+*.db
+*.db-wal
+*.db-shm
+# build output and tools
+/bin/
+/dist/
+.DS_Store
+.env
+.env.*

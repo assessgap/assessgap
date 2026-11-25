@@ -1,0 +1,24 @@
+[Unit]
+Description=AssessGap website
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=assessgap
+Group=assessgap
+WorkingDirectory=/srv/assessgap
+ExecStart=/srv/assessgap/server -addr 127.0.0.1:8080 -cook /srv/assessgap/data/cook.db -app /srv/assessgap/data/app.db -dev=false
+Restart=on-failure
+RestartSec=2
+MemoryMax=600M
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ReadWritePaths=/srv/assessgap/data
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target
