@@ -37,8 +37,8 @@ square footage or a building assessment. The 20 most similar by size, age, baths
 basement and distance (the nearer home first when two are equally similar) are listed on page 2.
 Uniformity figure
 Applying the comparable homes' median building rate of $24.94 per square foot to the property's 1,668
-square feet, and adding the property's land AV of $8,235, gives an assessed value of $49,832. That is
-$2,168 less than the current assessed value of $52,000.
+square feet, and adding the property's land AV of $8,235, gives an assessed value of $49,835. That is
+$2,165 less than the current assessed value of $52,000.
 Please verify
 •
 Please verify the bathroom count: the record shows no full bathrooms.

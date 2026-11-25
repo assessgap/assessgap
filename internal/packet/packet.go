@@ -178,13 +178,21 @@ func (p *pager) summary(generated time.Time) {
 	}
 
 	p.heading("Uniformity figure")
-	if st.PotentialAVReduction >= 1 {
+	switch {
+	case comps.AboveMedian(st.PctAboveMedian) && st.PotentialAVReduction >= 1:
 		p.body(fmt.Sprintf(
 			"Applying the comparable homes' median building rate of %s per square foot to the property's %s square feet, "+
 				"and adding the property's land AV of %s, gives an assessed value of %s. That is %s less than the current "+
 				"assessed value of %s.",
 			perSF(st.MedianBldgAVPerSF), num(s.BldgSF), money(s.LandAV), money(st.UniformityAV), money(st.PotentialAVReduction), money(s.AV)))
-	} else {
+	case st.PotentialAVReduction >= 1:
+		// Within 1% of the median: every surface calls this about equal, so no difference is stated.
+		p.body(fmt.Sprintf(
+			"Applying the comparable homes' median building rate of %s per square foot to the property's %s square feet, "+
+				"and adding the property's land AV of %s, gives an assessed value of %s, about the same as the current "+
+				"assessed value of %s: the building's rate is within 1%% of the median.",
+			perSF(st.MedianBldgAVPerSF), num(s.BldgSF), money(s.LandAV), money(st.UniformityAV), money(s.AV)))
+	default:
 		p.body(fmt.Sprintf(
 			"Applying the comparable homes' median building rate of %s per square foot to the property's %s square feet, "+
 				"and adding the property's land AV of %s, gives an assessed value of %s, which is not below the current "+

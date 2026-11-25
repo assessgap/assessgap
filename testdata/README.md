@@ -60,7 +60,7 @@ Structured output is flattened to one `path = value` line per field, sorted, wit
 
 The cases are listed, with the reason each was chosen, in `internal/golden/cases.go`. They cover: well above, slightly above, in line with and below the median; above but with few comparable homes; 1 and 4 comparable homes; every search widening level; one-story, multi-story, split-level and townhome classes; ties; each data check the fixture can reach (square footage, no full baths, more bedrooms than rooms, a land rate unlike similar homes'); a big lot whose total AV per sq ft is high but whose building is assessed below the median; recorded sales; no address; an earlier certified year; a PIN whose latest value is from 2023; condo, multi-building, two-flat, exempt and class 241 parcels; an unknown PIN; and a known PIN asked for a missing year.
 
-Edge cases real data doesn't reach (0 or 2 comparable homes, an even-count median, zero square feet, no characteristics row, unknown year built, no building/land split or a $0 building, unknown location) are tested with hand-written homes in `internal/comps/synthetic_test.go`, not here.
+Edge cases real data doesn't reach cleanly (0 or 2 comparable homes, an even-count median with exact hand-worked values, zero square feet, no characteristics row, unknown year built, no building/land split or a $0 building, unknown location) are tested with hand-written homes in `internal/comps/synthetic_test.go`, not here.
 
 **Updating.** Only after a deliberate change:
 

@@ -60,7 +60,9 @@ func computeStats(subject Home, comps []Comp) Stats {
 	st.MedianBldgAVPerSF = round(med, 2)
 	st.PctAboveMedian = round(subject.BldgAVPerSF/med-1, 4)
 	st.SubjectPercentile = round(100*(float64(below)+0.5*float64(equal))/float64(len(comps)), 1)
-	st.UniformityAV = round(med*subject.BldgSF+subject.LandAV, 0)
+	// From the median as shown (to the cent), so the figure is exactly the sum
+	// the report prints: median × sq ft + land AV.
+	st.UniformityAV = round(st.MedianBldgAVPerSF*subject.BldgSF+subject.LandAV, 0)
 	st.PotentialAVReduction = max(0, round(subject.AV-st.UniformityAV, 0))
 	return st
 }
@@ -102,11 +104,17 @@ func landFlag(s Home, comps []Comp, st Stats) []Flag {
 	if subj <= 0 || len(rates) == 0 || abs64(subj/median(rates)-1) <= landTolerance {
 		return nil
 	}
+	// At land rates under about $1, two rates more than 1% apart can round to
+	// the same cents; show a third decimal then, so the figures differ as stated.
+	subjS, medS := perSF(st.SubjectLandAVPerSF), perSF(st.MedianLandAVPerSF)
+	if subjS == medS {
+		subjS, medS = fmt.Sprintf("$%.3f", subj), fmt.Sprintf("$%.3f", median(rates))
+	}
 	return []Flag{{Field: "land", Message: fmt.Sprintf(
 		"Please verify your land assessment. The Assessor records land AV of %s on %s sq ft of land, or %s per sq ft; "+
 			"the median for the similar homes is %s per sq ft. The Assessor values land separately from the building, "+
 			"usually at one rate per neighborhood.",
-		money(s.LandAV), humanize.Comma(int64(s.LandSF)), perSF(st.SubjectLandAVPerSF), perSF(st.MedianLandAVPerSF))}}
+		money(s.LandAV), humanize.Comma(int64(s.LandSF)), subjS, medS)}}
 }
 
 func pct(x float64) string { return fmt.Sprintf("%.0f%%", 100*x) }

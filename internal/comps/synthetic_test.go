@@ -256,13 +256,14 @@ func TestSyntheticLandTolerance(t *testing.T) {
 		name                string
 		subjectLand, others float64
 		flag                bool
+		shows               string // the rates the flag states, "" for no flag
 	}{
 		// $3.3633 vs $3.3333: 0.9% apart.
-		{"within 1%", 10090, 10000, false},
+		{"within 1%", 10090, 10000, false, ""},
 		// $3.3700 vs $3.3333: 1.1% apart.
-		{"just over 1%", 10110, 10000, true},
-		// $0.4950 vs $0.5050: 2% apart, though both round to $0.50.
-		{"apart, same in cents", 1485, 1515, true},
+		{"just over 1%", 10110, 10000, true, "or $3.37 per sq ft; the median for the similar homes is $3.33 per sq ft"},
+		// $0.4953 vs $0.5047: 1.9% apart, though both round to $0.50, so a third decimal is shown.
+		{"apart, same in cents", 1486, 1514, true, "or $0.495 per sq ft; the median for the similar homes is $0.505 per sq ft"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -271,10 +272,35 @@ func TestSyntheticLandTolerance(t *testing.T) {
 			for i := range 3 {
 				s.add(sh{pin: fmt.Sprintf("C%d", i), class: "203", sf: 1000, av: 25000 + tt.others, landAV: tt.others, year: 1950})
 			}
-			if got := len(s.report("S").Flags) == 1; got != tt.flag {
-				t.Errorf("land flag %v, want %v", got, tt.flag)
+			flags := s.report("S").Flags
+			if got := len(flags) == 1; got != tt.flag {
+				t.Fatalf("land flag %v, want %v", got, tt.flag)
+			}
+			msg := ""
+			if len(flags) == 1 {
+				msg = flags[0].Message
+			}
+			if !strings.Contains(msg, tt.shows) {
+				t.Errorf("land flag says %q, want it to state %q", msg, tt.shows)
 			}
 		})
+	}
+}
+
+// TestSyntheticUniformityFromShownMedian: the uniformity figure uses the
+// median as the report shows it, to the cent, so a reader can redo the sum.
+func TestSyntheticUniformityFromShownMedian(t *testing.T) {
+	s := newSynth(t)
+	s.add(sh{pin: "S", class: "203", sf: 2000, av: 70000, landAV: 10000, year: 1950}) // building $30.00/sq ft
+	s.add(sh{pin: "A", class: "203", sf: 1000, av: 25000, landAV: 5000, year: 1950})  // $20.00
+	s.add(sh{pin: "B", class: "203", sf: 1000, av: 30004, landAV: 5000, year: 1950})  // $25.004, shown $25.00
+	s.add(sh{pin: "C", class: "203", sf: 1000, av: 33000, landAV: 5000, year: 1950})  // $28.00
+	st := s.report("S").Stats
+	// $25.00 × 2,000 + $10,000 land = $60,000 (the unrounded $25.004 would give
+	// $60,008); $70,000 − $60,000 = $10,000.
+	if st.MedianBldgAVPerSF != 25 || st.UniformityAV != 60000 || st.PotentialAVReduction != 10000 {
+		t.Errorf("median %v, uniformity %v, difference %v; want 25, 60000, 10000",
+			st.MedianBldgAVPerSF, st.UniformityAV, st.PotentialAVReduction)
 	}
 }
 

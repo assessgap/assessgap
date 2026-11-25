@@ -29,8 +29,8 @@ var Cases = []Case{
 	{"land-rate-differs", []string{"13332060380000"}},      // land $1.79 vs $1.85 per land sq ft: the land check
 	{"few-comps-4", []string{"13332250110000"}},            // 4 comps after full widening
 	{"too-few-comps", []string{"13332280060000"}},          // 1 comp
-	{"townhome-identical-3", []string{"16171270490000"}},   // 295 with 3 identical comps (tie at median)
-	{"townhome-below", []string{"24283020360000"}},         // 295, −36%
+	{"townhome-identical-3", []string{"16171270490000"}},   // 295 with 3 near-identical comps (building −0.03%, was a tie on total AV)
+	{"townhome-below", []string{"24283020360000"}},         // 295, −33%
 	{"widened-level-2", []string{"16171180290000"}},        // ±35% / ±25 years
 	{"widened-level-3", []string{"16171220340000"}},        // ±50% / ±40 years
 	{"tie-with-subject", []string{"13331050170000"}},       // 2 comps at exactly the subject's AV/sq ft
@@ -59,4 +59,6 @@ var PacketPINs = []Case{
 	{"well-above-mailed", []string{"13331030130000"}},
 	{"check-no-full-baths", []string{"16171210300000"}},
 	{"few-comps-4", []string{"13332250110000"}},
+	{"in-line", []string{"13331110210000"}},           // within 1%: no difference stated, like the web page
+	{"land-rate-differs", []string{"13332060380000"}}, // the land "please verify" item
 }

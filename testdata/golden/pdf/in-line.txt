@@ -1,0 +1,512 @@
+# Evidence report text for PIN 13331110210000, prepared 2026-11-24
+# Regenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update
+Assessment comparison: tax year 2026
+PIN 13-33-111-021-0000 · Tax year 2026
+Page 1 of 3
+AssessGap is not affiliated with Cook County. You file and sign your own appeal.
+Prepared November 24, 2026 from public Cook County Assessor data. Figures are assessed values (AV) as published by the
+Assessor.
+Property
+Address
+2158 N Latrobe Ave, Chicago
+PIN
+13-33-111-021-0000
+Property class
+203
+Township
+Jefferson
+Tax year
+2026
+Assessed value
+$27,000 (building $20,175 + land $6,825)
+Value stage
+Mailed: the Assessor's initial value; not yet certified, and it may change
+Building
+1,455 sq ft, built 1927, 3 bedrooms, 1 bath
+Comparison with similar homes
+The property's building is assessed at $13.87 per square foot of building area (building AV $20,175 ÷ 1,455
+sq ft). The median of 20 similar homes in the same Assessor neighborhood is $13.75 per square foot, so the
+property is about equal to the median.
+The building part of the assessment is compared, per square foot, because the Assessor values land
+separately at a neighborhood rate per square foot of land.
+12 of the 20 comparable homes have a building assessed lower per square foot than the property. The
+property ranks at the 60th percentile of the comparable homes by building AV per square foot.
+How comparable homes were chosen: same neighborhood, class 203, building sqft within ±25%, built within
+±15 years (Assessor neighborhood 71280), excluding multi-building parcels and homes without recorded
+square footage or a building assessment. The 20 most similar by size, age, baths, lot, design, construction,
+basement and distance (the nearer home first when two are equally similar) are listed on page 2.
+Uniformity figure
+Applying the comparable homes' median building rate of $13.75 per square foot to the property's 1,455
+square feet, and adding the property's land AV of $6,825, gives an assessed value of $26,831, about the
+same as the current assessed value of $27,000: the building's rate is within 1% of the median.
+This compares Cook County assessed values (AV), and the building's AV per square foot, among similar homes, using
+public Assessor data. It is not an appraisal and does not estimate what any property would sell for. AssessGap is not
+affiliated with Cook County. You file and sign your own appeal.
+Comparable property grid
+PIN 13-33-111-021-0000 · Tax year 2026
+Page 2 of 3
+AssessGap is not affiliated with Cook County. You file and sign your own appeal.
+Tax year 2026 assessed values from the Cook County Assessor, mailed stage; building characteristics are the Assessor's records. Homes are compared on building AV per square foot (building AV ÷
+building square feet), because the Assessor values land separately at a neighborhood rate. Evidence comparables are the most similar homes whose building is assessed lower per square foot than the
+subject's. Away = straight-line distance from the subject.
+PIN
+Address
+Away
+Class
+Stories
+Construction
+Bldg
+sq ft
+Built
+Beds /
+baths
+Basement
+Central
+air
+Fire-
+places
+Garage
+Land
+sq ft
+Building
+AV
+Land
+AV
+Total
+AV
+Bldg AV
+/ sq ft
+Subject property
+13-33-111-021-0000
+2158 N Latrobe Ave
+–
+203
+1.5-story
+Masonry
+1,455
+1927
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,689
+$20,175
+$6,825
+$27,000
+$13.87
+Evidence comparables (6): similar homes with the building assessed lower per sq ft
+13-33-111-022-0000
+2154 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,458
+1927
+3 / 1.5
+Full, unfinished
+No
+0
+1-car
+3,780
+$20,007
+$6,993
+$27,000
+$13.72
+13-33-111-030-0000
+2130 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,455
+1927
+3 / 1.5
+Full, unfinished
+Yes
+0
+None
+3,780
+$20,007
+$6,993
+$27,000
+$13.75
+13-33-111-032-0000
+2124 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,455
+1927
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,780
+$20,007
+$6,993
+$27,000
+$13.75
+13-33-111-031-0000
+2128 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,458
+1927
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,780
+$20,007
+$6,993
+$27,000
+$13.72
+13-33-111-035-0000
+2116 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,455
+1927
+3 / 1.5
+Full, unfinished
+No
+0
+1-car
+3,780
+$20,007
+$6,993
+$27,000
+$13.75
+13-33-111-034-0000
+2118 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,458
+1927
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,780
+$20,007
+$6,993
+$27,000
+$13.72
+Other comparable homes (14)
+13-33-111-039-0000
+2102 N Latrobe Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,455
+1927
+3 / 1
+Full, finished
+No
+0
+2-car
+3,780
+$22,007
+$6,993
+$29,000
+$15.13
+13-33-111-023-0000
+2152 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,455
+1927
+3 / 1.5
+Full, finished
+No
+0
+1-car
+3,780
+$22,007
+$6,993
+$29,000
+$15.13
+13-33-111-037-0000
+2110 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,455
+1927
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,780
+$21,007
+$6,993
+$28,000
+$14.44
+13-33-111-036-0000
+2112 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,458
+1927
+3 / 1.5
+Full, finished
+No
+0
+2-car
+3,780
+$23,007
+$6,993
+$30,000
+$15.78
+13-33-111-038-0000
+2106 N Latrobe Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,455
+1927
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,780
+$20,007
+$6,993
+$27,000
+$13.75
+13-33-108-006-0000
+2243 N Latrobe Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,405
+1925
+3 / 1
+Full, unfinished
+Yes
+0
+1-car
+3,780
+$20,007
+$6,993
+$27,000
+$14.24
+13-33-108-007-0000
+2239 N Latrobe Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,509
+1925
+3 / 1
+Full, finished
+Yes
+0
+2-car
+3,780
+$23,007
+$6,993
+$30,000
+$15.25
+13-33-111-026-0000
+2142 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,498
+1927
+3 / 1.5
+Full, unfinished
+Yes
+0
+2-car
+3,780
+$22,007
+$6,993
+$29,000
+$14.69
+13-33-114-006-0000
+2047 N Latrobe Av...
+0.2 mi
+203
+1.5-story
+Masonry
+1,395
+1926
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,906
+$17,774
+$7,226
+$25,000
+$12.74
+13-33-114-012-0000
+2029 N Latrobe Ave
+0.2 mi
+203
+1.5-story
+Masonry
+1,395
+1926
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,875
+$17,831
+$7,169
+$25,000
+$12.78
+13-33-114-001-0000
+2063 N Latrobe Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,455
+1927
+3 / 1.5
+Full, unfinished
+No
+0
+1.5-car
+4,284
+$19,075
+$7,925
+$27,000
+$13.11
+13-33-223-028-0000
+2026 N Leamingto...
+0.2 mi
+203
+1.5-story
+Masonry
+1,427
+1925
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,525
+$18,479
+$6,521
+$25,000
+$12.95
+13-33-113-018-0000
+2038 N Latrobe Ave
+0.2 mi
+203
+1.5-story
+Masonry
+1,464
+1928
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,780
+$20,007
+$6,993
+$27,000
+$13.67
+13-33-224-011-0000
+2025 N Leamingto...
+0.2 mi
+203
+1.5-story
+Masonry
+1,467
+1924
+3 / 1
+Full, finished
+No
+0
+2-car
+3,125
+$21,219
+$5,781
+$27,000
+$14.46
+Median building AV / sq ft of the 20 comparable homes: $13.75. Subject: $13.87 (about equal to the median).
+Differences of each evidence comparable from the subject (theirs vs the subject's):
+1. 2154 N Latrobe Ave: under 0.1 mi away · 1 more half bath
+2. 2130 N Latrobe Ave: under 0.1 mi away · 1 more half bath · central air vs none · no garage vs 1-car
+3. 2124 N Latrobe Ave: under 0.1 mi away · 1 more half bath · 2-car garage vs 1-car
+4. 2128 N Latrobe Ave: under 0.1 mi away · 1 more half bath · 2-car garage vs 1-car
+5. 2116 N Latrobe Ave: under 0.1 mi away · 1 more half bath
+6. 2118 N Latrobe Ave: under 0.1 mi away · 1 more half bath · 2-car garage vs 1-car
+Filing steps: Cook County Board of Review
+PIN 13-33-111-021-0000 · Tax year 2026
+Page 3 of 3
+AssessGap is not affiliated with Cook County. You file and sign your own appeal.
+How a homeowner files their own appeal, from the Board of Review's published instructions and rules (checked
+2026-11-24). Rules and dates change; the Board's website is the final word. This is general information, not legal
+advice. You file, sign and present your own appeal.
+1.
+Check when Jefferson Township opens. The Board hasn't posted its dates yet; each township is
+open about 30 days. You can pre-register on the Board's portal now. Dates:
+https://www.cookcountyboardofreview.com/dates-and-deadlines
+2.
+Take a color photo of the front of your home. The Board's Rule 14 requires one, taken within the last
+12 months, in the brief you upload. Mark the date it was taken. Photos of the comparable homes are
+encouraged.
+3.
+Check the details on page 2 (square feet, year built, bedrooms, baths) against your home. If the
+Assessor has something wrong, say so in your brief.
+4.
+Go to https://appeals.cookcountyboardofreview.com/ and choose Submit an Appeal. You can create
+an account or continue as a guest (guests get the decision by mail only; account holders also get it
+by email).
+5.
+Choose "Property Over-Assessed" as the type of appeal and enter PIN 13-33-111-021-0000. When
+asked if you are a Board of Review attorney, answer No. Choose your appellant type (owner).
+6.
+Decide whether you want a hearing. It is optional, held by phone for homeowners, and the Board
+says you are not penalized for skipping it. You choose this when you file.
+7.
+Enter comparable properties if you like (optional: the Board's analysts also pull their own). The
+evidence comparables on page 2 are similar homes in your Assessor neighborhood whose building
+is assessed lower per square foot than yours; the other homes listed there are not.
+8.
+Review, initial, confirm and submit before the deadline. Save your complaint number.
+9.
+Upload your evidence after submitting: your brief with the photo, and this report if you wish, by the
+evidence deadline for your township.
+10.
+Watch for the decision, usually 8–16 weeks after your township closes. You can check status at
+https://apps.cookcountyil.gov/BORDecisionSearch/. A re-review must be requested within 3 days of
+the decision letter. If you disagree with the decision, you can appeal to the state Property Tax
+Appeal Board within 30 days, and you can appeal again next year.
+AssessGap is not affiliated with Cook County. You file and sign your own appeal. This compares Cook County assessed
+values (AV), and the building's AV per square foot, among similar homes, using public Assessor data. It is not an appraisal
+and does not estimate what any property would sell for.

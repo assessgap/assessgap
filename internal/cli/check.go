@@ -144,7 +144,8 @@ func writeText(w io.Writer, r *comps.Report, now time.Time) error {
 		fmt.Fprintf(tw, "Gap\t%s\t\n", gapPhrase(st.PctAboveMedian))
 		fmt.Fprintf(tw, "Assessed lower\t%d of %d similar homes\t\n", countBelow(r), st.NumComps)
 		fmt.Fprintf(tw, "At the median rate\t%s assessed value\t(median × this home's sq ft + its land AV %s", money(st.UniformityAV), money(s.LandAV))
-		if st.PotentialAVReduction >= 1 {
+		// Like the web page and the reasons: a difference is stated only at 1% or more above the median.
+		if comps.AboveMedian(st.PctAboveMedian) && st.PotentialAVReduction >= 1 {
 			fmt.Fprintf(tw, "; %s below this home's", money(st.PotentialAVReduction))
 		}
 		fmt.Fprintln(tw, ")")

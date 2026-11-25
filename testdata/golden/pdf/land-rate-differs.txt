@@ -1,0 +1,510 @@
+# Evidence report text for PIN 13332060380000, prepared 2026-11-24
+# Regenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update
+Assessment comparison: tax year 2026
+PIN 13-33-206-038-0000 · Tax year 2026
+Page 1 of 3
+AssessGap is not affiliated with Cook County. You file and sign your own appeal.
+Prepared November 24, 2026 from public Cook County Assessor data. Figures are assessed values (AV) as published by the
+Assessor.
+Property
+Address
+4829 W Medill Ave Hse, Chicago
+PIN
+13-33-206-038-0000
+Property class
+203
+Township
+Jefferson
+Tax year
+2026
+Assessed value
+$23,000 (building $9,505 + land $13,495)
+Value stage
+Mailed: the Assessor's initial value; not yet certified, and it may change
+Building
+1,428 sq ft, built 1908, 3 bedrooms, 1 bath
+Comparison with similar homes
+The property's building is assessed at $6.66 per square foot of building area (building AV $9,505 ÷ 1,428 sq
+ft). The median of 20 similar homes in the same Assessor neighborhood is $11.51 per square foot, so the
+property is 42% below the median.
+The building part of the assessment is compared, per square foot, because the Assessor values land
+separately at a neighborhood rate per square foot of land.
+0 of the 20 comparable homes have a building assessed lower per square foot than the property. The
+property ranks at the 0th percentile of the comparable homes by building AV per square foot.
+How comparable homes were chosen: same neighborhood, class 203, building sqft within ±25%, built within
+±15 years (Assessor neighborhood 71280), excluding multi-building parcels and homes without recorded
+square footage or a building assessment. The 20 most similar by size, age, baths, lot, design, construction,
+basement and distance (the nearer home first when two are equally similar) are listed on page 2.
+Uniformity figure
+Applying the comparable homes' median building rate of $11.51 per square foot to the property's 1,428
+square feet, and adding the property's land AV of $13,495, gives an assessed value of $29,931, which is not
+below the current assessed value of $23,000.
+Please verify
+•
+Please verify your land assessment. The Assessor records land AV of $13,495 on 7,560 sq ft of land, or
+$1.79 per sq ft; the median for the similar homes is $1.85 per sq ft. The Assessor values land separately
+from the building, usually at one rate per neighborhood.
+This compares Cook County assessed values (AV), and the building's AV per square foot, among similar homes, using
+public Assessor data. It is not an appraisal and does not estimate what any property would sell for. AssessGap is not
+affiliated with Cook County. You file and sign your own appeal.
+Comparable property grid
+PIN 13-33-206-038-0000 · Tax year 2026
+Page 2 of 3
+AssessGap is not affiliated with Cook County. You file and sign your own appeal.
+Tax year 2026 assessed values from the Cook County Assessor, mailed stage; building characteristics are the Assessor's records. Homes are compared on building AV per square foot (building AV ÷
+building square feet), because the Assessor values land separately at a neighborhood rate. Evidence comparables are the most similar homes whose building is assessed lower per square foot than the
+subject's. Away = straight-line distance from the subject.
+PIN
+Address
+Away
+Class
+Stories
+Construction
+Bldg
+sq ft
+Built
+Beds /
+baths
+Basement
+Central
+air
+Fire-
+places
+Garage
+Land
+sq ft
+Building
+AV
+Land
+AV
+Total
+AV
+Bldg AV
+/ sq ft
+Subject property
+13-33-206-038-0000
+4829 W Medill Av...
+–
+203
+1.5-story
+Frame
+1,428
+1908
+3 / 1
+Full, unfinished
+No
+0
+1-car
+7,560
+$9,505
+$13,495
+$23,000
+$6.66
+Evidence comparables (0): similar homes with the building assessed lower per sq ft
+Other comparable homes (20)
+13-33-205-005-0000
+4943 W Medill Ave
+0.1 mi
+203
+1.5-story
+Frame
+1,350
+1908
+3 / 1
+Full, unfinished
+No
+0
+2-car
+4,725
+$13,259
+$8,741
+$22,000
+$9.82
+13-33-230-011-0000
+2035 N La Crosse...
+0.3 mi
+203
+1.5-story
+Frame
+1,440
+1908
+3 / 1
+Full, unfinished
+No
+0
+1.5-car
+3,275
+$16,941
+$6,059
+$23,000
+$11.76
+13-33-201-010-0000
+5127 W Medill Ave
+0.4 mi
+203
+1.5-story
+Frame
+1,433
+1908
+3 / 1.5
+Full, unfinished
+Yes
+0
+2-car
+3,625
+$22,294
+$6,706
+$29,000
+$15.56
+13-33-220-032-0000
+2124 N Lamon Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,380
+1912
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,780
+$17,007
+$6,993
+$24,000
+$12.32
+13-33-228-004-0000
+2051 N Laporte Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,434
+1912
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,150
+$16,173
+$5,828
+$22,001
+$11.28
+13-33-103-017-0000
+2317 N Lockwood...
+0.6 mi
+203
+1.5-story
+Frame
+1,460
+1908
+2 / 1
+Full, finished
+Yes
+0
+2-car
+3,402
+$23,706
+$6,294
+$30,000
+$16.24
+13-33-212-036-0000
+2212 N Lamon Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,369
+1913
+4 / 1
+Full, unfinished
+No
+0
+2-car
+3,654
+$18,240
+$6,760
+$25,000
+$13.32
+13-33-212-037-0000
+2210 N Lamon Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,370
+1913
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,654
+$15,240
+$6,760
+$22,000
+$11.12
+13-33-209-014-0000
+2219 N Leclaire Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,421
+1913
+2 / 1
+Full, finished
+No
+0
+2-car
+3,780
+$17,007
+$6,993
+$24,000
+$11.97
+13-33-219-010-0000
+2127 N Lavergne...
+0.3 mi
+203
+1.5-story
+Frame
+1,386
+1913
+3 / 1
+Full, unfinished
+No
+0
+2-car
+4,725
+$13,259
+$8,741
+$22,000
+$9.57
+13-33-212-040-0000
+2200 N Lamon Ave...
+0.2 mi
+203
+1.5-story
+Frame
+1,495
+1913
+3 / 1
+Full, unfinished
+No
+0
+2-car
+4,032
+$17,541
+$7,459
+$25,000
+$11.73
+13-33-206-022-0000
+4834 W Belden Ave
+<0.1 mi
+203
+1.5-story
+Frame
+1,440
+1911
+3 / 1
+Partial, unfinished
+No
+0
+1-car
+3,937
+$14,717
+$7,284
+$22,001
+$10.22
+13-33-211-010-0000
+2231 N Lavergne...
+0.2 mi
+203
+1.5-story
+Frame
+1,253
+1908
+3 / 1.5
+Full, unfinished
+No
+0
+None
+6,300
+$9,345
+$11,655
+$21,000
+$7.46
+13-33-208-008-0000
+2237 N Leamingto...
+0.4 mi
+203
+1.5-story
+Frame
+1,392
+1913
+3 / 1
+Full, unfinished
+No
+0
+1.5-car
+3,780
+$15,007
+$6,993
+$22,000
+$10.78
+13-33-208-009-0000
+2235 N Leamingto...
+0.4 mi
+203
+1.5-story
+Frame
+1,392
+1913
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,780
+$18,007
+$6,993
+$25,000
+$12.94
+13-33-208-010-0000
+2233 N Leamingto...
+0.4 mi
+203
+1.5-story
+Frame
+1,392
+1913
+2 / 1
+Full, unfinished
+No
+0
+None
+3,780
+$13,007
+$6,993
+$20,000
+$9.34
+13-33-213-019-0000
+2205 N Lamon Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,314
+1903
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,783
+$20,720
+$6,999
+$27,719
+$15.77
+13-33-208-015-0000
+2217 N Leamingto...
+0.4 mi
+203
+1.5-story
+Frame
+1,392
+1913
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,780
+$18,007
+$6,993
+$25,000
+$12.94
+13-33-217-013-0000
+2119 N Leclaire Ave
+0.4 mi
+203
+1.5-story
+Frame
+1,605
+1908
+3 / 1
+Full, unfinished
+No
+0
+2-car
+4,725
+$15,259
+$8,741
+$24,000
+$9.51
+13-33-220-030-0000
+2130 N Lamon Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,353
+1914
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,780
+$15,007
+$6,993
+$22,000
+$11.09
+Median building AV / sq ft of the 20 comparable homes: $11.51. Subject: $6.66 (42% below the median).
+Filing steps: Cook County Board of Review
+PIN 13-33-206-038-0000 · Tax year 2026
+Page 3 of 3
+AssessGap is not affiliated with Cook County. You file and sign your own appeal.
+How a homeowner files their own appeal, from the Board of Review's published instructions and rules (checked
+2026-11-24). Rules and dates change; the Board's website is the final word. This is general information, not legal
+advice. You file, sign and present your own appeal.
+1.
+Check when Jefferson Township opens. The Board hasn't posted its dates yet; each township is
+open about 30 days. You can pre-register on the Board's portal now. Dates:
+https://www.cookcountyboardofreview.com/dates-and-deadlines
+2.
+Take a color photo of the front of your home. The Board's Rule 14 requires one, taken within the last
+12 months, in the brief you upload. Mark the date it was taken. Photos of the comparable homes are
+encouraged.
+3.
+Check the details on page 2 (square feet, year built, bedrooms, baths) against your home. If the
+Assessor has something wrong, say so in your brief.
+4.
+Go to https://appeals.cookcountyboardofreview.com/ and choose Submit an Appeal. You can create
+an account or continue as a guest (guests get the decision by mail only; account holders also get it
+by email).
+5.
+Choose "Property Over-Assessed" as the type of appeal and enter PIN 13-33-206-038-0000. When
+asked if you are a Board of Review attorney, answer No. Choose your appellant type (owner).
+6.
+Decide whether you want a hearing. It is optional, held by phone for homeowners, and the Board
+says you are not penalized for skipping it. You choose this when you file.
+7.
+Enter comparable properties if you like (optional: the Board's analysts also pull their own). The
+evidence comparables on page 2 are similar homes in your Assessor neighborhood whose building
+is assessed lower per square foot than yours; the other homes listed there are not.
+8.
+Review, initial, confirm and submit before the deadline. Save your complaint number.
+9.
+Upload your evidence after submitting: your brief with the photo, and this report if you wish, by the
+evidence deadline for your township.
+10.
+Watch for the decision, usually 8–16 weeks after your township closes. You can check status at
+https://apps.cookcountyil.gov/BORDecisionSearch/. A re-review must be requested within 3 days of
+the decision letter. If you disagree with the decision, you can appeal to the state Property Tax
+Appeal Board within 30 days, and you can appeal again next year.
+AssessGap is not affiliated with Cook County. You file and sign your own appeal. This compares Cook County assessed
+values (AV), and the building's AV per square foot, among similar homes, using public Assessor data. It is not an appraisal
+and does not estimate what any property would sell for.

@@ -38,8 +38,8 @@ construction, basement and distance (the nearer home first when two are equally 
 2.
 Uniformity figure
 Applying the comparable homes' median building rate of $22.05 per square foot to the property's 2,172
-square feet, and adding the property's land AV of $5,781, gives an assessed value of $53,667. That is
-$3,333 less than the current assessed value of $57,000.
+square feet, and adding the property's land AV of $5,781, gives an assessed value of $53,674. That is
+$3,326 less than the current assessed value of $57,000.
 This compares Cook County assessed values (AV), and the building's AV per square foot, among similar homes, using
 public Assessor data. It is not an appraisal and does not estimate what any property would sell for. AssessGap is not
 affiliated with Cook County. You file and sign your own appeal.
