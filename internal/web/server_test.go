@@ -205,6 +205,12 @@ func TestNotifyInput(t *testing.T) {
 			200, "ann@example.com|13331030130000|Jefferson|unsupported"},
 		{"bad PIN and reason are dropped", url.Values{"email": {"bo@example.com"}, "pin": {"1333'; --"}, "reason": {"<script>"}},
 			200, "bo@example.com|||township-opens"},
+		{"township page", url.Values{"email": {"di@example.com"}, "township": {"lake-view"}, "reason": {"township-opens"}},
+			200, "di@example.com||Lake View|township-opens"},
+		{"PIN's township wins", url.Values{"email": {"ed@example.com"}, "pin": {"13331030130000"}, "township": {"worth"}},
+			200, "ed@example.com|13331030130000|Jefferson|township-opens"},
+		{"unknown township dropped", url.Values{"email": {"fe@example.com"}, "township": {"springfield"}},
+			200, "fe@example.com|||township-opens"},
 		{"display-name form rejected", url.Values{"email": {"Cy <cy@example.com>"}}, 200, ""},
 		{"not an email", url.Values{"email": {"nope"}}, 200, ""},
 		{"too long", url.Values{"email": {strings.Repeat("a", 250) + "@example.com"}}, 200, ""},
@@ -236,5 +242,21 @@ func TestNotifyInput(t *testing.T) {
 	var n int
 	if err := site.App.QueryRow(`SELECT COUNT(*) FROM signup WHERE email = 'ann@example.com'`).Scan(&n); err != nil || n != 1 {
 		t.Errorf("%d rows after a repeat signup (%v), want 1", n, err)
+	}
+}
+
+// TestNotifySecondTownship: a second township page with the same email stores
+// nothing (the key is email and PIN, and township pages send no PIN), so the
+// reply must not confirm a signup that didn't happen.
+func TestNotifySecondTownship(t *testing.T) {
+	site, ts := newSite(t, false)
+	postNotify(t, ts, url.Values{"email": {"gu@example.com"}, "township": {"worth"}}, nil)
+	_, body := postNotify(t, ts, url.Values{"email": {"gu@example.com"}, "township": {"lake"}}, nil)
+	var stored string
+	if err := site.App.QueryRow(`SELECT township FROM signup WHERE email = 'gu@example.com'`).Scan(&stored); err != nil || stored != "Worth" {
+		t.Errorf("stored township %q (%v), want Worth", stored, err)
+	}
+	if !strings.Contains(body, "already on our list") {
+		t.Errorf("second township signup reply doesn't say it was already on the list:\n%s", body)
 	}
 }

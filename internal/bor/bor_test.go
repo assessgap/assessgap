@@ -33,6 +33,19 @@ func TestStatusOf(t *testing.T) {
 	}
 }
 
+// TestDaysLeftAcrossDST uses a made-up window, Feb 22 – Mar 23, 2027, that
+// spans the spring daylight-saving change (Mar 14, 2027). On Mar 1 the days
+// Mar 1..23 are 23 days, counting today. Dividing hours by 24 gave 22.
+func TestDaysLeftAcrossDST(t *testing.T) {
+	saved := Schedule
+	t.Cleanup(func() { Schedule = saved })
+	Schedule = []Group{{"test", []string{"Worth"}, d("2027-02-22"), d("2027-03-23"), d("2027-04-02")}}
+	got := StatusOf("Worth", d("2027-03-01").Add(15*time.Hour))
+	if got.State != Open || got.DaysLeft != 23 {
+		t.Errorf("StatusOf on 2027-03-01 = %v/%d, want Open/23", got.State, got.DaysLeft)
+	}
+}
+
 // TestScheduleValid checks the hand-edited schedule: dates in order, no
 // township twice, and every name spelled exactly as in Townships (StatusOf
 // matches names exactly, so "Lakeview" would silently read as not posted).

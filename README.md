@@ -15,6 +15,25 @@ Filing an appeal with the Cook County Board of Review is free, and you don't nee
 ## Status
 Early. The website, the `assessgap` command (which can check a home straight from the county's open data API, no big download) and the free evidence report PDF work today. Planned next: configurable comparisons ([data inventory](docs/data-inventory.md)) and Assessor-stage appeals.
 
+## Install the command
+
+- **Download:** prebuilt `assessgap` binaries for macOS, Linux and Windows (Intel and ARM) are on the [Releases](https://github.com/assessgap/assessgap/releases) page once a release is published. Unpack the archive and put `assessgap` on your `PATH`. `checksums.txt` lists each archive's SHA-256.
+- **With Go 1.26+:** `go install github.com/assessgap/assessgap/cmd/assessgap@latest`
+
+`assessgap version` prints the version, commit and build date.
+
+### Quick check from your terminal
+
+No database or download is needed for one home. `check` fetches just that home's neighborhood from the county's open data API (live mode):
+
+```sh
+assessgap check 13281000270000                 # your 14-digit PIN, from your tax bill
+assessgap report 13281000270000 -o report.pdf  # the free evidence report PDF
+assessgap township jefferson                   # your township's Board of Review window
+```
+
+Live mode is for checking a home at a time; searching by address needs a local database (below).
+
 ## Run it yourself
 Requires Go 1.26+. Everything is pure Go (SQLite via `modernc.org/sqlite`), so there's no cgo.
 

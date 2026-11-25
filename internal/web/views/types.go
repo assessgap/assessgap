@@ -122,4 +122,6 @@ type Window struct {
 	Text     string
 	LinkText string
 	LinkURL  string
+
+	TownshipName, TownshipURL string // the township's page on this site, "" if unknown
 }

@@ -17,4 +17,4 @@ ssh "$host" 'set -euo pipefail
   sudo systemctl restart assessgap
   sudo -u caddy caddy validate --config /etc/caddy/Caddyfile >/dev/null
   sudo systemctl reload caddy
-  sleep 1; curl -fsS -o /dev/null -w "healthz %{http_code}\n" http://127.0.0.1:8080/healthz'
+  sleep 1; curl -fsS --retry 15 --retry-connrefused --retry-delay 1 -o /dev/null -w "healthz %{http_code}\n" http://127.0.0.1:8080/healthz'

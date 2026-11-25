@@ -8,6 +8,7 @@ templ Layout(s Site, title, desc string) {
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
 			<title>{ title }</title>
 			<meta name="description" content={ desc }/>
+			@shareTags(title, desc)
 			if s.Dev {
 				<meta name="robots" content="noindex, nofollow"/>
 			}
@@ -41,6 +42,7 @@ templ Layout(s Site, title, desc string) {
 					</p>
 					<p class="flex flex-wrap gap-x-5 gap-y-1">
 						<a href="/how-it-works" class="hover:text-slate-800">How it works</a>
+						<a href="/townships" class="hover:text-slate-800">Appeal dates by township</a>
 						<a href="/terms" class="hover:text-slate-800">Terms</a>
 						<a href="/privacy" class="hover:text-slate-800">Privacy</a>
 						<a href="https://github.com/assessgap/assessgap" rel="noopener" class="hover:text-slate-800">Free and open source</a>
