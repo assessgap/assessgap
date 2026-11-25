@@ -136,6 +136,12 @@ func (e *Engine) loadSubject(ctx context.Context, pin string, year int) (subject
 	return s, err
 }
 
+// Pool returns every in-scope home in nbhd for year, the candidates a report
+// chooses comps from. A supported subject is in its own neighborhood's pool.
+func (e *Engine) Pool(ctx context.Context, nbhd string, year int) ([]Home, error) {
+	return e.loadPool(ctx, nbhd, year)
+}
+
 // loadPool returns all in-scope homes in nbhd for year, cached per engine.
 func (e *Engine) loadPool(ctx context.Context, nbhd string, year int) ([]Home, error) {
 	key := poolKey{nbhd, year}

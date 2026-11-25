@@ -67,6 +67,14 @@ func computeStats(subject Home, comps []Comp) Stats {
 	return st
 }
 
+// ComputeStats is computeStats for callers outside the package (tools/tune).
+func ComputeStats(subject Home, comps []Comp) Stats { return computeStats(subject, comps) }
+
+// DataFlags returns the "worth double-checking" items a report would show.
+func DataFlags(subject Home, pool []Home, comps []Comp) []Flag {
+	return append(characteristicFlags(subject, pool), landFlag(subject, comps, computeStats(subject, comps))...)
+}
+
 // evidenceComps picks the most similar comps whose building is assessed lower
 // per sqft than the subject's: the ones a homeowner would cite. comps must be
 // sorted nearest first.
