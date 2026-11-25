@@ -1,0 +1,49 @@
+# Writes a test vs production line-count table into the PR description
+# (between <!-- prloc:start --> and <!-- prloc:end -->), rewriting it on every push.
+#
+# Security, following the pattern in github.com/stablyai/orca (MIT): the token can
+# edit the PR, so this job never checks out or runs the PR's code. It reads the
+# changed-file list through the API and runs tools/prloc/main.go from the default
+# branch (stdlib only, no module code). Changes to prloc take effect after merge.
+name: pr-loc
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: pr-loc-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  loc:
+    name: test vs production lines
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+      - name: Count lines and update the description
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TRUSTED_REF: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/prloc"
+          mkdir -p "$dir"
+          if ! gh api "repos/${GITHUB_REPOSITORY}/contents/tools/prloc/main.go?ref=${TRUSTED_REF}" \
+            --jq .content > "$dir/main.b64"; then
+            echo "::notice::tools/prloc is not on ${TRUSTED_REF} yet; skipping"
+            exit 0
+          fi
+          base64 --decode "$dir/main.b64" > "$dir/main.go"
+          cd "$dir"
+          go run main.go -pr "$PR_NUMBER"

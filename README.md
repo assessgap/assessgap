@@ -55,6 +55,8 @@ Without `-db` or `$ASSESSGAP_DB`, commands use `./data/cook.db`. For the whole c
 | `internal/bor` | Board of Review township calendar and official links |
 | `internal/packet` | The evidence report PDF (a small PDF writer, no dependencies) |
 | `internal/web` | The website: Go `net/http`, templ, htmx, Tailwind |
+| `internal/fixture`, `internal/golden`, `testdata/` | A frozen slice of county data for tests, and golden outputs that make any change to a homeowner-facing number a reviewable diff ([testdata/README.md](testdata/README.md)) |
+| `tools/` | Rebuild the fixture; PR checks (line counts, required description sections) |
 | `ops/` | Refresh and deploy scripts (Caddy + systemd on a small VPS); `logs.sh` (live logs) and `stats.sh` (daily traffic counts from the access log, no IPs or PINs) |
 
 Templates are [templ](https://templ.guide); generated `*_templ.go` and `static/app.css` are committed. After editing templates or styles: `scripts/tailwind.sh` once, then `go generate ./internal/web/...`.

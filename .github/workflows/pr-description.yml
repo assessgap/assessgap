@@ -1,0 +1,46 @@
+# Fails while the PR description leaves "Numbers impact" or "Risk and rollback"
+# empty or as the template's placeholder (.github/pull_request_template.md).
+#
+# Runs tools/prcheck/main.go from the default branch, fetched through the API,
+# so a PR can't change the check that judges it. The description is passed in
+# an environment variable, never pasted into the script.
+name: pr-description
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+concurrency:
+  group: pr-description-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  sections:
+    name: required sections
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+      - name: Check Numbers impact and Risk
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          TRUSTED_REF: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/prcheck"
+          mkdir -p "$dir"
+          if ! gh api "repos/${GITHUB_REPOSITORY}/contents/tools/prcheck/main.go?ref=${TRUSTED_REF}" \
+            --jq .content > "$dir/main.b64"; then
+            echo "::notice::tools/prcheck is not on ${TRUSTED_REF} yet; skipping"
+            exit 0
+          fi
+          base64 --decode "$dir/main.b64" > "$dir/main.go"
+          cd "$dir"
+          go run main.go
