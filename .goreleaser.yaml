@@ -3,8 +3,8 @@
 #   go run github.com/goreleaser/goreleaser/v2@latest check
 #   go run github.com/goreleaser/goreleaser/v2@latest release --snapshot --clean   # local test, into dist/
 #
-# Releases are made by .github/workflows/release.yml when a maintainer pushes a
-# v* tag. Pure Go (SQLite via modernc.org/sqlite), so no cgo and no C toolchain.
+# Releases are made by the release workflow (.github/workflows-pending/release.yml
+# until a maintainer installs it) when a maintainer pushes a v* tag. Pure Go (SQLite via modernc.org/sqlite), so no cgo and no C toolchain.
 version: 2
 
 project_name: assessgap
