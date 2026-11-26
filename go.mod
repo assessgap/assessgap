@@ -3,13 +3,14 @@ module github.com/assessgap/assessgap
 go 1.26.5
 
 require (
+	github.com/a-h/templ v0.3.1118
 	github.com/dustin/go-humanize v1.1.0
+	golang.org/x/image v0.48.0
 	modernc.org/sqlite v1.63.0
 )
 
 require (
 	github.com/a-h/parse v0.0.42 // indirect
-	github.com/a-h/templ v0.3.1118 // indirect
 	github.com/andybalholm/brotli v1.3.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cli/browser v1.3.0 // indirect
@@ -25,6 +26,7 @@ require (
 	golang.org/x/net v0.62.0 // indirect
 	golang.org/x/sync v0.25.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
+	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/tools v0.52.0 // indirect
 	modernc.org/libc v1.80.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect

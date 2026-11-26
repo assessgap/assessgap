@@ -1,0 +1,27 @@
+# Release: builds the assessgap command for macOS, Linux and Windows and
+# attaches the archives and checksums to a draft GitHub release.
+# Install as .github/workflows/release.yml (see README.md in this directory).
+# Runs only when a maintainer pushes a tag such as v0.1.0.
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write # create the release and upload its files; nothing else
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0 # the changelog is built from the commits since the last tag
+      - uses: actions/setup-go@v5.5.0
+        with:
+          go-version-file: go.mod
+      - uses: goreleaser/goreleaser-action@v6.3.0
+        with:
+          distribution: goreleaser
+          version: v2.20.3 # checked locally with "goreleaser check" and a snapshot build
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

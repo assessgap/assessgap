@@ -29,6 +29,9 @@ import (
 	"github.com/assessgap/assessgap/internal/packet"
 	"github.com/assessgap/assessgap/internal/store"
 	"github.com/assessgap/assessgap/internal/web"
+	"github.com/assessgap/assessgap/internal/web/views"
+
+	"github.com/a-h/templ"
 )
 
 // banned are phrases that must never appear. Each is matched case-insensitively
@@ -172,7 +175,24 @@ func TestComplianceWebsite(t *testing.T) {
 	ts := httptest.NewServer(site.Handler())
 	t.Cleanup(ts.Close)
 
-	paths := []string{"/", "/how-it-works", "/terms", "/privacy"}
+	// Every indexed page (the sitemap: the static pages, /townships and each
+	// township's page), plus the report page for every case.
+	paths := []string{"/townships/lakeview"} // a redirect, followed to the page
+	resp, err := http.Get(ts.URL + "/sitemap.xml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sitemap, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range regexp.MustCompile(`<loc>([^<]*)</loc>`).FindAllStringSubmatch(string(sitemap), -1) {
+		paths = append(paths, strings.TrimPrefix(m[1], ts.URL))
+	}
+	if len(paths) < 2 {
+		t.Fatalf("no pages in the sitemap:\n%s", sitemap)
+	}
 	for _, c := range golden.Cases {
 		paths = append(paths, "/check/"+c.Args[0])
 	}
@@ -199,10 +219,53 @@ func TestComplianceWebsite(t *testing.T) {
 		}
 		text := tags.ReplaceAllString(string(body), " ")
 		for _, m := range attrs.FindAllStringSubmatch(string(body), -1) {
+			if strings.HasPrefix(m[1], "https://") || strings.HasPrefix(m[1], "http://") {
+				continue // og:url and og:image are URLs, not prose ("/townships/worth")
+			}
 			text += " " + m[1]
 		}
 		for _, bad := range violations(html.UnescapeString(text)) {
 			t.Errorf("%s: page: %s", p, bad)
+		}
+	}
+}
+
+// TestComplianceTownshipStates scans the township pages' copy for every window
+// state. TestComplianceWebsite sees only the states the schedule has on the
+// day it runs, so this renders each one, plus the signup result page a
+// browser without JavaScript gets.
+func TestComplianceTownshipStates(t *testing.T) {
+	ctx := views.WithShare(context.Background(), views.Share{Origin: "https://assessgap.com", URL: "https://assessgap.com/townships/x"})
+	appeals := &views.TownshipAppeals{Appeals: "1,000", Reduced: "60%", AvgCut: "8%", Years: "2023–2025"}
+	var pages []templ.Component
+	for _, st := range []string{"open", "upcoming", "closed", "unscheduled"} {
+		w := views.TownshipWindow{State: st, Label: st, DaysLeft: "3 days left"}
+		if st != "unscheduled" {
+			w.Group, w.Open, w.Close, w.EvidenceDue = "1", "August 3, 2026", "September 1, 2026", "September 11, 2026"
+		}
+		d := views.TownshipData{Name: "Worth", Slug: "worth", Window: w, ScheduleAsOf: "November 24, 2026", Homes: "41,487", ProSe: appeals, Attorney: appeals}
+		pages = append(pages, views.Township(views.Site{}, d))
+		d.ProSe, d.Attorney = nil, nil
+		pages = append(pages, views.Township(views.Site{}, d))
+	}
+	links := []views.TownshipLink{{Name: "Worth", Slug: "worth", Dates: "Closes September 1, 2026 (3 days left)"}}
+	pages = append(pages,
+		views.Townships(views.Site{}, views.TownshipIndex{Groups: []views.TownshipGroup{
+			{State: "open", Heading: "Open now", Townships: links}, {State: "upcoming", Heading: "Opening soon", Townships: links},
+			{State: "unscheduled", Heading: "Dates not posted yet", Townships: links}, {State: "closed", Heading: "Closed", Townships: links},
+		}}),
+		views.NotifyPage(views.Site{}, views.NotifyThanks()),
+		views.NotifyPage(views.Site{}, views.NotifyAlready()),
+		views.NotifyPage(views.Site{}, views.NotifyFormFor("", "worth", "township-opens", "That email address doesn't look right.")),
+	)
+	tags := regexp.MustCompile(`(?s)<script.*?</script>|<style.*?</style>|<[^>]*>`)
+	for i, p := range pages {
+		var b strings.Builder
+		if err := p.Render(ctx, &b); err != nil {
+			t.Fatal(err)
+		}
+		for _, bad := range violations(html.UnescapeString(tags.ReplaceAllString(b.String(), " "))) {
+			t.Errorf("township page %d: %s", i, bad)
 		}
 	}
 }

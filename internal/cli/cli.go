@@ -42,6 +42,7 @@ func init() {
 		{"backtest", "compare the method with actual Board of Review outcomes (full database)", runBacktest},
 		{"sample", "coverage and comparison mix on a random sample of homes (full database)", runSample},
 		{"live-eval", "compare live (API) reports with a full local database", runLiveEval},
+		{"version", "print the version, commit and build date", runVersion},
 	}
 }
 
@@ -72,6 +73,9 @@ func Run(ctx context.Context, env *Env, args []string) int {
 			return 2
 		}
 		return 0
+	}
+	if args[0] == "-version" || args[0] == "--version" {
+		args = append([]string{"version"}, args[1:]...)
 	}
 	for _, c := range commands {
 		if c.name != args[0] {

@@ -105,6 +105,14 @@ type Status struct {
 	DaysLeft int // Open: days until close, counting today
 }
 
+// calendarDays counts the dates from a to b. Dividing the hours between two
+// Chicago midnights by 24 would come out a day short across the spring
+// daylight-saving change, so the dates are compared in UTC instead.
+func calendarDays(a, b time.Time) int {
+	day := func(t time.Time) time.Time { return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC) }
+	return int(day(b).Sub(day(a)).Hours() / 24)
+}
+
 // StatusOf reports where township t's window stands at now.
 func StatusOf(t string, now time.Time) Status {
 	s := Status{Township: t}
@@ -122,7 +130,7 @@ func StatusOf(t string, now time.Time) Status {
 				s.State = Upcoming
 			case !today.After(g.Close):
 				s.State = Open
-				s.DaysLeft = int(g.Close.Sub(today).Hours()/24) + 1
+				s.DaysLeft = calendarDays(today, g.Close) + 1
 			default:
 				s.State = Closed
 			}
