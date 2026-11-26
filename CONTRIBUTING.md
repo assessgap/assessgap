@@ -19,4 +19,18 @@ Bigger changes: open an issue first so we can agree on the approach.
 5. **Open a pull request using the template.** "Numbers impact" (either "None, goldens unchanged" or each changed golden and why it's right) and "Risk and rollback" are required; a check fails the PR until they're filled in. A bot adds a table of test vs production lines changed.
 6. **Review.** Reviewers read the `testdata/golden/` diff as the record of what changed for homeowners, and every number in it needs an explanation in the description.
 
+## Visual proof
+
+Any pull request that changes what users see (pages, the evidence report PDF, CLI output) includes before and after screenshots, desktop and mobile, under "Visual proof":
+
+1. Serve `main` and your branch, each from its own worktree, on `127.0.0.1` against the same county database (the fixture is enough for most pages), and run `scripts/screenshots.sh` against each:
+   ```sh
+   SUFFIX=-before scripts/screenshots.sh http://127.0.0.1:8091 shots / /townships
+   SUFFIX=-after  scripts/screenshots.sh http://127.0.0.1:8092 shots / /townships
+   ```
+   It writes a 1280-wide desktop and a 390-wide mobile capture of each whole page; see the script for one-screen captures, scrolling to an element, and `-redact`. For the PDF, `scripts/pdf-pages.sh report.pdf shots/report-after` renders every page. Paste CLI output as text.
+2. Look at every image before posting: nothing cut off, overlapping or unstyled, and the numbers match the goldens.
+3. Push the images to the `pr-assets` branch (an orphan branch holding only images) under `pr-<number>/`, and link them in the PR body as `https://raw.githubusercontent.com/assessgap/assessgap/pr-assets/pr-<number>/<file>.png`.
+4. **Never commit screenshots to a code branch.** Show only homes already public in `testdata/golden` or the docs; redact any other address or PIN.
+
 The test fixture (`testdata/fixture/`) is frozen public county data; see [testdata/README.md](testdata/README.md) for what's in it and how to rebuild it. A rebuild updates the goldens in the same pull request.
