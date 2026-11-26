@@ -28,7 +28,10 @@ const bootReps = 2000
 
 // runHoldout scores the current rule and each finalist on the held-out year,
 // once: a finalist already in the holdout log is refused.
-func runHoldout(cache, finalistsPath, outDir string) error {
+//
+// With dry set, the tuning years stand in for the holdout: it exercises the
+// whole command without opening 2025 and writes nothing to the holdout log.
+func runHoldout(cache, finalistsPath, outDir string, dry bool) error {
 	b, err := os.ReadFile(finalistsPath)
 	if err != nil {
 		return err
@@ -64,19 +67,26 @@ func runHoldout(cache, finalistsPath, outDir string) error {
 	if err != nil {
 		return err
 	}
-	hold, err := load(filepath.Join(cache, "holdout.gob"))
-	if err != nil {
-		return err
-	}
-	lf, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
-	if err != nil {
-		return err
-	}
-	for _, f := range fs {
-		fmt.Fprintf(lf, "%s\t%s\topened 2025 holdout\n", time.Now().UTC().Format(time.RFC3339), f.Name)
-	}
-	if err := lf.Close(); err != nil {
-		return err
+	hold := tune
+	if dry {
+		outDir = filepath.Join(cache, "dry")
+		if err := os.MkdirAll(outDir, 0o755); err != nil {
+			return err
+		}
+	} else {
+		if hold, err = load(filepath.Join(cache, "holdout.gob")); err != nil {
+			return err
+		}
+		lf, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+		if err != nil {
+			return err
+		}
+		for _, f := range fs {
+			fmt.Fprintf(lf, "%s\t%s\topened 2025 holdout\n", time.Now().UTC().Format(time.RFC3339), f.Name)
+		}
+		if err := lf.Close(); err != nil {
+			return err
+		}
 	}
 
 	cur := Trial{Name: "current"}
@@ -96,10 +106,10 @@ func runHoldout(cache, finalistsPath, outDir string) error {
 
 	type method struct {
 		name   string
-		isGap  bool
+		tierOf func(float64) int // nil: no tiers (the logistic model)
+		bands  []string
 		vals   []float64 // per appeal in pop
 		tune   tierTable // pro se tiers on the tuning years, same method
-		tuneOK bool
 	}
 	curTune := tierTable{}
 	for _, i := range population(tuneBase) {
@@ -107,7 +117,7 @@ func runHoldout(cache, finalistsPath, outDir string) error {
 			addTier(&curTune, tierOf(value(cur, tuneBase[i])), a.Won)
 		}
 	}
-	methods := []method{{name: "current", isGap: true, vals: values(cur, holdBase, pop), tune: curTune, tuneOK: true}}
+	methods := []method{{name: "current", tierOf: tierOf, bands: tierNames, vals: values(cur, holdBase, pop), tune: curTune}}
 	for _, f := range fs {
 		m := method{name: f.Name}
 		if f.Trial != nil {
@@ -115,19 +125,19 @@ func runHoldout(cache, finalistsPath, outDir string) error {
 			if err != nil {
 				return err
 			}
-			m.isGap = f.Trial.isGap()
+			m.tierOf, m.bands = tierOf, tierNames
+			if !f.Trial.isGap() {
+				m.tierOf, m.bands = pctTierOf, pctTierNames
+			}
 			m.vals = values(*f.Trial, sc, pop)
-			if m.isGap {
-				ts, err := score(tune, *f.Trial, false)
-				if err != nil {
-					return err
+			ts, err := score(tune, *f.Trial, false)
+			if err != nil {
+				return err
+			}
+			for _, i := range population(tuneBase) {
+				if a := tune.Appeals[i]; a.Pro {
+					addTier(&m.tune, m.tierOf(value(*f.Trial, ts[i])), a.Won)
 				}
-				for _, i := range population(tuneBase) {
-					if a := tune.Appeals[i]; a.Pro {
-						addTier(&m.tune, tierOf(value(*f.Trial, ts[i])), a.Won)
-					}
-				}
-				m.tuneOK = true
 			}
 		} else {
 			// Fitted on every tuning-year pro se appeal, applied to 2025 as is.
@@ -140,10 +150,10 @@ func runHoldout(cache, finalistsPath, outDir string) error {
 				y[k] = tune.Appeals[i].Won
 			}
 			lm := fitLogit(X, y)
-			hp := globalPrior(hold) // from 2023–2024 appeals only: see Appeal.NbhdN
+			// The same shrink target as in the fit, so the feature means the same thing.
 			m.vals = make([]float64, len(pop))
 			for k, i := range pop {
-				m.vals[k] = lm.predict(modelFeatures(f.Model, hold.Appeals[i], holdBase[i], hp))
+				m.vals[k] = lm.predict(modelFeatures(f.Model, hold.Appeals[i], holdBase[i], np))
 			}
 		}
 		methods = append(methods, m)
@@ -235,13 +245,13 @@ func runHoldout(cache, finalistsPath, outDir string) error {
 				ws = append(ws, m.vals[k])
 				wc = append(wc, a.Cut)
 			}
-			if m.isGap {
-				addTier(&tiers, tierOf(m.vals[k]), a.Won)
+			if m.tierOf != nil {
+				addTier(&tiers, m.tierOf(m.vals[k]), a.Won)
 			}
 		}
 		top, share := topShareWin(pro, 0.25)
 		cal := "-"
-		if m.tuneOK {
+		if m.tierOf != nil {
 			cal = fmt.Sprintf("%.4f", calibErr(m.tune, tiers))
 		}
 		fmt.Fprintf(w, "| %s | %.1f%% (%.1f%%) | %.3f | %s |\n", m.name, 100*top, 100*share, spearman(ws, wc), cal)
@@ -249,20 +259,21 @@ func runHoldout(cache, finalistsPath, outDir string) error {
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "**Tier win rates, pro se: 2023–24 (tuning) and 2025, share of appeals / reduction rate**")
 	fmt.Fprintln(w)
-	fmt.Fprintln(w, "| method | years | ≥+5% | +1..+5% | in line | < −1% |")
+	fmt.Fprintln(w, "| method | years | band 1 | band 2 | band 3 | band 4 |")
 	fmt.Fprintln(w, "|---|---|--:|--:|--:|--:|")
 	for _, m := range methods {
-		if !m.isGap {
+		if m.tierOf == nil {
 			continue
 		}
 		var tiers, att tierTable
 		for k, i := range pop {
 			if hold.Appeals[i].Pro {
-				addTier(&tiers, tierOf(m.vals[k]), hold.Appeals[i].Won)
+				addTier(&tiers, m.tierOf(m.vals[k]), hold.Appeals[i].Won)
 			} else {
-				addTier(&att, tierOf(m.vals[k]), hold.Appeals[i].Won)
+				addTier(&att, m.tierOf(m.vals[k]), hold.Appeals[i].Won)
 			}
 		}
+		fmt.Fprintf(w, "| %s | bands | %s |\n", m.name, strings.Join(m.bands, " | "))
 		fmt.Fprintf(w, "| %s | 2023–24 pro se | %s |\n", m.name, tierCells(m.tune))
 		fmt.Fprintf(w, "| %s | 2025 pro se | %s |\n", m.name, tierCells(tiers))
 		fmt.Fprintf(w, "| %s | 2025 attorney | %s |\n", m.name, tierCells(att))
@@ -277,7 +288,15 @@ func runHoldout(cache, finalistsPath, outDir string) error {
 		names = append(names, m.name)
 		cols = append(cols, m.vals)
 	}
-	return writeHoldoutTSV(filepath.Join(cache, "holdout-2025.tsv"), hold, pop, names, cols)
+	return writeHoldoutTSV(filepath.Join(outDirOrCache(cache, outDir, dry), "holdout-2025.tsv"), hold, pop, names, cols)
+}
+
+// The per-appeal file names PINs, so it stays in the git-ignored cache.
+func outDirOrCache(cache, outDir string, dry bool) string {
+	if dry {
+		return outDir
+	}
+	return cache
 }
 
 // writeHoldoutTSV writes one line per 2025 appeal with every method's score,

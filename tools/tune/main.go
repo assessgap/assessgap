@@ -41,6 +41,7 @@ func main() {
 	tsv := fl.String("tsv", "", "verify: the engine backtest's -tsv output")
 	finalists := fl.String("finalists", "docs/dev/tune-2026-11-26/finalists.json", "holdout: finalists file")
 	out := fl.String("out", "docs/dev/tune-2026-11-26", "holdout: output directory")
+	dry := fl.Bool("dry", false, "holdout: run on the tuning years instead, to test the command without opening 2025")
 	if err := fl.Parse(os.Args[2:]); err != nil {
 		log.Fatal(err)
 	}
@@ -60,7 +61,7 @@ func main() {
 	case "signals":
 		err = runSignals(*cache, *logPath)
 	case "holdout":
-		err = runHoldout(*cache, *finalists, *out)
+		err = runHoldout(*cache, *finalists, *out, *dry)
 	default:
 		err = fmt.Errorf("unknown command %q", os.Args[1])
 	}

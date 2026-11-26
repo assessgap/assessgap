@@ -121,6 +121,23 @@ func tierOf(gap float64) int {
 	}
 }
 
+// Bands for a percentile score (the share of similar homes assessed lower),
+// fixed before the holdout was opened.
+var pctTierNames = []string{">=75% lower", "50-75%", "25-50%", "<25%"}
+
+func pctTierOf(p float64) int {
+	switch {
+	case p >= 75:
+		return 0
+	case p >= 50:
+		return 1
+	case p >= 25:
+		return 2
+	default:
+		return 3
+	}
+}
+
 // tierTable holds each tier's count and wins.
 type tierTable [4]struct{ n, wins int }
 
