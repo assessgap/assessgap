@@ -16,7 +16,7 @@ sqlite3 data/serve.db.tmp "ANALYZE;" "VACUUM;"
 [ "$(sqlite3 data/serve.db.tmp 'PRAGMA integrity_check')" = ok ]
 [ "$(sqlite3 data/serve.db.tmp "select count(*) from sqlite_master where type='index'")" -ge 5 ]
 mv data/serve.db.tmp data/serve.db
-rsync -a --partial --info=progress2 data/serve.db "$host:/tmp/cook.db.new"
+rsync -a --partial --progress data/serve.db "$host:/tmp/cook.db.new"
 ssh "$host" 'set -euo pipefail
   sudo install -m 644 -o assessgap -g assessgap /tmp/cook.db.new /srv/assessgap/data/cook.db.new
   sudo mv /srv/assessgap/data/cook.db.new /srv/assessgap/data/cook.db
