@@ -146,7 +146,7 @@ func (p *pager) summary(generated time.Time) {
 	p.newPage(fmt.Sprintf("Assessment comparison: tax year %d", r.Year))
 	p.para(margin, contentW, regular, 9, fmt.Sprintf(
 		"Prepared %s from public Cook County Assessor data. Figures are assessed values (AV) as published by the Assessor.",
-		generated.Format("January 2, 2006")))
+		bor.InChicago(generated).Format("January 2, 2006")))
 
 	p.heading("Property")
 	stage := "Certified: the Assessor's value after Assessor appeals"

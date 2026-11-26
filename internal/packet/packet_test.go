@@ -199,6 +199,22 @@ func countPages(pdf []byte) int {
 	return len(regexp.MustCompile(`/Type /Page /`).FindAll(pdf, -1))
 }
 
+// TestPreparedDateInChicago: the server runs in UTC, so a report downloaded
+// at 9 pm in Chicago on Nov 24 is generated at 03:00 UTC on Nov 25.
+func TestPreparedDateInChicago(t *testing.T) {
+	r, err := comps.New(fixture.Open(t)).Report(context.Background(), "13331030130000", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	txt, err := Text(r, time.Date(2026, 11, 25, 3, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(txt, "Prepared November 24, 2026") {
+		t.Errorf("want the Chicago date, Prepared November 24, 2026:\n%.300s", txt)
+	}
+}
+
 func TestUnsupported(t *testing.T) {
 	condo, err := comps.New(fixture.Open(t)).Report(context.Background(), "13331120411001", 0)
 	if err != nil {
