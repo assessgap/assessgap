@@ -38,7 +38,21 @@ var directions = map[string]bool{"N": true, "S": true, "E": true, "W": true}
 // NormalizeQuery turns free text into an address prefix. The last token may be
 // partial (the user is still typing), so it is only abbreviated when it is a
 // complete word we know.
-func NormalizeQuery(q string) string {
+func NormalizeQuery(q string) string { return normalize(q, allWords) }
+
+// How many leading words normalize may abbreviate NORTH, SOUTH, EAST and WEST
+// in. They are also street names ("1921 W NORTH AVE", "3704 ARI WEST DR"),
+// which the Assessor stores in full; a street direction comes right after the
+// house number (word 2).
+const (
+	allWords      = int(^uint(0) >> 1)
+	afterNumber   = 2
+	noDirectionAt = 0
+)
+
+// normalize is NormalizeQuery, abbreviating direction words only among the
+// first dirWords words.
+func normalize(q string, dirWords int) string {
 	q = strings.ToUpper(q)
 	q = strings.ReplaceAll(q, "#", " UNIT ")
 	if i := strings.Index(q, ","); i >= 0 { // drop ", CHICAGO IL 60641"
@@ -52,7 +66,7 @@ func NormalizeQuery(q string) string {
 	}, q)
 	toks := strings.Fields(q)
 	for i, t := range toks {
-		if a, ok := abbrev[t]; ok {
+		if a, ok := abbrev[t]; ok && (i < dirWords || !directions[a]) {
 			toks[i] = a
 		}
 	}
@@ -102,6 +116,8 @@ FROM parcel WHERE pin = ?`
 
 // Find looks parcels up by PIN or address prefix. If an address without a
 // street direction finds nothing ("5555 BELMONT"), it retries with each one.
+// If that finds nothing either, it tries again with direction words as typed,
+// for streets named North, West and so on ("1921 W North Ave").
 func Find(ctx context.Context, db *sql.DB, q string) ([]Match, error) {
 	if pin, ok := ParsePIN(q); ok {
 		return query(ctx, db, pinSQL, pin)
@@ -110,6 +126,30 @@ func Find(ctx context.Context, db *sql.DB, q string) ([]Match, error) {
 	if len(n) < 3 {
 		return nil, nil
 	}
+	tried := map[string]bool{}
+	for _, p := range spellings(q) {
+		if tried[p] {
+			continue
+		}
+		tried[p] = true
+		ms, err := findAddress(ctx, db, p)
+		if err != nil || len(ms) > 0 {
+			return ms, err
+		}
+	}
+	return nil, nil
+}
+
+// spellings are the address prefixes to try for q, the usual one first:
+// "1921 W North Ave" is "1921 W N AVE", then "1921 W NORTH AVE"; "1921 North
+// Ave" is also "1921 NORTH AVE", which the direction retry finds.
+func spellings(q string) []string {
+	return []string{normalize(q, allWords), normalize(q, afterNumber), normalize(q, noDirectionAt)}
+}
+
+// findAddress looks up a normalized address prefix, retrying with each street
+// direction when the address has none.
+func findAddress(ctx context.Context, db *sql.DB, n string) ([]Match, error) {
 	ms, err := prefix(ctx, db, n)
 	if err != nil || len(ms) > 0 {
 		return ms, err
@@ -134,10 +174,10 @@ func Find(ctx context.Context, db *sql.DB, q string) ([]Match, error) {
 // Exact returns the one match whose address is exactly the normalized query
 // (so "5555 W Belmont Ave" picks the house over "... UNIT 2"), if there is one.
 func Exact(q string, ms []Match) (Match, bool) {
-	n := NormalizeQuery(q)
+	ps := spellings(q)
 	var found []Match
 	for _, m := range ms {
-		if m.Address == n {
+		if m.Address == ps[0] || m.Address == ps[1] || m.Address == ps[2] {
 			found = append(found, m)
 		}
 	}
