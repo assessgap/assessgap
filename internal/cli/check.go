@@ -137,18 +137,21 @@ func writeText(w io.Writer, r *comps.Report, now time.Time) error {
 	s, st := r.Subject, r.Stats
 	p.line("")
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	fmt.Fprintf(tw, "This home\t%s per sq ft\t(%s assessed value, %s sq ft)\n", perSF(s.AVPerSF), money(s.AV), num(s.BldgSF))
+	fmt.Fprintf(tw, "This home's building\t%s per sq ft\t(building AV %s on %s sq ft)\n", perSF(s.BldgAVPerSF), money(s.BldgAV), num(s.BldgSF))
+	fmt.Fprintf(tw, "Assessed value\t%s total\t(building %s + land %s)\n", money(s.AV), money(s.BldgAV), money(s.LandAV))
 	if st.NumComps > 0 {
-		fmt.Fprintf(tw, "Similar homes' median\t%s per sq ft\t(%d similar homes)\n", perSF(st.MedianAVPerSF), st.NumComps)
+		fmt.Fprintf(tw, "Similar homes' median\t%s per sq ft\t(building AV, %d similar homes)\n", perSF(st.MedianBldgAVPerSF), st.NumComps)
 		fmt.Fprintf(tw, "Gap\t%s\t\n", gapPhrase(st.PctAboveMedian))
 		fmt.Fprintf(tw, "Assessed lower\t%d of %d similar homes\t\n", countBelow(r), st.NumComps)
-		fmt.Fprintf(tw, "At the median rate\t%s assessed value\t", money(st.UniformityAV))
-		if st.PotentialAVReduction >= 1 {
-			fmt.Fprintf(tw, "(%s below this home's)", money(st.PotentialAVReduction))
+		fmt.Fprintf(tw, "At the median rate\t%s assessed value\t(median × this home's sq ft + its land AV %s", money(st.UniformityAV), money(s.LandAV))
+		// Like the web page and the reasons: a difference is stated only at 1% or more above the median.
+		if comps.AboveMedian(st.PctAboveMedian) && st.PotentialAVReduction >= 1 {
+			fmt.Fprintf(tw, "; %s below this home's", money(st.PotentialAVReduction))
 		}
-		fmt.Fprintln(tw)
+		fmt.Fprintln(tw, ")")
 	}
 	tw.Flush()
+	p.line("%s", comps.LandNote)
 	if r.Search != nil {
 		p.line("Compared on: %s.", r.Search.Description)
 	}
@@ -158,8 +161,13 @@ func writeText(w io.Writer, r *comps.Report, now time.Time) error {
 
 	if len(r.Evidence) > 0 {
 		p.line("")
-		p.line("Similar homes assessed lower per sq ft (most similar first):")
+		p.line("Similar homes with the building assessed lower per sq ft (most similar first):")
 		homeTable(w, r.Evidence)
+		p.line("")
+		p.line("Differences from this home:")
+		for i, c := range r.Evidence {
+			p.line("  %d. %s", i+1, c.Differences)
+		}
 	}
 	p.nbhd(r)
 	if len(r.Flags) > 0 {
@@ -196,12 +204,14 @@ func (p *printer) nbhd(r *comps.Report) {
 }
 
 func homeTable(w io.Writer, hs []comps.Comp) {
-	rows := [][]string{{"PIN", "Address", "Class", "Sq ft", "Built", "Beds/baths", "Assessed value", "Per sq ft"}}
-	for _, c := range hs {
-		rows = append(rows, []string{search.FormatPIN(c.PIN), titleCase(c.Address), c.Class, num(c.BldgSF),
-			yearOr(c.YearBuilt), fmt.Sprintf("%d / %s", c.Beds, baths(c.Home)), money(c.AV), perSF(c.AVPerSF)})
+	rows := [][]string{{"#", "PIN", "Address", "Class", "Away", "Sq ft", "Built", "Beds/baths",
+		"Building AV", "Land AV", "Total AV", "Bldg per sq ft"}}
+	for i, c := range hs {
+		rows = append(rows, []string{fmt.Sprint(i + 1), search.FormatPIN(c.PIN), titleCase(c.Address), c.Class,
+			milesText(c.Miles), num(c.BldgSF), yearOr(c.YearBuilt), fmt.Sprintf("%d / %s", c.Beds, baths(c.Home)),
+			money(c.BldgAV), money(c.LandAV), money(c.AV), perSF(c.BldgAVPerSF)})
 	}
-	table(w, "  ", rows, 3) // columns from index 3 on are numbers
+	table(w, "  ", rows, 4) // columns from index 4 on are numbers
 }
 
 // table prints rows in aligned columns: text columns left-aligned, columns
@@ -236,15 +246,7 @@ func table(w io.Writer, indent string, rows [][]string, numFrom int) {
 	}
 }
 
-func countBelow(r *comps.Report) int {
-	n := 0
-	for _, c := range r.Comps {
-		if c.AVPerSF < r.Subject.AVPerSF {
-			n++
-		}
-	}
-	return n
-}
+func countBelow(r *comps.Report) int { return comps.CountBelow(*r.Subject, r.Comps) }
 
 type printer struct {
 	w   io.Writer

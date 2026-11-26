@@ -5,6 +5,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"reflect"
 	"regexp"
@@ -57,10 +59,102 @@ func TestRenderEveryHome(t *testing.T) {
 				t.Errorf("%s: comp %s appears %d times", pin, c.PIN, n)
 			}
 		}
+		// The grid truncates a value that doesn't fit its cell. Only an
+		// address may be shortened; a cut figure would be a wrong number.
+		rows := append([]comps.Comp{{Home: *r.Subject, Miles: -1}}, r.Comps...)
+		for i, c := range rows {
+			f := regular
+			if i == 0 {
+				f = bold
+			}
+			for _, col := range columns {
+				if v := col.val(c); col.title != "Address" && textWidth(f, cellSize, v) > col.w-2*cellPad {
+					t.Errorf("%s: %s column cuts %q", pin, col.title, v)
+				}
+			}
+		}
 	}
 	// The frozen fixture has 2,102 supported homes; this keeps the loop honest.
 	if rendered != 2102 {
 		t.Errorf("rendered %d reports, want 2102", rendered)
+	}
+}
+
+// TestGridFitsEveryValue covers what the fixture may not: every value the
+// Assessor publishes for the decoded columns (docs/data-inventory.md), in
+// bold (the subject row), and the widest figures, must fit without cutting.
+func TestGridFitsEveryValue(t *testing.T) {
+	var homes []comps.Home
+	for _, typ := range []string{"1 Story", "1.5 Story", "2 Story", "3 Story +", "Split Level"} {
+		for _, wall := range []string{"Frame", "Masonry", "Frame + Masonry", "Stucco"} {
+			for _, b := range []string{"Full", "Partial", "Slab", "Crawl"} {
+				for _, fin := range []string{"Formal Rec Room", "Unfinished", "Apartment"} {
+					homes = append(homes, comps.Home{TypeResd: typ, ExtWall: wall, Basement: b, BsmtFin: fin})
+				}
+			}
+		}
+	}
+	for _, g := range []string{"0 cars", "1 cars", "1.5 cars", "2 cars", "2.5 cars", "3 cars", "3.5 cars", "4 cars"} {
+		for _, air := range []string{"Central A/C", "No Central A/C"} {
+			homes = append(homes, comps.Home{Garage: g, Air: air})
+		}
+	}
+	homes = append(homes, comps.Home{}) // nothing on record
+	for _, h := range homes {
+		c := comps.Comp{Home: h, Miles: 0.05}
+		for _, col := range columns {
+			if v := col.val(c); col.title != "Address" && textWidth(bold, cellSize, v) > col.w-2*cellPad {
+				t.Errorf("%s column cuts %q", col.title, v)
+			}
+		}
+	}
+	// Beyond the largest values in the county's 2026 records (AV $5.5M, 87,865
+	// building sq ft, 8.8M land sq ft, 17 beds, 42 full and 71 half baths, 22
+	// fireplaces): drawn whole, smaller if need be, but still legible.
+	huge := comps.Comp{Miles: 88.8, Home: comps.Home{PIN: "88888888888888", BldgSF: 99999, LandSF: 9999999,
+		YearBuilt: 2026, Beds: 18, FullBaths: 88, HalfBaths: 88, Fireplaces: 88,
+		AV: 9999999, BldgAV: 9999999, LandAV: 9999999, BldgAVPerSF: 8888.88}}
+	for _, col := range columns {
+		v := col.val(huge)
+		if col.title == "Address" {
+			continue
+		}
+		if _, size := cellText(bold, col.w-2*cellPad, v, false); size < 5 {
+			t.Errorf("%s column draws %q at %.1f pt, want 5 pt or more", col.title, v, size)
+		}
+	}
+}
+
+// TestRenderWorstCaseGrid fills page 2 as far as a real report can: 20 comps,
+// 6 evidence comps, each differing on every feature, with long addresses.
+func TestRenderWorstCaseGrid(t *testing.T) {
+	subject := comps.Home{PIN: "13331030130000", Address: "12345 W NORTHWEST HIGHWAY AVE", Class: "203",
+		AV: 30000, BldgAV: 24000, LandAV: 6000, BldgAVPerSF: 20, BldgSF: 1200, LandSF: 4000, YearBuilt: 1950,
+		FullBaths: 1, TypeResd: "1 Story", ExtWall: "Masonry", Basement: "Full", BsmtFin: "Unfinished",
+		Air: "Central A/C", Garage: "0 cars", NumCards: 1, HasSplit: true}
+	far := comps.Home{Class: "204", BldgSF: 1500, YearBuilt: 1990, FullBaths: 3, HalfBaths: 2,
+		TypeResd: "Split Level", ExtWall: "Frame + Masonry", Basement: "Full", BsmtFin: "Formal Rec Room",
+		Air: "No Central A/C", Fireplaces: 2, Garage: "2.5 cars"}
+	r := &comps.Report{PIN: subject.PIN, Year: 2026, AVStage: "mailed", Class: "203", Nbhd: "71280",
+		Township: "Jefferson", Subject: &subject, Disclaimer: comps.Disclaimer,
+		Search: &comps.Search{Level: 3, Description: "same neighborhood, one-story homes, building sqft within ±50%, built within ±40 years"},
+		Stats:  &comps.Stats{NumComps: 20, SubjectBldgAVPerSF: 20, MedianBldgAVPerSF: 18, PctAboveMedian: 0.1111}}
+	for i := range 20 {
+		h := far
+		h.PIN = fmt.Sprintf("1333103%03d0000", i)
+		h.Address, h.AV, h.BldgAV, h.LandAV, h.BldgAVPerSF = "12345 W NORTHWEST HIGHWAY AVE", 30000, 24000, 6000, 16
+		c := comps.Comp{Home: h, Miles: 0.95}
+		if i < 6 {
+			c.Differences = comps.Differences(subject, c)
+			r.Evidence = append(r.Evidence, c)
+		}
+		r.Comps = append(r.Comps, c)
+	}
+	if n := len(r.Evidence[0].Differences); n < 200 {
+		t.Fatalf("differences line is only %d characters; the test needs a long one", n)
+	}
+	if err := Render(io.Discard, r, when); err != nil {
+		t.Fatal(err)
 	}
 }
 

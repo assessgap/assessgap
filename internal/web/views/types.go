@@ -38,27 +38,35 @@ type ReportData struct {
 	StageLabel string
 	Mailed     bool
 
-	SubjectAVPerSF, MedianAVPerSF string
-	GapLabel                      string // "12% above" / "4% below"
-	NumComps                      int
-	SearchDesc                    string
-	SubjectAV, UniformityAV       string
-	Reduction                     string // "" when there is none
-	Subject                       HomeRow
-	Evidence                      []HomeRow
-	Comps                         []HomeRow
-	Flags                         []string
-	Sales                         []SaleRow
-	ProSe, Attorney               *NbhdRow
-	SmallSample                   bool
-	Chart, ChartNarrow            Chart
-	Disclaimer                    string
+	SubjectBldgAVPerSF, MedianBldgAVPerSF string
+	GapLabel                              string // "12% above" / "4% below"
+	NumComps                              int
+	SearchDesc                            string
+	SubjectAV, UniformityAV               string
+	SubjectBldgAV, SubjectLandAV          string
+	LandNote                              string
+	Reduction                             string // "" when there is none
+	Subject                               HomeRow
+	Evidence                              []HomeRow
+	Comps                                 []HomeRow
+	Flags                                 []string
+	Sales                                 []SaleRow
+	ProSe, Attorney                       *NbhdRow
+	SmallSample                           bool
+	Chart, ChartNarrow                    Chart
+	Disclaimer                            string
 }
 
+// HomeRow is one line of the evidence grid. Characteristics are plain words;
+// "" means not on record.
 type HomeRow struct {
-	Address, PIN, PINFmt                    string
-	SqFt, YearBuilt, Beds, Baths, AV, PerSF string
-	Evidence                                bool
+	Address, PIN, PINFmt                string
+	Away, Class, Stories, Construction  string
+	SqFt, YearBuilt, Beds, Baths        string
+	Basement, Air, Fireplaces, Garage   string
+	LandSqFt, BldgAV, LandAV, AV, PerSF string
+	Differences                         string // evidence comps only
+	Evidence                            bool
 }
 
 type NbhdRow struct {
@@ -77,7 +85,7 @@ type ChartLayout struct {
 
 func (l ChartLayout) ViewBox() string { return fmt.Sprintf("0 0 %.0f %.0f", l.W, l.H) }
 
-// Chart is a strip plot of AV per square foot.
+// Chart is a strip plot of building AV per square foot.
 type Chart struct {
 	L                  ChartLayout
 	Dots               []Dot

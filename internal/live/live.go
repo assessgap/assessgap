@@ -309,6 +309,11 @@ func subjectYear(ctx context.Context, db *sql.DB, pin string, year int) (int, st
 	if !nbhd.Valid || nbhd.String == "" {
 		return 0, "", fmt.Errorf("live: PIN %s has no neighborhood for %d", pin, year)
 	}
+	// The code goes into the next SoQL query; Assessor neighborhoods are
+	// always 5 digits (township + neighborhood), so refuse anything else.
+	if len(nbhd.String) != 5 || !isDigits(nbhd.String) {
+		return 0, "", fmt.Errorf("live: PIN %s has an unexpected neighborhood code %q for %d", pin, nbhd.String, year)
+	}
 	return year, nbhd.String, nil
 }
 

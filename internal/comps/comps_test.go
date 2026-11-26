@@ -94,8 +94,16 @@ func checkInvariants(t *testing.T, r *Report) {
 		}
 		if i > 0 {
 			p := r.Comps[i-1]
-			if p.Distance > c.Distance || (p.Distance == c.Distance && p.PIN > c.PIN) {
-				t.Errorf("%s: comps not ordered by distance, then PIN, at %d", r.PIN, i)
+			// Similarity first; then the nearer home (an unknown location, -1, last); then PIN.
+			pm, cm := p.Miles, c.Miles
+			if pm < 0 {
+				pm = 1e9
+			}
+			if cm < 0 {
+				cm = 1e9
+			}
+			if p.Distance > c.Distance || (p.Distance == c.Distance && (pm > cm || (pm == cm && p.PIN > c.PIN))) {
+				t.Errorf("%s: comps not ordered by similarity, then miles, then PIN, at %d", r.PIN, i)
 			}
 		}
 	}
@@ -103,8 +111,8 @@ func checkInvariants(t *testing.T, r *Report) {
 		t.Errorf("%s: %d lower-assessed homes listed, max 6", r.PIN, len(r.Evidence))
 	}
 	for _, c := range r.Evidence {
-		if c.AVPerSF >= s.AVPerSF {
-			t.Errorf("%s: listed %s as lower-assessed at %v ≥ %v", r.PIN, c.PIN, c.AVPerSF, s.AVPerSF)
+		if c.BldgAVPerSF >= s.BldgAVPerSF {
+			t.Errorf("%s: listed %s as lower-assessed at %v ≥ %v", r.PIN, c.PIN, c.BldgAVPerSF, s.BldgAVPerSF)
 		}
 	}
 	if st.PotentialAVReduction < 0 || st.SubjectPercentile < 0 || st.SubjectPercentile > 100 {
@@ -119,7 +127,7 @@ func checkInvariants(t *testing.T, r *Report) {
 
 // home builds a test home built in 1950; sf is building sqft, av is total AV.
 func home(pin, class string, sf, av float64) Home {
-	return Home{PIN: pin, Class: class, BldgSF: sf, AV: av, AVPerSF: av / sf, YearBuilt: 1950,
+	return Home{PIN: pin, Class: class, BldgSF: sf, AV: av, BldgAV: av, HasSplit: true, BldgAVPerSF: av / sf, YearBuilt: 1950,
 		NumCards: 1, FullBaths: 1, Rooms: 5, Beds: 2, LandSF: 3750,
 		TypeResd: "1 Story", ExtWall: "Masonry", Basement: "Full"}
 }

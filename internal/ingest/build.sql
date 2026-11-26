@@ -42,12 +42,23 @@ CREATE TABLE assessment (
   mailed     REAL,   -- Assessor first-pass total AV
   certified  REAL,   -- Assessor certified total AV (after Assessor appeals)
   board      REAL,   -- Board of Review final total AV
+  -- The same three stages split into building (improvement) and land AV.
+  -- The Assessor values land separately, at a per-sq-ft rate per neighborhood.
+  mailed_bldg     REAL,
+  mailed_land     REAL,
+  certified_bldg  REAL,
+  certified_land  REAL,
+  board_bldg      REAL,
+  board_land      REAL,
   PRIMARY KEY (pin, year)
 ) WITHOUT ROWID;
 
 INSERT OR REPLACE INTO assessment
 SELECT pin, CAST(CAST(year AS REAL) AS INTEGER), class, nbhd,
-       CAST(mailed_tot AS REAL), CAST(certified_tot AS REAL), CAST(board_tot AS REAL)
+       CAST(mailed_tot AS REAL), CAST(certified_tot AS REAL), CAST(board_tot AS REAL),
+       CAST(mailed_bldg AS REAL), CAST(mailed_land AS REAL),
+       CAST(certified_bldg AS REAL), CAST(certified_land AS REAL),
+       CAST(board_bldg AS REAL), CAST(board_land AS REAL)
 FROM raw_assessed_values;
 
 -- ---------------------------------------------------------------- residential characteristics

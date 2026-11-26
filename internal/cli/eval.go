@@ -8,12 +8,14 @@
 package cli
 
 import (
+	"bufio"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"io"
 	"math/rand/v2"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -55,9 +57,10 @@ func runSample(ctx context.Context, env *Env, args []string) error {
 }
 
 func runBacktest(ctx context.Context, env *Env, args []string) error {
-	fl := newFlags(env, "backtest", "[-db path] [-years 2024,2025]")
+	fl := newFlags(env, "backtest", "[-db path] [-years 2024,2025] [-tsv path]")
 	dbFlag := fl.String("db", "", "full county database (default $ASSESSGAP_DB, else "+DefaultDB+")")
 	years := fl.String("years", "2024,2025", "Board of Review tax years")
+	tsv := fl.String("tsv", "", "also write one line per scored appeal (PIN, year, filer, outcome, gap) to this file")
 	if _, err := parseArgs(fl, args); err != nil {
 		return err
 	}
@@ -66,7 +69,23 @@ func runBacktest(ctx context.Context, env *Env, args []string) error {
 		return err
 	}
 	defer db.Close()
-	return evalBacktest(ctx, env.Stdout, logger(env), db, e, *years)
+	if *tsv == "" {
+		return evalBacktest(ctx, env.Stdout, logger(env), db, e, *years, nil)
+	}
+	f, err := os.Create(*tsv)
+	if err != nil {
+		return err
+	}
+	bw := bufio.NewWriter(f)
+	if err := evalBacktest(ctx, env.Stdout, logger(env), db, e, *years, bw); err != nil {
+		f.Close()
+		return err
+	}
+	if err := bw.Flush(); err != nil {
+		f.Close()
+		return err
+	}
+	return f.Close()
 }
 
 // evalEngine opens the database read-only with neighborhood pools cached,
@@ -298,7 +317,60 @@ func loadAppeals(ctx context.Context, db *sql.DB, years []string) ([]appeal, err
 	return appeals, rows.Err()
 }
 
-func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), db *sql.DB, e *comps.Engine, yearList string) error {
+// scored is one appeal's gap and outcome, for the separation measures.
+type scored struct {
+	gap float64
+	won bool
+}
+
+// auc is the probability that a randomly chosen winner's gap is higher than
+// a randomly chosen loser's (ties count half): the Mann-Whitney U statistic
+// scaled to 0–1. 0.5 means the gap doesn't separate winners from losers.
+func auc(xs []scored) float64 {
+	s := append([]scored(nil), xs...)
+	sort.Slice(s, func(i, j int) bool { return s[i].gap < s[j].gap })
+	var rankSumWins float64
+	wins := 0
+	for i := 0; i < len(s); {
+		j := i
+		for j < len(s) && s[j].gap == s[i].gap {
+			j++
+		}
+		rank := float64(i+j+1) / 2 // average 1-based rank of the tied run
+		for k := i; k < j; k++ {
+			if s[k].won {
+				rankSumWins += rank
+				wins++
+			}
+		}
+		i = j
+	}
+	losses := len(s) - wins
+	if wins == 0 || losses == 0 {
+		return 0.5
+	}
+	return (rankSumWins - float64(wins)*float64(wins+1)/2) / (float64(wins) * float64(losses))
+}
+
+// tierOrder and tierBucket group gaps by the report's own cut points.
+var tierOrder = []string{"<3 comps", ">= +5%", "+1..+5%", "in line (±1%)", "< -1%"}
+
+func tierBucket(gap float64, n int) string {
+	switch {
+	case n < 3:
+		return "<3 comps"
+	case gap >= 0.05:
+		return ">= +5%"
+	case gap >= 0.01:
+		return "+1..+5%"
+	case gap > -0.01:
+		return "in line (±1%)"
+	default:
+		return "< -1%"
+	}
+}
+
+func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), db *sql.DB, e *comps.Engine, yearList string, perAppeal io.Writer) error {
 	ys := strings.Split(yearList, ",")
 	for _, y := range ys {
 		if _, err := strconv.Atoi(y); err != nil {
@@ -319,9 +391,20 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 	var (
 		byKey        = map[key]*outcome{}
 		byGap        = map[string]map[bool]*outcome{}
+		byTier       = map[string]map[bool]*outcome{}
+		gaps         = map[bool][]scored{}
 		skipped      = map[string]int{}
 		reportErrors int
 	)
+	if perAppeal != nil {
+		fmt.Fprintln(perAppeal, "pin\tyear\tpro_se\twon\tnum_comps\tgap\tverdict")
+	}
+	bucket := func(m map[string]map[bool]*outcome, k string) map[bool]*outcome {
+		if m[k] == nil {
+			m[k] = map[bool]*outcome{false: {}, true: {}}
+		}
+		return m[k]
+	}
 	get := func(k key) *outcome {
 		if byKey[k] == nil {
 			byKey[k] = &outcome{}
@@ -346,16 +429,20 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 		for _, yr := range []int{a.year, 0} { // 0 = all years
 			get(key{yr, v, a.pro}).add(a.won, a.cut.Float64)
 		}
-		g := gapBucket(r.Stats.PctAboveMedian, r.Stats.NumComps)
-		if byGap[g] == nil {
-			byGap[g] = map[bool]*outcome{false: {}, true: {}}
+		st := r.Stats
+		bucket(byGap, gapBucket(st.PctAboveMedian, st.NumComps))[a.pro].add(a.won, a.cut.Float64)
+		bucket(byTier, tierBucket(st.PctAboveMedian, st.NumComps))[a.pro].add(a.won, a.cut.Float64)
+		if st.NumComps >= 3 {
+			gaps[a.pro] = append(gaps[a.pro], scored{st.PctAboveMedian, a.won})
 		}
-		byGap[g][a.pro].add(a.won, a.cut.Float64)
+		if perAppeal != nil {
+			fmt.Fprintf(perAppeal, "%s\t%d\t%t\t%t\t%d\t%.4f\t%s\n", a.pin, a.year, a.pro, a.won, st.NumComps, st.PctAboveMedian, v)
+		}
 	}
 	fmt.Fprintf(w, "scored in %s; errors %d; skipped (unsupported) %d\n",
 		time.Since(start).Round(time.Second), reportErrors, sum(skipped))
-	for k, v := range skipped {
-		fmt.Fprintf(w, "  %6d  %s\n", v, k)
+	for _, k := range sortedKeys(skipped) {
+		fmt.Fprintf(w, "  %6d  %s\n", skipped[k], k)
 	}
 
 	for _, p := range append([]string{"all"}, ys...) {
@@ -369,13 +456,26 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 			printOutcomeRow(w, v, deref(byKey[key{yr, v, true}]), deref(byKey[key{yr, v, false}]))
 		}
 	}
-	fmt.Fprintf(w, "\n**By subject AV/sf vs. comp median (all years)**\n\n")
+	fmt.Fprintf(w, "\n**By subject building AV/sf vs. comp median (all years)**\n\n")
 	printOutcomeHeader(w, "gap")
 	for _, g := range gapOrder {
 		if m := byGap[g]; m != nil {
 			printOutcomeRow(w, g, *m[true], *m[false])
 		}
 	}
+	fmt.Fprintf(w, "\n**By report tier cut points (all years)**\n\n")
+	printOutcomeHeader(w, "gap")
+	for _, g := range tierOrder {
+		if m := byTier[g]; m != nil {
+			printOutcomeRow(w, g, *m[true], *m[false])
+		}
+	}
+	all := append(append([]scored(nil), gaps[true]...), gaps[false]...)
+	fmt.Fprintf(w, "\n**How well the gap separates reductions from no change (AUC, 3+ comps)**\n\n")
+	fmt.Fprintf(w, "| filer | n | AUC |\n|---|--:|--:|\n")
+	fmt.Fprintf(w, "| pro se | %d | %.3f |\n", len(gaps[true]), auc(gaps[true]))
+	fmt.Fprintf(w, "| attorney | %d | %.3f |\n", len(gaps[false]), auc(gaps[false]))
+	fmt.Fprintf(w, "| all | %d | %.3f |\n", len(all), auc(all))
 	return nil
 }
 

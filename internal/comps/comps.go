@@ -1,6 +1,7 @@
-// Package comps compares a home's assessed value per square foot with similar
-// homes in its Assessor neighborhood and judges whether a uniformity appeal has
-// a case. It works only with assessed values (AV); it never estimates market value.
+// Package comps compares a home's building assessed value per square foot with
+// similar homes nearby in its Assessor neighborhood (land is valued separately,
+// at a neighborhood rate) and sorts the result into internal tiers. It works
+// only with assessed values (AV); it never estimates market value.
 package comps
 
 import (
@@ -73,7 +74,7 @@ func (e *Engine) Report(ctx context.Context, pin string, year int) (*Report, err
 	r.Comps, r.Search, r.Stats = comps, &search, &st
 	r.Evidence = evidenceComps(subject, comps)
 	r.Verdict, r.Reasons = decide(r)
-	r.Flags = characteristicFlags(subject, pool)
+	r.Flags = append(characteristicFlags(subject, pool), landFlag(subject, comps, st)...)
 
 	if r.NbhdAppeals, err = e.loadNbhdStats(ctx, sub.Nbhd); err != nil {
 		return nil, fmt.Errorf("nbhd stats: %w", err)
@@ -97,6 +98,9 @@ func unsupported(s subjectRow, year int) string {
 		return "No building square footage on record for this PIN. Please verify your home's details with the Assessor."
 	case s.AV <= 0:
 		return fmt.Sprintf("No assessed value on record for tax year %d.", year)
+	case !s.HasSplit:
+		return fmt.Sprintf("The Assessor's tax year %d record for this PIN doesn't split the assessed value into "+
+			"building and land, so the building can't be compared with similar homes.", year)
 	case s.Nbhd == "":
 		return "No Assessor neighborhood on record for this PIN."
 	}

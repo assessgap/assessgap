@@ -1,0 +1,37 @@
+in-scope PINs in the 16 townships without posted BOR dates: 585413
+sampled 2000 PINs in 6s (seed 1)
+no assessment row: 0
+report years: map[2026:2000]   AV stage: map[certified:327 mailed:1673]
+unsupported: 3
+      3  This parcel has more than one building on record
+supported: 1997
+  >= 8 comps: 1995 (99.9% of supported, 99.8% of sampled)
+verdicts (of supported):
+  strong     408   20.4%
+  possible   386   19.3%
+  weak      1203   60.2%
+search level used:
+  L0  1956   97.9%
+  L1    18    0.9%
+  L2    14    0.7%
+  L3     9    0.5%
+please-verify flags (count of reports with flag):
+  bldg_sf     67    3.4%
+verdicts by township:
+       township    n  strong  possible  weak
+          Bloom   85     22%       16%   61%
+        Hanover   82     13%       27%   60%
+      Jefferson  279     24%       22%   54%
+           Lake  406     23%       18%   59%
+         Leyden   66     12%       21%   67%
+          Niles  112     25%       14%   61%
+  North Chicago   11     36%       18%   45%
+         Orland   99     10%       21%   69%
+       Palatine   89     15%       16%   70%
+        Proviso  134     22%       20%   58%
+           Rich   80     20%       25%   55%
+         Schaumburg   98     14%       23%   62%
+  South Chicago   34     32%       18%   50%
+       Thornton  163     26%       13%   61%
+       Wheeling  116     16%       19%   65%
+          Worth  143     15%       20%   65%

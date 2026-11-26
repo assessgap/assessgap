@@ -22,12 +22,23 @@ func pct(v float64) string { return fmt.Sprintf("%.0f%%", 100*v) }
 // gapPhrase states the subject's position against the median as a fact.
 func gapPhrase(g float64) string {
 	switch {
-	case g >= 0.005:
+	case comps.InLine(g):
+		return "about equal to the median"
+	case g > 0:
 		return pct(g) + " above the median"
-	case g <= -0.005:
-		return pct(-g) + " below the median"
 	}
-	return "about equal to the median"
+	return pct(-g) + " below the median"
+}
+
+// milesText is a comp's distance from the subject, "?" when unknown.
+func milesText(mi float64) string {
+	switch {
+	case mi < 0:
+		return "?"
+	case mi < 0.1:
+		return "<0.1 mi"
+	}
+	return fmt.Sprintf("%.1f mi", mi)
 }
 
 func yearOr(y int) string {

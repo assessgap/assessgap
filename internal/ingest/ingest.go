@@ -41,8 +41,9 @@ var Datasets = []socrata.Dataset{
 var Columns = map[string][]string{
 	"parcel_universe": {"pin", "year", "class", "township_code", "township_name", "nbhd_code", "tax_code",
 		"tax_municipality_name", "lat", "lon"},
-	"addresses":       {"pin", "year", "prop_address_full", "prop_address_city_name", "prop_address_zipcode_1"},
-	"assessed_values": {"pin", "year", "class", "nbhd", "mailed_tot", "certified_tot", "board_tot"},
+	"addresses": {"pin", "year", "prop_address_full", "prop_address_city_name", "prop_address_zipcode_1"},
+	"assessed_values": {"pin", "year", "class", "nbhd", "mailed_tot", "certified_tot", "board_tot",
+		"mailed_bldg", "mailed_land", "certified_bldg", "certified_land", "board_bldg", "board_land"},
 	"sales": {"pin", "year", "sale_date", "sale_price", "doc_no", "deed_type", "class", "nbhd", "is_multisale",
 		"sale_filter_same_sale_within_365", "sale_filter_less_than_10k", "sale_filter_deed_type"},
 	"res_chars": {"pin", "year", "card", "class", "char_bldg_sf", "char_land_sf", "char_yrblt", "char_beds",

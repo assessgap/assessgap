@@ -18,214 +18,453 @@ Jefferson
 Tax year
 2026
 Assessed value
-$27,000
+$27,000 (building $20,706 + land $6,294)
 Value stage
 Mailed: the Assessor's initial value; not yet certified, and it may change
 Building
 1,080 sq ft, built 1908, 3 bedrooms, 1 bath
 Comparison with similar homes
-The property is assessed at $25.00 per square foot of building area. The median of 20 similar homes in the
-same Assessor neighborhood is $18.95 per square foot, so the property is 32% above the median.
-20 of the 20 comparable homes are assessed lower per square foot than the property. The property ranks at
-the 100th percentile of the comparable homes by AV per square foot.
+The property's building is assessed at $19.17 per square foot of building area (building AV $20,706 ÷ 1,080
+sq ft). The median of 20 similar homes in the same Assessor neighborhood is $12.77 per square foot, so the
+property is 50% above the median.
+The building part of the assessment is compared, per square foot, because the Assessor values land
+separately at a neighborhood rate per square foot of land.
+20 of the 20 comparable homes have a building assessed lower per square foot than the property. The
+property ranks at the 100th percentile of the comparable homes by building AV per square foot.
 How comparable homes were chosen: same neighborhood, class 203, building sqft within ±25%, built within
 ±15 years (Assessor neighborhood 71280), excluding multi-building parcels and homes without recorded
-square footage. The 20 most similar by size, age, baths, land and construction are listed on page 2.
+square footage or a building assessment. The 20 most similar by size, age, baths, lot, design, construction,
+basement and distance (the nearer home first when two are equally similar) are listed on page 2.
 Uniformity figure
-Applying the comparable homes' median of $18.95 per square foot to the property's 1,080 square feet gives
-an assessed value of $20,471. That is $6,529 less than the current assessed value of $27,000.
-This compares Cook County assessed values (AV) and AV per building square foot among similar homes, using public
-Assessor data. It is not an appraisal and does not estimate what any property would sell for. AssessGap is not affiliated
-with Cook County. You file and sign your own appeal.
+Applying the comparable homes' median building rate of $12.77 per square foot to the property's 1,080
+square feet, and adding the property's land AV of $6,294, gives an assessed value of $20,086. That is
+$6,914 less than the current assessed value of $27,000.
+This compares Cook County assessed values (AV), and the building's AV per square foot, among similar homes, using
+public Assessor data. It is not an appraisal and does not estimate what any property would sell for. AssessGap is not
+affiliated with Cook County. You file and sign your own appeal.
 Comparable property grid
 PIN 13-33-103-013-0000 · Tax year 2026
 Page 2 of 3
 AssessGap is not affiliated with Cook County. You file and sign your own appeal.
-Tax year 2026 assessed values from the Cook County Assessor, mailed stage. Building characteristics are the
-Assessor's records. Evidence comparables are the most similar homes assessed lower per square foot than the
-subject. AV / sq ft = assessed value ÷ building square feet.
+Tax year 2026 assessed values from the Cook County Assessor, mailed stage; building characteristics are the Assessor's records. Homes are compared on building AV per square foot (building AV ÷
+building square feet), because the Assessor values land separately at a neighborhood rate. Evidence comparables are the most similar homes whose building is assessed lower per square foot than the
+subject's. Away = straight-line distance from the subject.
 PIN
 Address
+Away
 Class
-Bldg sq ft
+Stories
+Construction
+Bldg
+sq ft
 Built
-Beds/baths
-Assessed value
-AV / sq ft
+Beds /
+baths
+Basement
+Central
+air
+Fire-
+places
+Garage
+Land
+sq ft
+Building
+AV
+Land
+AV
+Total
+AV
+Bldg AV
+/ sq ft
 Subject property
 13-33-103-013-0000
-2329 N Lockwood Ave
+2329 N Lockwood...
+–
 203
+1.5-story
+Frame
 1,080
 1908
 3 / 1
+Full, unfinished
+No
+0
+2-car
+3,402
+$20,706
+$6,294
 $27,000
-$25.00
-Evidence comparables (6): similar homes assessed lower per sq ft
+$19.17
+Evidence comparables (6): similar homes with the building assessed lower per sq ft
 13-33-103-014-0000
-2325 N Lockwood Ave
+2325 N Lockwood...
+<0.1 mi
 203
+1.5-story
+Frame
 1,080
 1908
 3 / 1
+Full, unfinished
+No
+0
+2-car
+3,402
+$15,706
+$6,294
 $22,000
-$20.37
+$14.54
 13-33-103-016-0000
-2319 N Lockwood Ave
+2319 N Lockwood...
+<0.1 mi
 203
+1.5-story
+Frame
 1,080
 1908
 3 / 1
+Full, finished
+No
+0
+2-car
+3,402
+$16,706
+$6,294
 $23,000
-$21.30
-13-33-211-011-0000
-2227 N Lavergne Ave
-203
-1,076
-1911
-3 / 1.5
-$22,343
-$20.76
-13-33-215-027-0000
-2146 N Leamington Ave
-203
-1,024
-1914
-2 / 1
-$22,000
-$21.48
+$15.47
 13-33-207-035-0000
-2220 N Leamington Ave
+2220 N Leamingto...
+0.2 mi
 203
+1.5-story
+Frame
 1,101
 1916
 2 / 1
+Full, unfinished
+No
+0
+2-car
+3,780
+$14,467
+$6,993
 $21,460
-$19.49
-13-33-220-033-0000
-2122 N Lamon Ave
+$13.14
+13-33-215-027-0000
+2146 N Leamingto...
+0.3 mi
 203
-1,072
-1910
-3 / 1
-$19,000
-$17.72
-Other comparable homes (14)
-13-33-213-013-0000
-2221 N Lamon Ave
+1.5-story
+Frame
+1,024
+1914
+2 / 1
+Full, unfinished
+No
+0
+2-car
+3,525
+$15,479
+$6,521
+$22,000
+$15.12
+13-33-211-011-0000
+2227 N Lavergne...
+0.4 mi
 203
-1,123
-1900
-3 / 1
-$19,001
-$16.92
+1.5-story
+Frame
+1,076
+1911
+3 / 1.5
+Full, unfinished
+Yes
+1
+2-car
+3,150
+$16,515
+$5,828
+$22,343
+$15.35
 13-33-210-006-0000
 2243 N Lawler Ave
+0.3 mi
 203
+1-story
+Frame
 1,020
 1908
 2 / 1
+Full, unfinished
+No
+0
+1-car
+3,150
+$16,173
+$5,828
 $22,001
-$21.57
-13-33-211-008-0000
-2237 N Lavergne Ave
-203
-1,126
-1908
-4 / 1.5
-$24,001
-$21.32
+$15.86
+Other comparable homes (14)
 13-33-209-010-0000
 2231 N Leclaire Ave
+0.3 mi
 203
+1.5-story
+Frame
 1,200
 1913
 3 / 1
+Full, unfinished
+No
+0
+1-car
+3,780
+$13,007
+$6,993
 $20,000
-$16.67
-13-33-213-034-0000
-2224 N La Crosse Ave
+$10.84
+13-33-211-008-0000
+2237 N Lavergne...
+0.4 mi
 203
-1,134
-1898
-3 / 1
-$20,001
-$17.64
-13-33-226-002-0000
-2055 N Lawler Ave
-203
-1,241
-1910
-3 / 1
-$21,000
-$16.92
-13-33-211-035-0000
-2222 N Laporte Ave
-203
-1,056
-1903
-3 / 1
-$22,001
-$20.83
-13-33-213-014-0000
-2219 N Lamon Ave
-203
-1,104
-1903
-3 / 1
-$25,000
-$22.64
-13-33-220-035-0000
-2116 N Lamon Ave
-203
-1,056
-1913
-2 / 1
-$19,000
-$17.99
-13-33-219-027-0000
-2128 N Laporte Ave
-203
-1,224
-1913
-3 / 1
-$20,000
-$16.34
-13-33-226-020-0000
-2048 N Lavergne Ave
-203
-1,100
-1898
-3 / 1.5
-$22,001
-$20.00
-13-33-209-009-0000
-2233 N Leclaire Ave
-203
-1,254
-1913
-2 / 1
-$22,000
-$17.54
-13-33-209-035-0000
-2206 N Lawler Ave
-203
-1,254
-1913
-3 / 1
-$20,000
-$15.95
+1.5-story
+Frame
+1,126
+1908
+4 / 1.5
+Full, finished
+No
+0
+2-car
+5,877
+$13,128
+$10,873
+$24,001
+$11.66
 13-33-105-044-0000
 2208 N Lorel Ave
+0.2 mi
 203
+1.5-story
+Frame
 1,086
 1893
 3 / 1
+Full, unfinished
+No
+0
+None
+3,150
+$14,173
+$5,828
 $20,001
-$18.42
-Median AV / sq ft of the 20 comparable homes: $18.95. Subject: $25.00 (32% above the median).
-Selection: same neighborhood, class 203, building sqft within ±25%, built within ±15 years (Assessor neighborhood 71280).
-Multi-building parcels and homes without recorded square footage are excluded.
+$13.05
+13-33-213-013-0000
+2221 N Lamon Ave
+0.5 mi
+203
+1.5-story
+Frame
+1,123
+1900
+3 / 1
+Full, unfinished
+No
+0
+None
+3,150
+$13,173
+$5,828
+$19,001
+$11.73
+13-33-220-033-0000
+2122 N Lamon Ave
+0.5 mi
+203
+1-story
+Frame
+1,072
+1910
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,780
+$12,007
+$6,993
+$19,000
+$11.20
+13-33-103-015-0000
+2323 N Lockwood...
+<0.1 mi
+203
+1.5-story
+Frame
+1,080
+1908
+2 / 3.5
+Full, unfinished
+No
+0
+2-car
+3,402
+$18,706
+$6,294
+$25,000
+$17.32
+13-33-209-009-0000
+2233 N Leclaire Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,254
+1913
+2 / 1
+Full, unfinished
+No
+0
+2-car
+3,780
+$15,007
+$6,993
+$22,000
+$11.97
+13-33-209-035-0000
+2206 N Lawler Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,254
+1913
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,780
+$13,007
+$6,993
+$20,000
+$10.37
+13-33-226-002-0000
+2055 N Lawler Ave
+0.5 mi
+203
+1.5-story
+Frame
+1,241
+1910
+3 / 1
+Full, unfinished
+No
+0
+None
+4,687
+$12,329
+$8,671
+$21,000
+$9.93
+13-33-211-035-0000
+2222 N Laporte Ave
+0.4 mi
+203
+1.5-story
+Masonry
+1,056
+1903
+3 / 1
+Full, unfinished
+Yes
+0
+2-car
+3,150
+$16,173
+$5,828
+$22,001
+$15.32
+13-33-110-048-0000
+2114 N Lockwood...
+0.3 mi
+203
+1.5-story
+Frame
+1,280
+1903
+3 / 1
+Full, unfinished
+No
+0
+1.5-car
+3,150
+$18,173
+$5,828
+$24,001
+$14.20
+13-33-217-012-0000
+2123 N Leclaire Ave
+0.4 mi
+203
+1-story
+Frame
+1,070
+1913
+2 / 1
+Full, unfinished
+No
+0
+1-car
+4,725
+$10,259
+$8,741
+$19,000
+$9.59
+13-33-209-017-0000
+2209 N Leclaire Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,283
+1913
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,780
+$15,007
+$6,993
+$22,000
+$11.70
+13-33-213-034-0000
+2224 N La Crosse...
+0.6 mi
+203
+1.5-story
+Frame
+1,134
+1898
+3 / 1
+Full, unfinished
+No
+0
+None
+3,150
+$14,173
+$5,828
+$20,001
+$12.50
+Median building AV / sq ft of the 20 comparable homes: $12.77. Subject: $19.17 (50% above the median).
+Differences of each evidence comparable from the subject (theirs vs the subject's):
+1. 2325 N Lockwood Ave: under 0.1 mi away
+2. 2319 N Lockwood Ave: under 0.1 mi away · finished basement vs unfinished
+3. 2220 N Leamington Ave: 0.2 mi away
+4. 2146 N Leamington Ave: 0.3 mi away · 5% smaller
+5. 2227 N Lavergne Ave: 0.4 mi away · 1 more half bath · central air vs none · 1 fireplace vs none
+6. 2243 N Lawler Ave: 0.3 mi away · 1-story vs 1.5-story · 6% smaller · 1-car garage vs 2-car
 Filing steps: Cook County Board of Review
 PIN 13-33-103-013-0000 · Tax year 2026
 Page 3 of 3
@@ -255,9 +494,9 @@ asked if you are a Board of Review attorney, answer No. Choose your appellant ty
 Decide whether you want a hearing. It is optional, held by phone for homeowners, and the Board
 says you are not penalized for skipping it. You choose this when you file.
 7.
-Enter comparable properties if you like (optional: the Board's analysts also pull their own). The PINs
-on page 2 are similar homes assessed lower per square foot than yours, from the same
-neighborhood and class.
+Enter comparable properties if you like (optional: the Board's analysts also pull their own). The
+evidence comparables on page 2 are similar homes in your Assessor neighborhood whose building
+is assessed lower per square foot than yours; the other homes listed there are not.
 8.
 Review, initial, confirm and submit before the deadline. Save your complaint number.
 9.
@@ -269,5 +508,5 @@ https://apps.cookcountyil.gov/BORDecisionSearch/. A re-review must be requested 
 the decision letter. If you disagree with the decision, you can appeal to the state Property Tax
 Appeal Board within 30 days, and you can appeal again next year.
 AssessGap is not affiliated with Cook County. You file and sign your own appeal. This compares Cook County assessed
-values (AV) and AV per building square foot among similar homes, using public Assessor data. It is not an appraisal and
-does not estimate what any property would sell for.
+values (AV), and the building's AV per square foot, among similar homes, using public Assessor data. It is not an appraisal
+and does not estimate what any property would sell for.

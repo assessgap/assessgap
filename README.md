@@ -2,7 +2,7 @@
 
 **Free tools to help Cook County homeowners appeal their own property assessments.**
 
-AssessGap compares your home's assessed value per square foot with similar homes in your Assessor neighborhood, using public county data, and shows how Board of Review appeals have gone for homeowners near you. If similar homes are assessed lower than yours, it produces an evidence report you can attach to your own appeal.
+AssessGap compares the building part of your home's assessed value, per square foot, with similar homes nearby in your Assessor neighborhood (land is assessed separately, at a neighborhood rate), using public county data, and shows how Board of Review appeals have gone for homeowners near you. If similar homes are assessed lower than yours, it produces an evidence report you can attach to your own appeal.
 
 - Website: **https://assessgap.com** (free, no sign-up)
 - How it works: [docs/methodology.md](docs/methodology.md), including a backtest against ~400,000 Board of Review decisions

@@ -11,7 +11,7 @@ One CSV page per ingested dataset, with only the columns `build.sql` reads (`ing
 | Neighborhoods | Assessor neighborhoods **27080** (Oak Park Township; 2026 values certified), **39082** (Worth Township; certified) and **71280** (Jefferson Township, Chicago; 2026 values mailed, not yet certified) |
 | Rows | every row, in every dataset, for every PIN whose parcel or assessed-value record is in those neighborhoods: 3,851 parcels, 19,251 assessed values (2022–2026), 6,054 characteristic cards, 7,702 addresses, 1,510 sales, 604 condo cards, 3,416 Board of Review appeals (2021–2025), 3,181 Assessor appeals |
 | Size | 3.8 MB of plain, diffable CSV |
-| Taken from | a full local build (`assessgap db sync`) whose downloads were made on 2026-11-24 |
+| Taken from | a full local build (`assessgap db sync`) whose downloads were made on 2026-11-24. Rebuilt on 2026-11-25 from the same download to add the assessed values' building and land columns (`*_bldg`, `*_land`); no existing value changed |
 | Why these three | three townships with different AV stages (mailed vs certified), all three class groups, condos, two-flats, multi-building parcels, commercial and exempt parcels, and real Board of Review appeal history (288 to 977 appeals per neighborhood in 2023–2025) |
 
 **Provenance.** Everything here is public data from the Cook County open data portal ([datacatalog.cookcountyil.gov](https://datacatalog.cookcountyil.gov/)), published by the Cook County Assessor's Office and the Board of Review:
@@ -52,15 +52,15 @@ go run ./cmd/assessgap check -db data-fixture/cook.db 13331030130000
 
 | Directory | What | Written by |
 |---|---|---|
-| `check/` | `assessgap check -json` for 31 cases (exit status, stderr, and every field of the report) | `internal/golden` |
+| `check/` | `assessgap check -json` for 32 cases (exit status, stderr, and every field of the report) | `internal/golden` |
 | `pdf/` | the evidence report's text, for 3 PINs, prepared on a fixed date | `internal/golden` |
 | `web/` | the report page's formatted figures (`web.toView`) for 8 cases; the date-dependent filing window and the chart geometry are left out | `internal/web` |
 
 Structured output is flattened to one `path = value` line per field, sorted, with floats rounded to 6 decimal places, so a diff names the field that changed. On a mismatch the test prints `case (PIN): field: old → new`.
 
-The cases are listed, with the reason each was chosen, in `internal/golden/cases.go`. They cover: well above, slightly above, in line with and below the median; above but with few comparable homes; 1 and 4 comparable homes; every search widening level; one-story, multi-story, split-level and townhome classes; ties; each data check the fixture can reach (square footage, no full baths, more bedrooms than rooms); recorded sales; no address; an earlier certified year; a PIN whose latest value is from 2023; condo, multi-building, two-flat, exempt and class 241 parcels; an unknown PIN; and a known PIN asked for a missing year.
+The cases are listed, with the reason each was chosen, in `internal/golden/cases.go`. They cover: well above, slightly above, in line with and below the median; above but with few comparable homes; 1 and 4 comparable homes; every search widening level; one-story, multi-story, split-level and townhome classes; ties; each data check the fixture can reach (square footage, no full baths, more bedrooms than rooms, a land rate unlike similar homes'); a big lot whose total AV per sq ft is high but whose building is assessed below the median; recorded sales; no address; an earlier certified year; a PIN whose latest value is from 2023; condo, multi-building, two-flat, exempt and class 241 parcels; an unknown PIN; and a known PIN asked for a missing year.
 
-Edge cases real data doesn't reach (0 or 2 comparable homes, an even-count median, zero square feet, no characteristics row, unknown year built) are tested with hand-written homes in `internal/comps/synthetic_test.go`, not here.
+Edge cases real data doesn't reach cleanly (0 or 2 comparable homes, an even-count median with exact hand-worked values, zero square feet, no characteristics row, unknown year built, no building/land split or a $0 building, unknown location) are tested with hand-written homes in `internal/comps/synthetic_test.go`, not here.
 
 **Updating.** Only after a deliberate change:
 

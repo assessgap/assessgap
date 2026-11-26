@@ -1,0 +1,65 @@
+in-scope BOR appeals (PIN-years) 2024,2025: 406838
+scored in 5m59s; errors 0; skipped (unsupported) 2260
+     113  No building characteristics on record for this PIN.
+       5  Class 100 is not residential
+       7  No building square footage on record for this PIN
+       2  Class 241 is not supported
+       1  The Assessor's tax year 2025 record for this PIN doesn't split the assessed value into building and land, so the building can't be compared with similar homes.
+       2  Class EX is not residential
+    2130  This parcel has more than one building on record
+
+**Tax year all**
+
+| verdict | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| strong | 25444 | 89.0% | 10.3% | 48587 | 75.7% | 9.4% | 74031 | 80.3% | 9.7% |
+| possible | 21246 | 83.9% | 7.1% | 42350 | 71.8% | 6.4% | 63596 | 75.8% | 6.7% |
+| weak | 79150 | 42.0% | 7.3% | 187801 | 32.4% | 6.5% | 266951 | 35.2% | 6.8% |
+
+**Tax year 2024**
+
+| verdict | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| strong | 12274 | 88.7% | 10.3% | 22829 | 73.6% | 9.6% | 35103 | 78.9% | 9.9% |
+| possible | 9310 | 81.5% | 7.3% | 17852 | 67.5% | 6.4% | 27162 | 72.3% | 6.8% |
+| weak | 36123 | 38.9% | 7.4% | 87484 | 30.0% | 6.3% | 123607 | 32.6% | 6.7% |
+
+**Tax year 2025**
+
+| verdict | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| strong | 13170 | 89.2% | 10.3% | 25758 | 77.6% | 9.2% | 38928 | 81.5% | 9.6% |
+| possible | 11936 | 85.7% | 7.0% | 24498 | 75.0% | 6.4% | 36434 | 78.5% | 6.6% |
+| weak | 43027 | 44.7% | 7.2% | 100317 | 34.5% | 6.6% | 143344 | 37.6% | 6.8% |
+
+**By subject AV/sf vs. comp median (all years)**
+
+| gap | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| <3 comps | 64 | 42.2% | 10.1% | 348 | 26.4% | 11.3% | 412 | 28.9% | 11.1% |
+| < -10% | 17625 | 22.4% | 8.8% | 45848 | 18.8% | 7.9% | 63473 | 19.8% | 8.2% |
+| -10..-5% | 18473 | 31.7% | 7.5% | 42050 | 23.3% | 6.8% | 60523 | 25.9% | 7.0% |
+| -5..0% | 32802 | 51.1% | 7.0% | 75720 | 39.8% | 6.2% | 108522 | 43.2% | 6.5% |
+| 0..5% | 31367 | 78.0% | 7.1% | 65922 | 64.4% | 6.2% | 97289 | 68.8% | 6.5% |
+| 5..10% | 12701 | 90.1% | 8.2% | 23315 | 77.5% | 7.5% | 36016 | 81.9% | 7.8% |
+| 10..20% | 7828 | 89.6% | 10.2% | 15161 | 76.6% | 9.3% | 22989 | 81.1% | 9.6% |
+| 20..30% | 2271 | 88.1% | 12.8% | 4621 | 74.4% | 11.8% | 6892 | 78.9% | 12.1% |
+| >= 30% | 2709 | 82.0% | 19.2% | 5753 | 65.9% | 16.4% | 8462 | 71.1% | 17.4% |
+
+**By report tier cut points (all years)**
+
+| gap | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| <3 comps | 64 | 42.2% | 10.1% | 348 | 26.4% | 11.3% | 412 | 28.9% | 11.1% |
+| >= +5% | 25509 | 88.9% | 10.3% | 48850 | 75.6% | 9.4% | 74359 | 80.2% | 9.7% |
+| +1..+5% | 21186 | 83.9% | 7.1% | 42129 | 71.9% | 6.4% | 63315 | 75.9% | 6.7% |
+| in line (±1%) | 18455 | 63.6% | 6.9% | 42701 | 49.8% | 5.9% | 61156 | 53.9% | 6.3% |
+| < -1% | 60626 | 35.5% | 7.5% | 144710 | 27.3% | 6.8% | 205336 | 29.7% | 7.0% |
+
+**How well the gap separates reductions from no change (AUC, 3+ comps)**
+
+| filer | n | AUC |
+|---|--:|--:|
+| pro se | 125776 | 0.792 |
+| attorney | 278390 | 0.749 |
+| all | 404166 | 0.761 |
