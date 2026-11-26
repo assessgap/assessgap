@@ -33,4 +33,9 @@ Committed before any trial ran, so the rules below can't be bent to fit the resu
 - `tune holdout` scores the current rule and each finalist on 2025 once. It logs each finalist in `holdout-log.tsv` and refuses one that is already there.
 - 95% confidence intervals come from a bootstrap of the 2025 appeals by neighborhood (2,000 replicates, the same draws for every method, so differences are paired).
 - **The engine changes only if** the best rule finalist's 2025 pro se AUC gain has a 95% interval entirely above 0, and its attorney AUC change is not significantly negative.
-- A logistic model is never shipped as a score. At most, a strong signal becomes a *proposed* factual sentence for the maintainer to decide on.
+- A logistic model is never shipped as a score.
+
+## Addendum, after the leakage audit (before any holdout run; no rule above changed)
+
+- **The current rule is not blind to 2025.** Its distance weight (1 per mile) and its tier sentences were chosen in the 25c backtest on tax years 2024 and 2025. So on 2025 the current rule's AUC is somewhat optimistic. That favors the current rule, and finalists that keep its distance weight, in the comparison. A finalist that beats it on 2025 has done so against a head start.
+- `calibErr` skips a tier that the reference years don't have. With four broad tiers this never happens here; the code is left as it was so every logged row is computed the same way. At most, a strong signal becomes a *proposed* factual sentence for the maintainer to decide on.

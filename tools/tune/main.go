@@ -4,7 +4,7 @@
 //
 //	go run ./tools/tune prep    -db data/cook-c.db -cache data/tune        # cache appeals and pools (2 files)
 //	go run ./tools/tune verify  -cache data/tune -tsv data/new-appeals.tsv # default rule = engine backtest
-//	go run ./tools/tune trial   -cache data/tune -log trials.tsv -kind T 'JSON trial' ...
+//	go run ./tools/tune trial   -cache data/tune -log trials.tsv -kind T trials.jsonl ... # one JSON Trial per line
 //	go run ./tools/tune signals -cache data/tune -log trials.tsv           # context signals, grouped CV
 //	go run ./tools/tune holdout -cache data/tune -finalists finalists.json # 2025, once per finalist
 //
@@ -52,7 +52,11 @@ func main() {
 	case "verify":
 		err = verify(*cache, *tsv)
 	case "trial":
-		err = runTrials(*cache, *logPath, *kind, fl.Args())
+		var specs []string
+		specs, err = trialSpecs(fl.Args())
+		if err == nil {
+			err = runTrials(*cache, *logPath, *kind, specs)
+		}
 	case "signals":
 		err = runSignals(*cache, *logPath)
 	case "holdout":
@@ -63,6 +67,24 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// trialSpecs reads one JSON trial per non-empty line of each file; lines
+// starting with # are comments.
+func trialSpecs(files []string) ([]string, error) {
+	var specs []string
+	for _, p := range files {
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return nil, err
+		}
+		for _, line := range strings.Split(string(b), "\n") {
+			if line = strings.TrimSpace(line); line != "" && !strings.HasPrefix(line, "#") {
+				specs = append(specs, line)
+			}
+		}
+	}
+	return specs, nil
 }
 
 // verify checks that the default rule, run by this tool, gives exactly the

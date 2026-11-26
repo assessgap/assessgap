@@ -54,7 +54,7 @@ func (t Trial) stat() string {
 	return t.Stat
 }
 
-func (t Trial) isGap() bool { return t.stat() != "pctile" }
+func (t Trial) isGap() bool { return t.stat() != "pctile" && t.stat() != "pctile_gap" }
 
 // Scored is one appeal's result under a trial.
 type Scored struct {
@@ -120,6 +120,10 @@ func scoreOne(d *Dataset, a Appeal, p comps.Params, stat string, withFlags bool)
 		r.Score = st.PctAboveMedian
 	case "pctile":
 		r.Score = st.SubjectPercentile
+	case "pctile_gap":
+		// The percentile first; the gap only breaks ties (it moves the score
+		// by under 0.001, less than one percentile step).
+		r.Score = st.SubjectPercentile + 0.0005*math.Max(-1, math.Min(1, st.PctAboveMedian))
 	case "mean":
 		r.Score = rel(s.BldgAVPerSF, mean(vals))
 	case "trim20":
@@ -138,7 +142,7 @@ func scoreOne(d *Dataset, a Appeal, p comps.Params, stat string, withFlags bool)
 	return r
 }
 
-var stats = map[string]bool{"median": true, "mean": true, "trim20": true, "wmedian": true, "pctile": true}
+var stats = map[string]bool{"median": true, "mean": true, "trim20": true, "wmedian": true, "pctile": true, "pctile_gap": true}
 
 // rel is the subject's rate relative to a center, rounded like the report's gap.
 func rel(subject, center float64) float64 {
