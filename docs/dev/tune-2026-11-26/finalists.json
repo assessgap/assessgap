@@ -1,0 +1,17 @@
+[
+  {
+    "name": "F1_w4_wsf1_bsmt0_k30_pctile_gap",
+    "why": "Finalist 1 by the plan: the robust rule with the highest pooled 2023-24 pro se AUC (trial 47: 0.8302, +0.0307; +0.0291 in 2023, +0.0320 in 2024; 5/5 township groups).",
+    "trial": {"name": "w4_wsf1_bsmt0_k30_pctile_gap", "stat": "pctile_gap", "params": {"WMiles": 4, "WSF": 1, "WBasement": 0, "MaxComps": 30}}
+  },
+  {
+    "name": "F2_stat_pctile_gap",
+    "why": "Finalist 2 by the plan: the best robust single change from the current rule (trial 42: 0.8123, +0.0127; 5/5 township groups). Same comps as today, ranked by percentile among them.",
+    "trial": {"name": "stat_pctile_gap", "stat": "pctile_gap"}
+  },
+  {
+    "name": "F3_logistic_all",
+    "why": "Finalist 3 by the plan: the gap plus every context signal beat the gap alone by more than 0.005 in township cross-validation (signal model 'all': 0.8093 vs 0.8006, +0.0087; 2023 to 2024 +0.0071). Fitted on all 2023-24 pro se appeals, applied unchanged to 2025.",
+    "model": "all"
+  }
+]
