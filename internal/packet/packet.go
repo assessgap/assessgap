@@ -432,8 +432,15 @@ func (p *pager) cell(x, y, w, h float64, f font, s string, right, truncate bool)
 }
 
 // baseline is where text sits in a row of height h: 4.5 pt above the bottom
-// in a full row, less in a compact one, so the type stays centered.
-func baseline(h float64) float64 { return h - 4.5*h/rowH }
+// in a full row. A compact row centers the type between its cap height and
+// descenders (Helvetica: 0.718 and 0.207 of the size), so caps don't touch
+// the rule above.
+func baseline(h float64) float64 {
+	if h >= rowH {
+		return h - 4.5
+	}
+	return (h + (0.718-0.207)*cellSize) / 2
+}
 
 // cellText returns s as drawn in a cell of inner width w, and its font size.
 func cellText(f font, w float64, s string, truncate bool) (string, float64) {

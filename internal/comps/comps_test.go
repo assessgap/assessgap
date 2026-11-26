@@ -182,24 +182,85 @@ func TestSelectCompsWidening(t *testing.T) {
 	}
 }
 
+// TestOptionalParams covers the rules that are off by default but were
+// measured by tools/tune: hard matches and the distance limit hold at every
+// step but the last, and a mismatch weight reorders comps.
+func TestOptionalParams(t *testing.T) {
+	subject := home("S", "203", 1200, 30000)
+	withBsmt := func(pin, b string) Home { h := home(pin, "203", 1200, 30000); h.Basement = b; return h }
+	var eightFullFourCrawl, twoFullTenCrawl []Home
+	for i := range 12 {
+		b := "Crawl"
+		if i < 8 {
+			b = "Full"
+		}
+		eightFullFourCrawl = append(eightFullFourCrawl, withBsmt(pin(i), b))
+		b = "Crawl"
+		if i < 2 {
+			b = "Full"
+		}
+		twoFullTenCrawl = append(twoFullTenCrawl, withBsmt(pin(i), b))
+	}
+	noAir := home("c00", "203", 1200, 30000)
+	noAir.Air = "No Central A/C"
+	air := home("c01", "203", 1200, 30000)
+	air.Air, subject.Air = "Central A/C", "Central A/C"
+	tests := []struct {
+		name      string
+		p         func(*Params)
+		pool      []Home
+		wantLevel int
+		wantPINs  string
+	}{
+		{"same basement holds while 8 match", func(p *Params) { p.SameBasement = true }, eightFullFourCrawl, 0,
+			"c00,c01,c02,c03,c04,c05,c06,c07"},
+		{"same basement gives way at the last step", func(p *Params) { p.SameBasement = true }, twoFullTenCrawl, 3,
+			"c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,c10,c11"},
+		// home() has no location, so a distance limit admits nobody until the last step.
+		{"distance limit excludes unknown locations", func(p *Params) { p.MaxMiles = 0.5 }, eightFullFourCrawl[:8], 3,
+			"c00,c01,c02,c03,c04,c05,c06,c07"},
+		// Otherwise identical: the PIN breaks the tie (c00 first) unless air counts.
+		{"no air weight: PIN order", func(*Params) {}, []Home{noAir, air}, 3, "c00,c01"},
+		{"air weight: the matching home first", func(p *Params) { p.WAir = 1 }, []Home{noAir, air}, 3, "c01,c00"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := DefaultParams()
+			p.WBasement = 0 // so only the hard rule, not the weight, sorts by basement
+			tt.p(&p)
+			got, s := p.SelectComps(subject, tt.pool)
+			if s.Level != tt.wantLevel || pins(got) != tt.wantPINs {
+				t.Errorf("level %d, comps %s; want level %d, %s", s.Level, pins(got), tt.wantLevel, tt.wantPINs)
+			}
+		})
+	}
+}
+
 func TestVerdict(t *testing.T) {
-	// Subject at $30/sf; comps at the given AV/sf values. The tier depends on
-	// the share of comps strictly below $30.
-	lower, higher := func(n int) []float64 { return fill(n, 25) }, func(n int) []float64 { return fill(n, 35) }
+	// Subject at $30/sf; comps at the given AV/sf values. The tier needs the
+	// gap (30/median − 1) at +1% or more, then the share of comps strictly
+	// below $30.
+	at := func(n int, v float64) []float64 { return fill(n, v) }
+	join := func(a, b []float64) []float64 { return append(append([]float64(nil), a...), b...) }
 	tests := []struct {
 		name  string
 		comps []float64
 		want  string
 	}{
-		{"strong: 8 of 10 lower", append(lower(8), higher(2)...), Strong},
-		{"strong: exactly three quarters (9 of 12)", append(lower(9), higher(3)...), Strong},
-		{"possible: just under three quarters (11 of 15)", append(lower(11), higher(4)...), Possible},
-		{"possible: most lower but only 6 comps", append(lower(5), higher(1)...), Possible},
-		{"possible: exactly half (5 of 10)", append(lower(5), higher(5)...), Possible},
-		{"weak: just under half (4 of 9)", append(lower(4), higher(5)...), Weak},
-		{"weak: assessed the same as every comp", fill(10, 30), Weak},
-		{"weak: too few comps", fill(2, 20), Weak},
-		{"weak: half lower but < 3 lower-assessed", append(lower(2), higher(2)...), Weak},
+		{"strong: +20%, 8 of 10 lower", join(at(8, 25), at(2, 35)), Strong},
+		{"strong: exactly three quarters lower (9 of 12)", join(at(9, 25), at(3, 35)), Strong},
+		{"possible: +20% but 7 of 10 lower", join(at(7, 25), at(3, 35)), Possible},
+		{"possible: most lower but only 6 comps", join(at(5, 25), at(1, 35)), Possible},
+		// Median (20+31)/2 = 25.5: +17.6%, half lower.
+		{"possible: +17.6% with half lower", join(at(5, 20), at(5, 31)), Possible},
+		// Median 29.9: +0.33%, in line, though 29 of 30 are lower.
+		{"weak: nearly all lower but in line with the median", join(at(29, 29.9), at(1, 31)), Weak},
+		// Median (29.9+30.1)/2 = 30: in line with half lower.
+		{"weak: half lower, in line", join(at(5, 29.9), at(5, 30.1)), Weak},
+		{"weak: assessed the same as every comp", at(10, 30), Weak},
+		{"weak: below the median", at(10, 33), Weak},
+		{"weak: too few comps", at(2, 20), Weak},
+		{"weak: above the median but < 3 lower-assessed", []float64{20, 20, 31, 31}, Weak},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

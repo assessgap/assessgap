@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -37,9 +38,23 @@ func runHoldout(cache, finalistsPath, outDir string, dry bool) error {
 	if err != nil {
 		return err
 	}
+	// Strict decoding and full validation before the log is written, so a typo
+	// can't use up a finalist's one look at the holdout.
 	var fs []Finalist
-	if err := json.Unmarshal(b, &fs); err != nil {
-		return err
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&fs); err != nil {
+		return fmt.Errorf("%s: %w", finalistsPath, err)
+	}
+	for _, f := range fs {
+		if f.Trial != nil {
+			if err := f.Trial.validate(); err != nil {
+				return err
+			}
+		}
+		if f.Model != "" && f.Model != "all" && !isSignalModel(f.Model) {
+			return fmt.Errorf("finalist %q: unknown model %q", f.Name, f.Model)
+		}
 	}
 	if len(fs) == 0 || len(fs) > 3 {
 		return fmt.Errorf("need 1–3 finalists, got %d", len(fs))

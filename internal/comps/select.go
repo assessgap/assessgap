@@ -7,8 +7,8 @@ import (
 )
 
 // Params are the rules for choosing similar homes. Every report uses
-// DefaultParams. Other values exist so the tuning tool (tools/tune) measures a
-// candidate rule with the same code a report would run.
+// DefaultParams(). Other values exist so the tuning tool (tools/tune) measures
+// a candidate rule with the same code a report would run.
 type Params struct {
 	// Steps are tried in order until one admits MinComps homes. Each must be a
 	// superset of the one before it.
@@ -51,7 +51,7 @@ type Params struct {
 // held-out 2025 pro se appeals it raised the AUC from 0.789 to 0.817 (95% CI
 // of the gain +0.025 to +0.030); see docs/dev/2026-11-26-tune.md. The Board
 // prefers comps on the same block or within ¼ mile.
-var DefaultParams = Params{
+var defaults = Params{
 	Steps: []Search{
 		{Level: 0, SameClass: true, SFTolerance: 0.25, AgeTol: 15},
 		{Level: 1, SameClass: false, SFTolerance: 0.25, AgeTol: 15},
@@ -65,9 +65,17 @@ var DefaultParams = Params{
 	WMiles: 4.0, CapMiles: 1.0,
 }
 
+// DefaultParams returns a copy of the rules every report uses, for a caller
+// to vary without touching them.
+func DefaultParams() Params {
+	p := defaults
+	p.Steps = append([]Search(nil), defaults.Steps...)
+	return p
+}
+
 // minComps is the default widening threshold; decide also uses it as the
 // smallest group a top-tier report may rest on.
-var minComps = DefaultParams.MinComps
+var minComps = defaults.MinComps
 
 func (s Search) describe(class string) string {
 	who := "class " + class
@@ -187,7 +195,7 @@ func (p Params) hasStrict() bool { return p.SameTypeResd || p.SameBasement || p.
 
 // selectComps chooses comps with the rules every report uses.
 func selectComps(subject Home, pool []Home) ([]Comp, Search) {
-	return DefaultParams.SelectComps(subject, pool)
+	return defaults.SelectComps(subject, pool)
 }
 
 // SelectComps widens the search until it has MinComps candidates (or runs

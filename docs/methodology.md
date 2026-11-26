@@ -37,11 +37,11 @@ For the subject and each similar home the report shows: address and PIN, distanc
 ## How we describe results
 We state facts and don't tell anyone whether to appeal. Internally, a report is in one of three tiers, which only controls styling and whether the evidence report is offered:
 
-- at least three quarters of the similar homes have a building assessed lower per sq ft, with 8 or more similar homes and at least 3 assessed lower;
-- at least half of them assessed lower, and at least 3;
+- at least 1% above the median, and higher than at least three quarters of the similar homes, with 8 or more similar homes and at least 3 assessed lower;
+- at least 1% above the median with at least 3 assessed lower;
 - everything else.
 
-The tiers follow how many similar homes are assessed lower, not the size of the gap from the median: in the backtest, a home's rank among its similar homes separated reductions from no change better than its gap did. Every report still states the gap and the value at the median rate.
+Each report quotes the backtest rate for its group. The gap comes first, because every report states it, so a home the report calls in line or below the median is never quoted an above-median rate. Then the share of similar homes with a building assessed lower per sq ft (strictly lower) splits the above- and below-median groups. In the backtest, a home's rank among its similar homes separated reductions from no change better than its gap did. The rates are for each group as a whole; a home near a group's edge did a little worse or better.
 
 ## Backtest
 We run the method on in-scope Board of Review appeals that ended in a decrease or no change, using the certified value the Board started from (the value at the stage appealed), and compare with the actual outcome. Win = any reduction.
@@ -55,16 +55,17 @@ We run the method on in-scope Board of Review appeals that ended in a decrease o
 
 The gain is +0.028 (95% interval +0.025 to +0.030, from resampling neighborhoods). For attorney filings it is 0.751 → 0.777. On the tuning years the gain was +0.031, so nearly all of it held on unseen data. AUC is the chance that a randomly chosen appeal that got a reduction ranked higher than one that didn't (0.5 = chance).
 
-By the report's tiers, tax year 2025:
+By the report's groups, tax year 2025 ([backtest-2025.txt](dev/tune-2026-11-26/backtest-2025.txt)):
 
-| Similar homes with a building assessed lower per sq ft | Self-filed: share of appeals | Got a reduction | Attorney: share | Got a reduction |
-|---|--:|--:|--:|--:|
-| at least three quarters | 19.8% | 91.7% | 17.6% | 81.4% |
-| half to three quarters | 26.5% | 81.0% | 25.2% | 68.2% |
-| a quarter to half | 26.0% | 54.1% | 26.9% | 41.9% |
-| fewer than a quarter | 27.7% | 24.6% | 30.3% | 18.8% |
+| Building AV/sq ft vs similar homes | Self-filed: share of appeals | Got a reduction | Attorney: share | Got a reduction | Self-filed, 2023–24 |
+|---|--:|--:|--:|--:|--:|
+| at least 1% above the median, higher than at least ¾ of them | 19.7% | 92.2% | 17.4% | 82.1% | 93.0% |
+| at least 1% above the median, higher than fewer than ¾ | 19.0% | 84.2% | 17.5% | 71.5% | 82.5% |
+| within 1% of the median | 13.2% | 67.0% | 14.1% | 52.8% | 64.2% |
+| more than 1% below, higher than at least ¼ | 20.8% | 51.7% | 21.7% | 40.1% | 47.4% |
+| more than 1% below, higher than fewer than ¼ | 27.3% | 24.6% | 29.3% | 18.9% | 20.4% |
 
-On 2023–2024 the same tiers gave 92.7%, 79.5%, 49.7% and 20.5% for self-filers; 2025 ran a few points higher in the lower tiers.
+The 2023–24 column is the same rule on the tuning years ([backtest-2023-24.txt](dev/tune-2026-11-26/backtest-2023-24.txt)); 2025 ran a few points higher below the median. The evidence report is offered for 38.7% of 2025 self-filed appeals (36.8% with the previous method), and those in the top tier got a reduction 92.2% of the time (89.2% before).
 
 By the gap from the median, 2025, self-filed (the same comparison):
 

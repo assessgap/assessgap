@@ -9,22 +9,21 @@ import (
 )
 
 const (
-	// possibleGap: within ±1% of the median is "in line" on every surface, and
-	// from +1% the reports state the value at the median rate.
+	// possibleGap: within ±1% of the median is "in line" on every surface; from
+	// +1% the reports state the value at the median rate, and the evidence
+	// report may be offered.
 	possibleGap = 0.01
 	minEvidence = 3
 	maxEvidence = 6
 )
 
-// Tier bands on the share of similar homes whose building is assessed lower
-// per sq ft than the subject's. Ranking a home among its comps this way
-// separated Board of Review outcomes better than its gap from the median
-// (docs/dev/2026-11-26-tune.md). Strictly lower, so a home assessed the same
-// as its neighbors doesn't rise a band.
+// Shares of similar homes whose building is assessed lower per sq ft than
+// the subject's (strictly, so a home assessed the same as its neighbors gains
+// nothing). A home's rank among its comps separated Board of Review outcomes
+// better than its gap from the median (docs/dev/2026-11-26-tune.md).
 const (
-	strongShare   = 0.75
-	possibleShare = 0.50
-	lowShare      = 0.25
+	strongShare = 0.75
+	lowShare    = 0.25
 )
 
 // ShareLower is the share of comps assessed lower per sq ft than the subject.
@@ -35,19 +34,38 @@ func (st Stats) ShareLower() float64 {
 	return float64(st.CompsLower) / float64(st.NumComps)
 }
 
-// ShareBand is the band index (0 = at least three quarters lower … 3 = fewer
-// than a quarter) a share falls in.
-func ShareBand(share float64) int {
+// Group places a comparison in one of the five groups the reports quote
+// backtest rates for. The gap from the median comes first, because every
+// surface states it, so a quoted rate never describes a home as above the
+// median when the report says it is in line or below. Within the above- and
+// below-median groups the share assessed lower splits further:
+//
+//	0: at least 1% above the median, higher than at least three quarters
+//	1: at least 1% above the median, higher than fewer than three quarters
+//	2: within 1% of the median
+//	3: more than 1% below the median, higher than at least a quarter
+//	4: more than 1% below the median, higher than fewer than a quarter
+func Group(st Stats) int {
+	gap, share := st.PctAboveMedian, st.ShareLower()
 	switch {
-	case share >= strongShare:
+	case AboveMedian(gap) && share >= strongShare:
 		return 0
-	case share >= possibleShare:
+	case AboveMedian(gap):
 		return 1
-	case share >= lowShare:
+	case InLine(gap):
 		return 2
-	default:
+	case share >= lowShare:
 		return 3
+	default:
+		return 4
 	}
+}
+
+// RankScore orders homes by their percentile among their comps, the gap
+// breaking ties (it moves the score by under one percentile step). It is the
+// score the 2026-11-26 tuning validated, for the backtest's AUC.
+func RankScore(st Stats) float64 {
+	return st.SubjectPercentile + 0.0005*max(-1, min(1, st.PctAboveMedian))
 }
 
 func median(xs []float64) float64 {
@@ -204,15 +222,14 @@ func decide(r *Report) (string, []string) {
 			"At similar homes' median building rate per sq ft, plus your land's assessed value of %s, your assessed value would be %s, which is %s lower than now.",
 			money(s.LandAV), money(st.UniformityAV), money(st.PotentialAVReduction)))
 	}
-	band := ShareBand(st.ShareLower())
+	g := Group(*st)
 	why = append(why, fmt.Sprintf("In our test of past Board of Review decisions, homeowners who appealed on their own "+
-		"when %s of similar homes had a building assessed lower per sq ft got a reduction about %d%% of the time.",
-		shareBandWords[band], shareBandRates[band]))
+		"with a building assessed %s got a reduction about %d%% of the time.", groupWords[g], groupRates[g]))
 	switch {
-	case band == 0 && n >= minComps && ev >= minEvidence:
+	case g == 0 && n >= minComps && ev >= minEvidence:
 		return Strong, why
-	case band <= 1 && ev >= minEvidence:
-		if band == 0 {
+	case g <= 1 && ev >= minEvidence:
+		if g == 0 {
 			why = append(why, fmt.Sprintf("We found only %d similar homes, so this comparison rests on a small group.", n))
 		}
 		return Possible, why
@@ -221,11 +238,17 @@ func decide(r *Report) (string, []string) {
 	}
 }
 
-var shareBandWords = [4]string{"at least three quarters", "half to three quarters", "a quarter to half", "fewer than a quarter"}
+var groupWords = [5]string{
+	"at least 1% above similar homes' median, and higher than at least three quarters of them,",
+	"at least 1% above similar homes' median, but higher than fewer than three quarters of them,",
+	"within 1% of similar homes' median",
+	"more than 1% below similar homes' median, but higher than at least a quarter of them,",
+	"more than 1% below similar homes' median, and higher than fewer than a quarter of them,",
+}
 
-// shareBandRates: pro se reduction rates by band, tax year 2025, which the
+// groupRates: pro se reduction rates by Group, tax year 2025, which the
 // tuning never saw (docs/dev/tune-2026-11-26/backtest-2025.txt).
-var shareBandRates = [4]int{92, 81, 54, 25}
+var groupRates = [5]int{92, 84, 67, 52, 25}
 
 // InLine reports whether a gap is within ±1% of the median. Every surface
 // describes such a home as in line with (or about equal to) similar homes.

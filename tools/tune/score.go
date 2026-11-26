@@ -29,22 +29,29 @@ type Trial struct {
 // defaults from 2026-11-25c until this run changed them. Trials override it,
 // not comps.DefaultParams, so the logged configs and the holdout keep their
 // meaning after the engine moved to finalist 1.
-var rule25c = func() comps.Params {
-	p := comps.DefaultParams
-	p.Steps = []comps.Search{
+// It is a literal, so a later Params field defaults to zero here rather than
+// to whatever the engine's default becomes.
+var rule25c = comps.Params{
+	Steps: []comps.Search{
 		{Level: 0, SameClass: true, SFTolerance: 0.25, AgeTol: 15},
 		{Level: 1, SameClass: false, SFTolerance: 0.25, AgeTol: 15},
 		{Level: 2, SameClass: false, SFTolerance: 0.35, AgeTol: 25},
 		{Level: 3, SameClass: false, SFTolerance: 0.50, AgeTol: 40},
+	},
+	MinComps: 8, MaxComps: 20,
+	WSF: 4, WAge: 1, AgeScale: 15, WBath: 0.5, WLand: 0.5,
+	WTypeResd: 0.5, WExtWall: 0.5, WBasement: 0.5, WClass: 0.25,
+	WMiles: 1, CapMiles: 1,
+}
+
+// validate checks a trial before anything runs on it.
+func (t Trial) validate() error {
+	if !stats[t.stat()] {
+		return fmt.Errorf("trial %s: unknown stat %q", t.Name, t.Stat)
 	}
-	p.MinComps, p.MaxComps = 8, 20
-	p.WSF, p.WAge, p.AgeScale, p.WBath, p.WLand = 4, 1, 15, 0.5, 0.5
-	p.WTypeResd, p.WExtWall, p.WBasement, p.WClass = 0.5, 0.5, 0.5, 0.25
-	p.WMiles, p.CapMiles = 1, 1
-	p.WAir, p.WBsmtFin, p.WGarage, p.MaxMiles = 0, 0, 0, 0
-	p.SameTypeResd, p.SameBasement = false, false
-	return p
-}()
+	_, err := t.params()
+	return err
+}
 
 func (t Trial) params() (comps.Params, error) {
 	p := rule25c
@@ -91,6 +98,9 @@ var flagBits = map[string]int{"bldg_sf": 1, "beds": 2, "fbath": 4, "yrblt": 8, "
 
 // score runs a trial on every appeal, in parallel across the CPU cores.
 func score(d *Dataset, t Trial, withFlags bool) ([]Scored, error) {
+	if err := t.validate(); err != nil {
+		return nil, err
+	}
 	p, err := t.params()
 	if err != nil {
 		return nil, err
@@ -142,23 +152,19 @@ func scoreOne(d *Dataset, a Appeal, p comps.Params, stat string, withFlags bool)
 	case "pctile":
 		r.Score = st.SubjectPercentile
 	case "pctile_gap":
-		// The percentile first; the gap only breaks ties (it moves the score
-		// by under 0.001, less than one percentile step).
-		r.Score = st.SubjectPercentile + 0.0005*math.Max(-1, math.Min(1, st.PctAboveMedian))
+		r.Score = comps.RankScore(st)
 	case "mean":
 		r.Score = rel(s.BldgAVPerSF, mean(vals))
 	case "trim20":
 		sort.Float64s(vals)
 		k := len(vals) / 5
 		r.Score = rel(s.BldgAVPerSF, mean(vals[k:len(vals)-k]))
-	case "wmedian":
+	default: // "wmedian"; score validated the name before any run
 		w := make([]float64, len(cs))
 		for i, c := range cs {
 			w[i] = 1 / (1 + c.Distance)
 		}
 		r.Score = rel(s.BldgAVPerSF, weightedMedian(vals, w))
-	default:
-		panic("unknown stat " + stat) // validated in main before any run
 	}
 	return r
 }

@@ -101,6 +101,18 @@ func modelFeatures(model string, a Appeal, s Scored, np nbhdPrior) []float64 {
 	return x
 }
 
+func isSignalModel(m string) bool {
+	if m == "gap" {
+		return true
+	}
+	for _, s := range signals {
+		if m == "gap+"+s.name {
+			return true
+		}
+	}
+	return false
+}
+
 func globalPrior(d *Dataset) nbhdPrior {
 	type ky struct {
 		nb string

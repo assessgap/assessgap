@@ -60,8 +60,8 @@ templ HowItWorks(s Site) {
 		<p>
 			One ground the Board of Review accepts is <em>lack of uniformity</em>: similar homes nearby are assessed lower than yours.
 			We look up homes in your Assessor neighborhood with the same property class (or the same broad group), similar size
-			(within 25% of your square footage) and similar age (within 15 years). Then we rank them by how closely they match your home's
-			size, age, bathrooms, lot, style, exterior and basement, and by how close they are to your home.
+			(within 25% of your square footage) and similar age (within 15 years). Then we keep the 30 that match best, counting how close
+			they are to your home most, then size, age, bathrooms, lot, style and exterior.
 		</p>
 		<p>
 			Your assessed value has two parts: the building and the land. We compare the building part of your assessment, per square foot,
@@ -81,8 +81,8 @@ templ HowItWorks(s Site) {
 		<p>
 			We don't tell you whether to appeal. We show how your building's assessed value per square foot compares with the median of similar homes,
 			how many of them are assessed lower than yours, and how appeals have gone for homeowners in your neighborhood. We offer the
-			free evidence report (a PDF) when at least half of the similar homes, and at least 3 of them, have a building assessed lower per
-			square foot than yours.
+			free evidence report (a PDF) when at least 3 similar homes have a building assessed lower per square foot than yours and yours is at
+			least 1% above the median.
 		</p>
 		<h2>If an appeal doesn't work</h2>
 		<p>
@@ -92,9 +92,10 @@ templ HowItWorks(s Site) {
 		<p>
 			We chose how to pick and compare similar homes using about 370,000 Board of Review decisions from 2023 and 2024, then tested
 			the result once on about 220,000 decisions from 2025 that the choice never used. Among homeowners who appealed on their own in
-			2025, those whose building was assessed higher per square foot than at least three quarters of similar homes got a reduction
-			about 92% of the time. Higher than half to three quarters of them: about 81%. A quarter to half: about 54%. Fewer than a
-			quarter: about 25%. People who appeal usually already have a reason to, so these rates aren't a prediction for any one home.
+			2025, those whose building was assessed at least 1% above similar homes' median got a reduction about 92% of the time if it was
+			also higher than at least three quarters of them, and about 84% otherwise. Within 1% of the median: about 67%. More than 1%
+			below: about 52% if it was still higher than at least a quarter of them, and about 25% if not. People who appeal usually already
+			have a reason to, so these rates aren't a prediction for any one home.
 		</p>
 		<h2>What we don't do</h2>
 		<ul>

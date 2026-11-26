@@ -352,7 +352,8 @@ func auc(xs []scored) float64 {
 	return (rankSumWins - float64(wins)*float64(wins+1)/2) / (float64(wins) * float64(losses))
 }
 
-// tierOrder and tierBucket group gaps by the report's own cut points.
+// tierOrder and tierBucket group gaps by the cut points the reports used
+// until 2026-11-26, kept so runs stay comparable across versions.
 var tierOrder = []string{"<3 comps", ">= +5%", "+1..+5%", "in line (±1%)", "< -1%"}
 
 func tierBucket(gap float64, n int) string {
@@ -392,7 +393,7 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 		byKey        = map[key]*outcome{}
 		byGap        = map[string]map[bool]*outcome{}
 		byTier       = map[string]map[bool]*outcome{}
-		byShare      = map[string]map[bool]*outcome{}
+		byGroup      = map[string]map[bool]*outcome{}
 		gaps         = map[bool][]scored{}
 		ranks        = map[bool][]scored{} // percentile among comps, the gap breaking ties
 		skipped      = map[string]int{}
@@ -434,10 +435,10 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 		st := r.Stats
 		bucket(byGap, gapBucket(st.PctAboveMedian, st.NumComps))[a.pro].add(a.won, a.cut.Float64)
 		bucket(byTier, tierBucket(st.PctAboveMedian, st.NumComps))[a.pro].add(a.won, a.cut.Float64)
-		bucket(byShare, shareBucket(*st))[a.pro].add(a.won, a.cut.Float64)
+		bucket(byGroup, groupBucket(*st))[a.pro].add(a.won, a.cut.Float64)
 		if st.NumComps >= 3 {
 			gaps[a.pro] = append(gaps[a.pro], scored{st.PctAboveMedian, a.won})
-			ranks[a.pro] = append(ranks[a.pro], scored{rankScore(*st), a.won})
+			ranks[a.pro] = append(ranks[a.pro], scored{comps.RankScore(*st), a.won})
 		}
 		if perAppeal != nil {
 			fmt.Fprintf(perAppeal, "%s\t%d\t%t\t%t\t%d\t%.4f\t%s\t%d\t%.1f\n", a.pin, a.year, a.pro, a.won, st.NumComps, st.PctAboveMedian, v,
@@ -468,17 +469,17 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 			printOutcomeRow(w, g, *m[true], *m[false])
 		}
 	}
-	fmt.Fprintf(w, "\n**By report tier cut points (all years)**\n\n")
+	fmt.Fprintf(w, "\n**By the gap cut points the reports used until 2026-11-26 (all years)**\n\n")
 	printOutcomeHeader(w, "gap")
 	for _, g := range tierOrder {
 		if m := byTier[g]; m != nil {
 			printOutcomeRow(w, g, *m[true], *m[false])
 		}
 	}
-	fmt.Fprintf(w, "\n**By share of similar homes assessed lower (the report's tiers, all years)**\n\n")
-	printOutcomeHeader(w, "share lower")
-	for _, g := range shareOrder {
-		if m := byShare[g]; m != nil {
+	fmt.Fprintf(w, "\n**By the report's groups: gap from the median, then share of similar homes assessed lower (all years)**\n\n")
+	printOutcomeHeader(w, "group")
+	for _, g := range groupOrder {
+		if m := byGroup[g]; m != nil {
 			printOutcomeRow(w, g, *m[true], *m[false])
 		}
 	}
@@ -493,19 +494,13 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 	return nil
 }
 
-// rankScore orders homes by their percentile among their comps, and by the
-// gap among equal percentiles (it moves the score by under one step).
-func rankScore(st comps.Stats) float64 {
-	return st.SubjectPercentile + 0.0005*max(-1, min(1, st.PctAboveMedian))
-}
+var groupOrder = []string{"<3 comps", ">= +1%, >= 3/4 lower", ">= +1%, < 3/4 lower", "in line (±1%)", "< -1%, >= 1/4 lower", "< -1%, < 1/4 lower"}
 
-var shareOrder = []string{"<3 comps", ">= 75% lower", "50..75%", "25..50%", "< 25%"}
-
-func shareBucket(st comps.Stats) string {
+func groupBucket(st comps.Stats) string {
 	if st.NumComps < 3 {
 		return "<3 comps"
 	}
-	return shareOrder[1+comps.ShareBand(st.ShareLower())]
+	return groupOrder[1+comps.Group(st)]
 }
 
 func printOutcomeHeader(w io.Writer, first string) {

@@ -349,10 +349,7 @@ func runTrials(cache, logPath, kind string, specs []string) error {
 		if err := dec.Decode(&t); err != nil {
 			return fmt.Errorf("trial %q: %w", s, err)
 		}
-		if !stats[t.stat()] {
-			return fmt.Errorf("trial %s: unknown stat %q", t.Name, t.Stat)
-		}
-		if _, err := t.params(); err != nil {
+		if err := t.validate(); err != nil {
 			return err
 		}
 		trials = append(trials, t)
