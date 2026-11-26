@@ -3,7 +3,7 @@
 // 2023–2024 and checked once on 2025, which the search commands never open.
 //
 //	go run ./tools/tune prep    -db data/cook-c.db -cache data/tune        # cache appeals and pools (2 files)
-//	go run ./tools/tune verify  -cache data/tune -tsv data/new-appeals.tsv # default rule = engine backtest
+//	go run ./tools/tune verify  -cache data/tune -tsv data/new-appeals.tsv # rule25c vs a backtest TSV from the 25c engine, not today's
 //	go run ./tools/tune trial   -cache data/tune -log trials.tsv -kind T trials.jsonl ... # one JSON Trial per line
 //	go run ./tools/tune signals -cache data/tune -log trials.tsv           # context signals, grouped CV
 //	go run ./tools/tune holdout -cache data/tune -finalists finalists.json # 2025, once per finalist

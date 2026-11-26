@@ -53,8 +53,8 @@ go run ./cmd/assessgap check -db data-fixture/cook.db 13331030130000
 | Directory | What | Written by |
 |---|---|---|
 | `check/` | `assessgap check -json` for 32 cases (exit status, stderr, and every field of the report) | `internal/golden` |
-| `pdf/` | the evidence report's text, for 3 PINs, prepared on a fixed date | `internal/golden` |
-| `web/` | the report page's formatted figures (`web.toView`) for 8 cases; the date-dependent filing window and the chart geometry are left out | `internal/web` |
+| `pdf/` | the evidence report's text, for 5 PINs, prepared on a fixed date | `internal/golden` |
+| `web/` | the report page's formatted figures (`web.toView`) for 8 cases, plus the township pages and the townships index on fixed dates; the date-dependent filing window and the chart geometry are left out | `internal/web` |
 
 Structured output is flattened to one `path = value` line per field, sorted, with floats rounded to 6 decimal places, so a diff names the field that changed. On a mismatch the test prints `case (PIN): field: old → new`.
 
