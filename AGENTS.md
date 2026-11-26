@@ -50,6 +50,13 @@ Read [docs/testing.md](docs/testing.md). In short: test only where a silent regr
 
 Use `.github/pull_request_template.md`. "Numbers impact" and "Risk and rollback" are required, and a workflow checks them. Say so if an AI wrote the change.
 
+**Dependent PRs use `gh stack`** ([github/gh-stack](https://gh.io/stacks)). When one branch builds on another, never stack by hand by basing a branch on a PR branch and merging one into the other.
+- Start or adopt a stack with `gh stack init <bottom> <next> …`. Add layers with `gh stack add`, then open or update every PR with `gh stack submit --auto`, which creates drafts.
+- Fix a lower layer **on that layer**, then run `gh stack rebase` and `gh stack push` (or `gh stack sync`) so every layer above picks it up. Don't merge one stack branch into another, and don't push to a layer some other way.
+- The maintainer merges the whole stack at once with `gh stack merge`, which is all-or-nothing. Agents never merge.
+- Independent changes stay as separate branches off `main`, not a stack.
+- **Generated files** (`internal/web/static/app.css`, `*_templ.go`) conflict whenever two branches change templates. Never resolve them by hand: take either side, rerun `scripts/check.sh` to regenerate them, and commit the result.
+
 **Visual proof.** Any PR that changes what users see includes before and after screenshots, desktop and mobile ([CONTRIBUTING.md](CONTRIBUTING.md#visual-proof)):
 - run `scripts/screenshots.sh` against `main` and against the branch (and `scripts/pdf-pages.sh` for the evidence report), then look at every image;
 - push the images to the `pr-assets` branch under `pr-<number>/`;
