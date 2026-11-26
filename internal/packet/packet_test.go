@@ -170,6 +170,30 @@ func TestRenderWorstCaseGrid(t *testing.T) {
 	}
 }
 
+// TestSubjectRateOneRounding: a subject rate on a half cent must print the
+// same on every page. 19,305 / 1,000 sq ft = $19.305, which prints as $19.30;
+// Stats carries it rounded to the cent first, $19.31 (comps rounds half away
+// from zero), so printing that on page 2 put two rates on one report.
+func TestSubjectRateOneRounding(t *testing.T) {
+	subject := comps.Home{PIN: "13331030130000", Address: "1 MAIN ST", Class: "203", AV: 25305, BldgAV: 19305,
+		LandAV: 6000, BldgAVPerSF: 19.305, BldgSF: 1000, NumCards: 1, HasSplit: true}
+	r := &comps.Report{PIN: subject.PIN, Year: 2026, AVStage: "mailed", Class: "203", Nbhd: "71280",
+		Township: "Jefferson", Subject: &subject, Disclaimer: comps.Disclaimer,
+		Search: &comps.Search{Description: "same neighborhood"},
+		Stats:  &comps.Stats{NumComps: 3, SubjectBldgAVPerSF: 19.31, MedianBldgAVPerSF: 18, PctAboveMedian: 0.0725}}
+	for i := range 3 {
+		h := comps.Home{PIN: fmt.Sprintf("1333103%03d0000", i), Class: "203", BldgSF: 1000, BldgAVPerSF: 18}
+		r.Comps = append(r.Comps, comps.Comp{Home: h, Miles: 0.1})
+	}
+	txt, err := Text(r, when)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(txt, "19.31") || !strings.Contains(txt, "Subject: $19.30") {
+		t.Errorf("subject rate printed inconsistently; want $19.30 everywhere:\n%s", txt)
+	}
+}
+
 // supportedPINs lists the fixture's homes that get a comparison.
 func supportedPINs(t *testing.T, db *sql.DB) []string {
 	t.Helper()

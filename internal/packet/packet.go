@@ -353,8 +353,11 @@ func (p *pager) grid() {
 
 	p.y += 10
 	st := r.Stats
+	// The subject's rate unrounded, as page 1 and the grid's subject row print
+	// it: st.SubjectBldgAVPerSF is rounded to the cent first, so at a half cent
+	// it printed one cent more than those two.
 	p.para(m, cw, bold, 8, fmt.Sprintf("Median building AV / sq ft of the %d comparable homes: $%.2f.  Subject: $%.2f (%s the median).",
-		st.NumComps, st.MedianBldgAVPerSF, st.SubjectBldgAVPerSF, gapPhrase(st.PctAboveMedian)))
+		st.NumComps, st.MedianBldgAVPerSF, r.Subject.BldgAVPerSF, gapPhrase(st.PctAboveMedian)))
 	if len(r.Evidence) > 0 {
 		p.y -= 3
 		p.text(m, p.y, bold, 7.5, "Differences of each evidence comparable from the subject (theirs vs the subject's):")
