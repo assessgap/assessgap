@@ -1,0 +1,61 @@
+$ go run ./cmd/assessgap backtest -db data/cook-c.db -years 2025 -tsv data/tune/backtest-new-2025.tsv
+  (the engine after this run: finalist 1; progress lines removed)
+
+in-scope BOR appeals (PIN-years) 2025: 219816
+scored in 3m31s; errors 0; skipped (unsupported) 1110
+       2  Class EX is not residential
+       4  No building square footage on record for this PIN
+       1  The Assessor's tax year 2025 record for this PIN doesn't split the assessed value into building and land, so the building can't be compared with similar homes.
+    1103  This parcel has more than one building on record
+
+**Tax year 2025**
+
+| verdict | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| strong | 13458 | 91.8% | 9.6% | 26406 | 81.5% | 8.6% | 39864 | 84.9% | 9.0% |
+| possible | 18050 | 81.0% | 7.4% | 37932 | 68.2% | 6.7% | 55982 | 72.3% | 7.0% |
+| weak | 36625 | 38.9% | 7.3% | 86235 | 29.7% | 6.7% | 122860 | 32.4% | 6.9% |
+
+**By subject building AV/sf vs. comp median (all years)**
+
+| gap | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| <3 comps | 41 | 39.0% | 7.5% | 173 | 23.1% | 11.7% | 214 | 26.2% | 10.5% |
+| < -10% | 9897 | 22.4% | 8.8% | 25082 | 19.5% | 8.2% | 34979 | 20.3% | 8.4% |
+| -10..-5% | 10018 | 32.0% | 7.4% | 22072 | 23.3% | 7.0% | 32090 | 26.0% | 7.2% |
+| -5..0% | 16989 | 54.1% | 6.9% | 39027 | 41.5% | 6.2% | 56016 | 45.3% | 6.5% |
+| 0..5% | 16252 | 81.0% | 6.9% | 35210 | 68.0% | 6.2% | 51462 | 72.1% | 6.4% |
+| 5..10% | 7259 | 91.0% | 7.9% | 14284 | 80.8% | 7.3% | 21543 | 84.2% | 7.5% |
+| 10..20% | 4747 | 90.4% | 9.8% | 9119 | 78.9% | 9.2% | 13866 | 82.8% | 9.4% |
+| 20..30% | 1320 | 88.3% | 12.6% | 2567 | 76.2% | 11.6% | 3887 | 80.3% | 12.0% |
+| >= 30% | 1610 | 84.3% | 18.8% | 3039 | 68.0% | 15.7% | 4649 | 73.7% | 16.9% |
+
+**By report tier cut points (all years)**
+
+| gap | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| <3 comps | 41 | 39.0% | 7.5% | 173 | 23.1% | 11.7% | 214 | 26.2% | 10.5% |
+| >= +5% | 14936 | 89.8% | 10.0% | 29009 | 78.5% | 9.0% | 43945 | 82.3% | 9.4% |
+| +1..+5% | 11418 | 86.2% | 6.9% | 23458 | 74.7% | 6.3% | 34876 | 78.5% | 6.5% |
+| in line (±1%) | 8968 | 67.0% | 6.7% | 21277 | 52.8% | 6.0% | 30245 | 57.0% | 6.2% |
+| < -1% | 32770 | 36.4% | 7.4% | 76656 | 27.9% | 6.9% | 109426 | 30.5% | 7.1% |
+
+**By share of similar homes assessed lower (the report's tiers, all years)**
+
+| share lower | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| <3 comps | 41 | 39.0% | 7.5% | 173 | 23.1% | 11.7% | 214 | 26.2% | 10.5% |
+| >= 75% lower | 13485 | 91.7% | 9.6% | 26524 | 81.4% | 8.6% | 40009 | 84.9% | 9.0% |
+| 50..75% | 18029 | 81.0% | 7.4% | 37841 | 68.2% | 6.7% | 55870 | 72.3% | 7.0% |
+| 25..50% | 17725 | 54.1% | 7.1% | 40520 | 41.9% | 6.5% | 58245 | 45.6% | 6.7% |
+| < 25% | 18853 | 24.6% | 7.7% | 45515 | 18.8% | 7.2% | 64368 | 20.5% | 7.4% |
+
+**How well each score separates reductions from no change (AUC, 3+ comps)**
+
+Rank = the percentile among the comps, the gap breaking ties (docs/dev/2026-11-26-tune.md).
+
+| filer | n | AUC of the gap | AUC of the rank |
+|---|--:|--:|--:|
+| pro se | 68092 | 0.8041 | 0.8166 |
+| attorney | 150400 | 0.7623 | 0.7773 |
+| all | 218492 | 0.7739 | 0.7879 |

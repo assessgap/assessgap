@@ -25,20 +25,20 @@ Building
 1,080 sq ft, built 1908, 3 bedrooms, 1 bath
 Comparison with similar homes
 The property's building is assessed at $19.17 per square foot of building area (building AV $20,706 ÷ 1,080
-sq ft). The median of 20 similar homes in the same Assessor neighborhood is $12.77 per square foot, so the
-property is 50% above the median.
+sq ft). The median of 30 similar homes in the same Assessor neighborhood is $13.26 per square foot, so the
+property is 45% above the median.
 The building part of the assessment is compared, per square foot, because the Assessor values land
 separately at a neighborhood rate per square foot of land.
-20 of the 20 comparable homes have a building assessed lower per square foot than the property. The
+30 of the 30 comparable homes have a building assessed lower per square foot than the property. The
 property ranks at the 100th percentile of the comparable homes by building AV per square foot.
 How comparable homes were chosen: same neighborhood, class 203, building sqft within ±25%, built within
 ±15 years (Assessor neighborhood 71280), excluding multi-building parcels and homes without recorded
-square footage or a building assessment. The 20 most similar by size, age, baths, lot, design, construction,
-basement and distance (the nearer home first when two are equally similar) are listed on page 2.
+square footage or a building assessment. The 30 most similar by distance (weighted most), size, age, baths,
+lot, design and construction (the nearer home first when two are equally similar) are listed on page 2.
 Uniformity figure
-Applying the comparable homes' median building rate of $12.77 per square foot to the property's 1,080
-square feet, and adding the property's land AV of $6,294, gives an assessed value of $20,086. That is
-$6,914 less than the current assessed value of $27,000.
+Applying the comparable homes' median building rate of $13.26 per square foot to the property's 1,080
+square feet, and adding the property's land AV of $6,294, gives an assessed value of $20,615. That is
+$6,385 less than the current assessed value of $27,000.
 This compares Cook County assessed values (AV), and the building's AV per square foot, among similar homes, using
 public Assessor data. It is not an appraisal and does not estimate what any property would sell for. AssessGap is not
 affiliated with Cook County. You file and sign your own appeal.
@@ -132,169 +132,6 @@ $16,706
 $6,294
 $23,000
 $15.47
-13-33-207-035-0000
-2220 N Leamingto...
-0.2 mi
-203
-1.5-story
-Frame
-1,101
-1916
-2 / 1
-Full, unfinished
-No
-0
-2-car
-3,780
-$14,467
-$6,993
-$21,460
-$13.14
-13-33-215-027-0000
-2146 N Leamingto...
-0.3 mi
-203
-1.5-story
-Frame
-1,024
-1914
-2 / 1
-Full, unfinished
-No
-0
-2-car
-3,525
-$15,479
-$6,521
-$22,000
-$15.12
-13-33-211-011-0000
-2227 N Lavergne...
-0.4 mi
-203
-1.5-story
-Frame
-1,076
-1911
-3 / 1.5
-Full, unfinished
-Yes
-1
-2-car
-3,150
-$16,515
-$5,828
-$22,343
-$15.35
-13-33-210-006-0000
-2243 N Lawler Ave
-0.3 mi
-203
-1-story
-Frame
-1,020
-1908
-2 / 1
-Full, unfinished
-No
-0
-1-car
-3,150
-$16,173
-$5,828
-$22,001
-$15.86
-Other comparable homes (14)
-13-33-209-010-0000
-2231 N Leclaire Ave
-0.3 mi
-203
-1.5-story
-Frame
-1,200
-1913
-3 / 1
-Full, unfinished
-No
-0
-1-car
-3,780
-$13,007
-$6,993
-$20,000
-$10.84
-13-33-211-008-0000
-2237 N Lavergne...
-0.4 mi
-203
-1.5-story
-Frame
-1,126
-1908
-4 / 1.5
-Full, finished
-No
-0
-2-car
-5,877
-$13,128
-$10,873
-$24,001
-$11.66
-13-33-105-044-0000
-2208 N Lorel Ave
-0.2 mi
-203
-1.5-story
-Frame
-1,086
-1893
-3 / 1
-Full, unfinished
-No
-0
-None
-3,150
-$14,173
-$5,828
-$20,001
-$13.05
-13-33-213-013-0000
-2221 N Lamon Ave
-0.5 mi
-203
-1.5-story
-Frame
-1,123
-1900
-3 / 1
-Full, unfinished
-No
-0
-None
-3,150
-$13,173
-$5,828
-$19,001
-$11.73
-13-33-220-033-0000
-2122 N Lamon Ave
-0.5 mi
-203
-1-story
-Frame
-1,072
-1910
-3 / 1
-Full, unfinished
-No
-0
-1-car
-3,780
-$12,007
-$6,993
-$19,000
-$11.20
 13-33-103-015-0000
 2323 N Lockwood...
 <0.1 mi
@@ -313,6 +150,115 @@ $18,706
 $6,294
 $25,000
 $17.32
+13-33-103-036-0000
+2308 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Frame
+1,248
+1919
+2 / 1.5
+Full, unfinished
+No
+0
+1-car
+3,402
+$16,706
+$6,294
+$23,000
+$13.39
+13-33-106-012-0000
+2231 N Lorel Ave
+0.1 mi
+203
+1.5-story
+Frame
+1,291
+1898
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,150
+$18,173
+$5,828
+$24,001
+$14.08
+13-33-207-035-0000
+2220 N Leamingto...
+0.2 mi
+203
+1.5-story
+Frame
+1,101
+1916
+2 / 1
+Full, unfinished
+No
+0
+2-car
+3,780
+$14,467
+$6,993
+$21,460
+$13.14
+Other comparable homes (24)
+13-33-215-010-0000
+2137 N Laramie Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,170
+1913
+3 / 1
+Slab
+No
+0
+2-car
+3,150
+$16,173
+$5,828
+$22,001
+$13.82
+13-33-215-027-0000
+2146 N Leamingto...
+0.3 mi
+203
+1.5-story
+Frame
+1,024
+1914
+2 / 1
+Full, unfinished
+No
+0
+2-car
+3,525
+$15,479
+$6,521
+$22,000
+$15.12
+13-33-209-010-0000
+2231 N Leclaire Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,200
+1913
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,780
+$13,007
+$6,993
+$20,000
+$10.84
 13-33-209-009-0000
 2233 N Leclaire Ave
 0.3 mi
@@ -331,60 +277,6 @@ $15,007
 $6,993
 $22,000
 $11.97
-13-33-209-035-0000
-2206 N Lawler Ave
-0.3 mi
-203
-1.5-story
-Frame
-1,254
-1913
-3 / 1
-Full, unfinished
-No
-0
-1-car
-3,780
-$13,007
-$6,993
-$20,000
-$10.37
-13-33-226-002-0000
-2055 N Lawler Ave
-0.5 mi
-203
-1.5-story
-Frame
-1,241
-1910
-3 / 1
-Full, unfinished
-No
-0
-None
-4,687
-$12,329
-$8,671
-$21,000
-$9.93
-13-33-211-035-0000
-2222 N Laporte Ave
-0.4 mi
-203
-1.5-story
-Masonry
-1,056
-1903
-3 / 1
-Full, unfinished
-Yes
-0
-2-car
-3,150
-$16,173
-$5,828
-$22,001
-$15.32
 13-33-110-048-0000
 2114 N Lockwood...
 0.3 mi
@@ -403,24 +295,24 @@ $18,173
 $5,828
 $24,001
 $14.20
-13-33-217-012-0000
-2123 N Leclaire Ave
-0.4 mi
+13-33-109-007-0000
+2143 N Long Ave
+0.3 mi
 203
 1-story
 Frame
-1,070
-1913
+1,071
+1905
 2 / 1
-Full, unfinished
+Slab
 No
 0
 1-car
-4,725
-$10,259
-$8,741
-$19,000
-$9.59
+3,150
+$13,173
+$5,828
+$19,001
+$12.30
 13-33-209-017-0000
 2209 N Leclaire Ave
 0.3 mi
@@ -439,14 +331,32 @@ $15,007
 $6,993
 $22,000
 $11.70
-13-33-213-034-0000
-2224 N La Crosse...
-0.6 mi
+13-33-216-016-0000
+2115 N Leamingto...
+0.3 mi
 203
 1.5-story
 Frame
-1,134
-1898
+1,184
+1913
+3 / 1
+Partial, finished
+Yes
+0
+1-car
+3,525
+$13,479
+$6,521
+$20,000
+$11.38
+13-33-105-044-0000
+2208 N Lorel Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,086
+1893
 3 / 1
 Full, unfinished
 No
@@ -456,15 +366,285 @@ None
 $14,173
 $5,828
 $20,001
-$12.50
-Median building AV / sq ft of the 20 comparable homes: $12.77. Subject: $19.17 (50% above the median).
+$13.05
+13-33-216-025-0000
+2148 N Leclaire Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,320
+1913
+3 / 1
+Full, unfinished
+Yes
+0
+1-car
+3,780
+$15,007
+$6,993
+$22,000
+$11.37
+13-33-209-013-0000
+2221 N Leclaire Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,338
+1914
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,780
+$15,007
+$6,993
+$22,000
+$11.22
+13-33-209-035-0000
+2206 N Lawler Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,254
+1913
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,780
+$13,007
+$6,993
+$20,000
+$10.37
+13-33-106-018-0000
+2217 N Lorel Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,291
+1893
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,150
+$22,373
+$5,828
+$28,201
+$17.33
+13-33-109-035-0000
+2146 N Lorel Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,344
+1914
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,150
+$18,173
+$5,828
+$24,001
+$13.52
+13-33-217-003-0000
+2151 N Leclaire Av...
+0.3 mi
+203
+1.5-story
+Frame
+1,341
+1912
+3 / 1
+Full, finished
+Yes
+1
+2-car
+3,906
+$22,774
+$7,226
+$30,000
+$16.98
+13-33-210-006-0000
+2243 N Lawler Ave
+0.3 mi
+203
+1-story
+Frame
+1,020
+1908
+2 / 1
+Full, unfinished
+No
+0
+1-car
+3,150
+$16,173
+$5,828
+$22,001
+$15.86
+13-33-209-015-0000
+2217 N Leclaire Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,254
+1913
+3 / 1
+Full, unfinished
+No
+0
+2-car
+5,355
+$12,891
+$9,907
+$22,798
+$10.28
+13-33-216-034-0000
+2122 N Leclaire Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,320
+1913
+4 / 1
+Full, unfinished
+No
+0
+None
+3,780
+$15,007
+$6,993
+$22,000
+$11.37
+13-33-216-035-0000
+2118 N Leclaire Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,320
+1913
+2 / 1
+Full, unfinished
+No
+0
+1.5-car
+3,780
+$13,007
+$6,993
+$20,000
+$9.85
+13-33-201-002-0000
+515 W Medill Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,251
+1915
+4 / 1.5
+Full, unfinished
+No
+0
+2-car
+4,325
+$15,999
+$8,001
+$24,000
+$12.79
+13-33-106-004-0000
+2251 N Lorel Ave
+0.1 mi
+203
+1.5-story
+Frame
+1,230
+1894
+3 / 2
+Full, finished
+No
+0
+1.5-car
+3,150
+$23,173
+$5,828
+$29,001
+$18.84
+13-33-205-005-0000
+4943 W Medill Ave
+0.4 mi
+203
+1.5-story
+Frame
+1,350
+1908
+3 / 1
+Full, unfinished
+No
+0
+2-car
+4,725
+$13,259
+$8,741
+$22,000
+$9.82
+13-33-208-002-0000
+2255 N Leamingto...
+0.2 mi
+203
+1.5-story
+Frame
+1,152
+1921
+3 / 1.5
+Full, unfinished
+No
+0
+1.5-car
+3,780
+$21,007
+$6,993
+$28,000
+$18.24
+13-33-215-033-0000
+2128 N Leamingto...
+0.3 mi
+203
+1-story
+Frame
+1,032
+1913
+2 / 1
+Slab
+No
+0
+1-car
+3,525
+$19,479
+$6,521
+$26,000
+$18.88
+Median building AV / sq ft of the 30 comparable homes: $13.26. Subject: $19.17 (45% above the median).
 Differences of each evidence comparable from the subject (theirs vs the subject's):
 1. 2325 N Lockwood Ave: under 0.1 mi away
 2. 2319 N Lockwood Ave: under 0.1 mi away · finished basement vs unfinished
-3. 2220 N Leamington Ave: 0.2 mi away
-4. 2146 N Leamington Ave: 0.3 mi away · 5% smaller
-5. 2227 N Lavergne Ave: 0.4 mi away · 1 more half bath · central air vs none · 1 fireplace vs none
-6. 2243 N Lawler Ave: 0.3 mi away · 1-story vs 1.5-story · 6% smaller · 1-car garage vs 2-car
+3. 2323 N Lockwood Ave: under 0.1 mi away · 2 more full baths · 1 more half bath
+4. 2308 N Latrobe Ave: under 0.1 mi away · 16% larger · built 11 years later · 1 more half bath · 1-car garage vs 2-car
+5. 2231 N Lorel Ave: 0.1 mi away · 20% larger · built 10 years earlier
+6. 2220 N Leamington Ave: 0.2 mi away
 Filing steps: Cook County Board of Review
 PIN 13-33-103-013-0000 · Tax year 2026
 Page 3 of 3

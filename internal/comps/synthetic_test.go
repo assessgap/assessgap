@@ -119,7 +119,7 @@ func TestSyntheticTwoComps(t *testing.T) {
 		t.Fatalf("level %d, %d comps; want level 3, 2 comps", r.Search.Level, r.Stats.NumComps)
 	}
 	want := Stats{NumComps: 2, SubjectBldgAVPerSF: 30, MedianBldgAVPerSF: 22.5, PctAboveMedian: 0.3333,
-		SubjectPercentile: 100, UniformityAV: 22500, PotentialAVReduction: 7500}
+		SubjectPercentile: 100, CompsLower: 2, UniformityAV: 22500, PotentialAVReduction: 7500}
 	if *r.Stats != want {
 		t.Errorf("stats %+v\nwant  %+v", *r.Stats, want)
 	}
@@ -138,9 +138,9 @@ func TestSyntheticTieAtMedian(t *testing.T) {
 	}
 	r := s.report("S")
 	// Median of 20, 25, 25, 30 is (25+25)/2 = 25: exactly the subject.
-	// Percentile = (1 below + 0.5 × 2 equal) / 4 = 50.
+	// Percentile = (1 below + 0.5 × 2 equal) / 4 = 50; strictly lower: 1.
 	want := Stats{NumComps: 4, SubjectBldgAVPerSF: 25, MedianBldgAVPerSF: 25, PctAboveMedian: 0,
-		SubjectPercentile: 50, UniformityAV: 25000, PotentialAVReduction: 0}
+		SubjectPercentile: 50, CompsLower: 1, UniformityAV: 25000, PotentialAVReduction: 0}
 	if *r.Stats != want {
 		t.Errorf("stats %+v\nwant  %+v", *r.Stats, want)
 	}
@@ -238,7 +238,7 @@ func TestSyntheticBuildingRate(t *testing.T) {
 	// Uniformity = 25 × 1,000 + 10,000 land = 35,000; 40,000 − 35,000 = 5,000.
 	// Land: subject 10,000 / 3,000 = $3.33 per land sq ft; comps 5,000 / 3,000 = $1.67.
 	want := Stats{NumComps: 3, SubjectBldgAVPerSF: 30, MedianBldgAVPerSF: 25, PctAboveMedian: 0.2,
-		SubjectPercentile: 100, UniformityAV: 35000, PotentialAVReduction: 5000,
+		SubjectPercentile: 100, CompsLower: 3, UniformityAV: 35000, PotentialAVReduction: 5000,
 		SubjectLandAVPerSF: 3.33, MedianLandAVPerSF: 1.67}
 	if *r.Stats != want {
 		t.Errorf("stats %+v\nwant  %+v", *r.Stats, want)

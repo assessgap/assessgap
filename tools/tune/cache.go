@@ -108,18 +108,16 @@ func prep(ctx context.Context, dbPath, dir string) error {
 	e.CachePools = false
 
 	triads := map[string]string{}
-	rows, err := db.QueryContext(ctx, triadSQL)
-	if err != nil {
-		return err
-	}
-	for rows.Next() {
+	if err := eachRow(ctx, db, triadSQL, nil, func(rows *sql.Rows) error {
 		var t, c sql.NullString
 		if err := rows.Scan(&t, &c); err != nil {
 			return err
 		}
 		triads[t.String] = c.String
+		return nil
+	}); err != nil {
+		return err
 	}
-	rows.Close()
 
 	for _, set := range []struct {
 		file  string
@@ -177,18 +175,28 @@ func subjectIndex(pool []comps.Home, pin string) int {
 	return -1
 }
 
-func loadYear(ctx context.Context, db *sql.DB, y int) ([]Appeal, error) {
-	rows, err := db.QueryContext(ctx, appealsSQL, y)
+// eachRow runs q and calls fn for every row.
+func eachRow(ctx context.Context, db *sql.DB, q string, args []any, fn func(*sql.Rows) error) error {
+	rows, err := db.QueryContext(ctx, q, args...)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	var as []Appeal
+	defer rows.Close()
 	for rows.Next() {
+		if err := fn(rows); err != nil {
+			return err
+		}
+	}
+	return rows.Err()
+}
+
+func loadYear(ctx context.Context, db *sql.DB, y int) ([]Appeal, error) {
+	var as []Appeal
+	if err := eachRow(ctx, db, appealsSQL, []any{y}, func(rows *sql.Rows) error {
 		var a Appeal
 		var cut sql.NullFloat64
 		if err := rows.Scan(&a.PIN, &a.Year, &a.Won, &a.Pro, &cut, &a.Nbhd, &a.Mailed, &a.Certified, &a.PriorFinal); err != nil {
-			rows.Close()
-			return nil, err
+			return err
 		}
 		a.Cut = math.NaN()
 		if cut.Valid {
@@ -198,9 +206,8 @@ func loadYear(ctx context.Context, db *sql.DB, y int) ([]Appeal, error) {
 			a.Town = a.Nbhd[:2]
 		}
 		as = append(as, a)
-	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -209,39 +216,33 @@ func loadYear(ctx context.Context, db *sql.DB, y int) ([]Appeal, error) {
 		n, wins int
 	}
 	prior := map[string]py{}
-	rows, err = db.QueryContext(ctx, priorSQL, y-2, y-1)
-	if err != nil {
-		return nil, err
-	}
-	for rows.Next() {
+	if err := eachRow(ctx, db, priorSQL, []any{y - 2, y - 1}, func(rows *sql.Rows) error {
 		var pin string
 		var yr, won int
 		if err := rows.Scan(&pin, &yr, &won); err != nil {
-			rows.Close()
-			return nil, err
+			return err
 		}
 		p := prior[pin]
 		p.n++
 		p.wins += won
 		prior[pin] = p
-	}
-	rows.Close()
-
-	hist := map[string][2]int{}
-	rows, err = db.QueryContext(ctx, nbhdHistorySQL, y-2, y-1, y)
-	if err != nil {
+		return nil
+	}); err != nil {
 		return nil, err
 	}
-	for rows.Next() {
+
+	hist := map[string][2]int{}
+	if err := eachRow(ctx, db, nbhdHistorySQL, []any{y - 2, y - 1, y}, func(rows *sql.Rows) error {
 		var nb sql.NullString
 		var n, w int
 		if err := rows.Scan(&nb, &n, &w); err != nil {
-			rows.Close()
-			return nil, err
+			return err
 		}
 		hist[nb.String] = [2]int{n, w}
+		return nil
+	}); err != nil {
+		return nil, err
 	}
-	rows.Close()
 
 	for i := range as {
 		a := &as[i]

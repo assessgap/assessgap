@@ -70,10 +70,10 @@ func allPINs(t *testing.T, db *sql.DB) []string {
 func checkInvariants(t *testing.T, r *Report) {
 	t.Helper()
 	s, st := r.Subject, r.Stats
-	if len(r.Comps) > 20 || st.NumComps != len(r.Comps) {
+	if len(r.Comps) > 30 || st.NumComps != len(r.Comps) {
 		t.Errorf("%s: %d comps, NumComps %d", r.PIN, len(r.Comps), st.NumComps)
 	}
-	if len(r.Comps) != min(r.Search.Candidates, 20) {
+	if len(r.Comps) != min(r.Search.Candidates, 30) {
 		t.Errorf("%s: %d candidates for %d comps", r.PIN, r.Search.Candidates, len(r.Comps))
 	}
 	for i, c := range r.Comps {
@@ -162,10 +162,11 @@ func TestSelectCompsWidening(t *testing.T) {
 			wantLevel: 3, wantN: 0,
 		},
 		{
-			// Distances are 4·i/1200, so the 20 nearest are c00–c19.
-			name:      "keeps the 20 nearest",
-			pool:      repeat(30, func(i int) Home { return home(pin(29-i), "203", 1200+float64(29-i), 30000) }),
-			wantLevel: 0, wantN: 20, wantLast: "c19",
+			// Distances are 1·i/1200 (plus the same 4 for an unknown
+			// location), so the 30 most similar are c00–c29.
+			name:      "keeps the 30 most similar",
+			pool:      repeat(40, func(i int) Home { return home(pin(39-i), "203", 1200+float64(39-i), 30000) }),
+			wantLevel: 0, wantN: 30, wantLast: "c29",
 		},
 	}
 	for _, tt := range tests {
@@ -182,22 +183,23 @@ func TestSelectCompsWidening(t *testing.T) {
 }
 
 func TestVerdict(t *testing.T) {
-	// Subject at $30/sf; comps at the given AV/sf values, so the gap is
-	// 30/median − 1, rounded to 4 places.
+	// Subject at $30/sf; comps at the given AV/sf values. The tier depends on
+	// the share of comps strictly below $30.
+	lower, higher := func(n int) []float64 { return fill(n, 25) }, func(n int) []float64 { return fill(n, 35) }
 	tests := []struct {
 		name  string
 		comps []float64
 		want  string
 	}{
-		{"strong: 20% above, 10 comps", fill(10, 25), Strong},
-		{"strong: just over 5% (5.01%)", fill(10, 28.57), Strong},
-		{"possible: just under 5% (4.90%)", fill(10, 28.6), Possible},
-		{"possible: big gap but only 6 comps", fill(6, 25), Possible},
-		{"possible: just over 1% (1.01%)", fill(10, 29.7), Possible},
-		{"weak: just under 1% (0.98%)", fill(10, 29.71), Weak},
-		{"weak: below median", fill(10, 33), Weak},
+		{"strong: 8 of 10 lower", append(lower(8), higher(2)...), Strong},
+		{"strong: exactly three quarters (9 of 12)", append(lower(9), higher(3)...), Strong},
+		{"possible: just under three quarters (11 of 15)", append(lower(11), higher(4)...), Possible},
+		{"possible: most lower but only 6 comps", append(lower(5), higher(1)...), Possible},
+		{"possible: exactly half (5 of 10)", append(lower(5), higher(5)...), Possible},
+		{"weak: just under half (4 of 9)", append(lower(4), higher(5)...), Weak},
+		{"weak: assessed the same as every comp", fill(10, 30), Weak},
 		{"weak: too few comps", fill(2, 20), Weak},
-		{"weak: gap but < 3 lower-assessed", []float64{20, 20, 31, 31}, Weak},
+		{"weak: half lower but < 3 lower-assessed", append(lower(2), higher(2)...), Weak},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

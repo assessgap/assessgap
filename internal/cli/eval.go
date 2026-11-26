@@ -392,12 +392,14 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 		byKey        = map[key]*outcome{}
 		byGap        = map[string]map[bool]*outcome{}
 		byTier       = map[string]map[bool]*outcome{}
+		byShare      = map[string]map[bool]*outcome{}
 		gaps         = map[bool][]scored{}
+		ranks        = map[bool][]scored{} // percentile among comps, the gap breaking ties
 		skipped      = map[string]int{}
 		reportErrors int
 	)
 	if perAppeal != nil {
-		fmt.Fprintln(perAppeal, "pin\tyear\tpro_se\twon\tnum_comps\tgap\tverdict")
+		fmt.Fprintln(perAppeal, "pin\tyear\tpro_se\twon\tnum_comps\tgap\tverdict\tcomps_lower\tpercentile")
 	}
 	bucket := func(m map[string]map[bool]*outcome, k string) map[bool]*outcome {
 		if m[k] == nil {
@@ -432,11 +434,14 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 		st := r.Stats
 		bucket(byGap, gapBucket(st.PctAboveMedian, st.NumComps))[a.pro].add(a.won, a.cut.Float64)
 		bucket(byTier, tierBucket(st.PctAboveMedian, st.NumComps))[a.pro].add(a.won, a.cut.Float64)
+		bucket(byShare, shareBucket(*st))[a.pro].add(a.won, a.cut.Float64)
 		if st.NumComps >= 3 {
 			gaps[a.pro] = append(gaps[a.pro], scored{st.PctAboveMedian, a.won})
+			ranks[a.pro] = append(ranks[a.pro], scored{rankScore(*st), a.won})
 		}
 		if perAppeal != nil {
-			fmt.Fprintf(perAppeal, "%s\t%d\t%t\t%t\t%d\t%.4f\t%s\n", a.pin, a.year, a.pro, a.won, st.NumComps, st.PctAboveMedian, v)
+			fmt.Fprintf(perAppeal, "%s\t%d\t%t\t%t\t%d\t%.4f\t%s\t%d\t%.1f\n", a.pin, a.year, a.pro, a.won, st.NumComps, st.PctAboveMedian, v,
+				st.CompsLower, st.SubjectPercentile)
 		}
 	}
 	fmt.Fprintf(w, "scored in %s; errors %d; skipped (unsupported) %d\n",
@@ -470,13 +475,37 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 			printOutcomeRow(w, g, *m[true], *m[false])
 		}
 	}
+	fmt.Fprintf(w, "\n**By share of similar homes assessed lower (the report's tiers, all years)**\n\n")
+	printOutcomeHeader(w, "share lower")
+	for _, g := range shareOrder {
+		if m := byShare[g]; m != nil {
+			printOutcomeRow(w, g, *m[true], *m[false])
+		}
+	}
 	all := append(append([]scored(nil), gaps[true]...), gaps[false]...)
-	fmt.Fprintf(w, "\n**How well the gap separates reductions from no change (AUC, 3+ comps)**\n\n")
-	fmt.Fprintf(w, "| filer | n | AUC |\n|---|--:|--:|\n")
-	fmt.Fprintf(w, "| pro se | %d | %.3f |\n", len(gaps[true]), auc(gaps[true]))
-	fmt.Fprintf(w, "| attorney | %d | %.3f |\n", len(gaps[false]), auc(gaps[false]))
-	fmt.Fprintf(w, "| all | %d | %.3f |\n", len(all), auc(all))
+	allRanks := append(append([]scored(nil), ranks[true]...), ranks[false]...)
+	fmt.Fprintf(w, "\n**How well each score separates reductions from no change (AUC, 3+ comps)**\n\n")
+	fmt.Fprintf(w, "Rank = the percentile among the comps, the gap breaking ties (docs/dev/2026-11-26-tune.md).\n\n")
+	fmt.Fprintf(w, "| filer | n | AUC of the gap | AUC of the rank |\n|---|--:|--:|--:|\n")
+	fmt.Fprintf(w, "| pro se | %d | %.4f | %.4f |\n", len(gaps[true]), auc(gaps[true]), auc(ranks[true]))
+	fmt.Fprintf(w, "| attorney | %d | %.4f | %.4f |\n", len(gaps[false]), auc(gaps[false]), auc(ranks[false]))
+	fmt.Fprintf(w, "| all | %d | %.4f | %.4f |\n", len(all), auc(all), auc(allRanks))
 	return nil
+}
+
+// rankScore orders homes by their percentile among their comps, and by the
+// gap among equal percentiles (it moves the score by under one step).
+func rankScore(st comps.Stats) float64 {
+	return st.SubjectPercentile + 0.0005*max(-1, min(1, st.PctAboveMedian))
+}
+
+var shareOrder = []string{"<3 comps", ">= 75% lower", "50..75%", "25..50%", "< 25%"}
+
+func shareBucket(st comps.Stats) string {
+	if st.NumComps < 3 {
+		return "<3 comps"
+	}
+	return shareOrder[1+comps.ShareBand(st.ShareLower())]
 }
 
 func printOutcomeHeader(w io.Writer, first string) {

@@ -125,7 +125,7 @@ func TestGridFitsEveryValue(t *testing.T) {
 	}
 }
 
-// TestRenderWorstCaseGrid fills page 2 as far as a real report can: 20 comps,
+// TestRenderWorstCaseGrid fills page 2 as far as a real report can: 30 comps,
 // 6 evidence comps, each differing on every feature, with long addresses.
 func TestRenderWorstCaseGrid(t *testing.T) {
 	subject := comps.Home{PIN: "13331030130000", Address: "12345 W NORTHWEST HIGHWAY AVE", Class: "203",
@@ -138,8 +138,8 @@ func TestRenderWorstCaseGrid(t *testing.T) {
 	r := &comps.Report{PIN: subject.PIN, Year: 2026, AVStage: "mailed", Class: "203", Nbhd: "71280",
 		Township: "Jefferson", Subject: &subject, Disclaimer: comps.Disclaimer,
 		Search: &comps.Search{Level: 3, Description: "same neighborhood, one-story homes, building sqft within ±50%, built within ±40 years"},
-		Stats:  &comps.Stats{NumComps: 20, SubjectBldgAVPerSF: 20, MedianBldgAVPerSF: 18, PctAboveMedian: 0.1111}}
-	for i := range 20 {
+		Stats:  &comps.Stats{NumComps: 30, SubjectBldgAVPerSF: 20, MedianBldgAVPerSF: 18, PctAboveMedian: 0.1111}}
+	for i := range 30 {
 		h := far
 		h.PIN = fmt.Sprintf("1333103%03d0000", i)
 		h.Address, h.AV, h.BldgAV, h.LandAV, h.BldgAVPerSF = "12345 W NORTHWEST HIGHWAY AVE", 30000, 24000, 6000, 16

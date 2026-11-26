@@ -43,11 +43,14 @@ type Params struct {
 
 // DefaultParams are the rules every report uses (docs/methodology.md).
 //
-// The distance weight: the Board prefers comps on the same block or within
-// ¼ mile. In the 2026-11-25c backtest, pro se AUC was 0.769 at 0, 0.784 at
-// 0.5, 0.792 at 1 and 0.799 at 2; 1 keeps most of the gain while a mile still
-// weighs no more than one noticeable difference in size or age
-// (docs/dev/backtest-2026-11-25c/README.md).
+// Within the hard filters (same neighborhood and class, size and age bands),
+// nearness counts most: 4 per mile, capped at 1 mile, against 1 per 100% size
+// difference, and a different basement type costs nothing. With 30 comps, this
+// and ranking the subject among its comps (analyze.go) separated Board of
+// Review reductions from no change best when tuned on tax years 2023–2024. On
+// held-out 2025 pro se appeals it raised the AUC from 0.789 to 0.817 (95% CI
+// of the gain +0.025 to +0.030); see docs/dev/2026-11-26-tune.md. The Board
+// prefers comps on the same block or within ¼ mile.
 var DefaultParams = Params{
 	Steps: []Search{
 		{Level: 0, SameClass: true, SFTolerance: 0.25, AgeTol: 15},
@@ -56,10 +59,10 @@ var DefaultParams = Params{
 		{Level: 3, SameClass: false, SFTolerance: 0.50, AgeTol: 40},
 	},
 	MinComps: 8,
-	MaxComps: 20,
-	WSF:      4.0, WAge: 1.0, AgeScale: 15, WBath: 0.5, WLand: 0.5,
-	WTypeResd: 0.5, WExtWall: 0.5, WBasement: 0.5, WClass: 0.25,
-	WMiles: 1.0, CapMiles: 1.0,
+	MaxComps: 30,
+	WSF:      1.0, WAge: 1.0, AgeScale: 15, WBath: 0.5, WLand: 0.5,
+	WTypeResd: 0.5, WExtWall: 0.5, WBasement: 0, WClass: 0.25,
+	WMiles: 4.0, CapMiles: 1.0,
 }
 
 // minComps is the default widening threshold; decide also uses it as the

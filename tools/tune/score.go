@@ -11,7 +11,7 @@ import (
 	"github.com/assessgap/assessgap/internal/comps"
 )
 
-// Trial is one candidate rule: overrides on comps.DefaultParams plus the
+// Trial is one candidate rule: overrides on rule25c plus the
 // statistic that turns a comp set into a score.
 type Trial struct {
 	Name string `json:"name"`
@@ -25,9 +25,30 @@ type Trial struct {
 	Params  json.RawMessage `json:"params,omitempty"`   // comps.Params fields to override
 }
 
-func (t Trial) params() (comps.Params, error) {
+// rule25c is the rule every trial was measured against: the engine's
+// defaults from 2026-11-25c until this run changed them. Trials override it,
+// not comps.DefaultParams, so the logged configs and the holdout keep their
+// meaning after the engine moved to finalist 1.
+var rule25c = func() comps.Params {
 	p := comps.DefaultParams
-	p.Steps = append([]comps.Search(nil), p.Steps...) // never write through to the defaults
+	p.Steps = []comps.Search{
+		{Level: 0, SameClass: true, SFTolerance: 0.25, AgeTol: 15},
+		{Level: 1, SameClass: false, SFTolerance: 0.25, AgeTol: 15},
+		{Level: 2, SameClass: false, SFTolerance: 0.35, AgeTol: 25},
+		{Level: 3, SameClass: false, SFTolerance: 0.50, AgeTol: 40},
+	}
+	p.MinComps, p.MaxComps = 8, 20
+	p.WSF, p.WAge, p.AgeScale, p.WBath, p.WLand = 4, 1, 15, 0.5, 0.5
+	p.WTypeResd, p.WExtWall, p.WBasement, p.WClass = 0.5, 0.5, 0.5, 0.25
+	p.WMiles, p.CapMiles = 1, 1
+	p.WAir, p.WBsmtFin, p.WGarage, p.MaxMiles = 0, 0, 0, 0
+	p.SameTypeResd, p.SameBasement = false, false
+	return p
+}()
+
+func (t Trial) params() (comps.Params, error) {
+	p := rule25c
+	p.Steps = append([]comps.Search(nil), p.Steps...) // never write through to the base rule
 	if len(t.Params) > 0 {
 		if err := json.Unmarshal(t.Params, &p); err != nil {
 			return p, fmt.Errorf("%s: params: %w", t.Name, err)

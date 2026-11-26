@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -317,7 +318,8 @@ func writeHoldoutTSV(path string, d *Dataset, pop []int, names []string, cols []
 		}
 		row := []string{a.PIN, fmt.Sprint(a.Year), a.Nbhd, fmt.Sprint(b2i(a.Pro)), fmt.Sprint(b2i(a.Won)), cut}
 		for mi := range cols {
-			row = append(row, fmt.Sprintf("%.6f", cols[mi][k]))
+			// Full precision: the percentile scores' tie-break is below 0.001.
+			row = append(row, strconv.FormatFloat(cols[mi][k], 'g', -1, 64))
 		}
 		fmt.Fprintln(bw, strings.Join(row, "\t"))
 	}

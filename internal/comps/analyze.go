@@ -8,13 +8,47 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-// Verdict thresholds on how far the subject's building AV/sqft sits above the comp median.
 const (
-	strongGap   = 0.05 // backtest: pro se win rate plateaus ~89% from +5% (docs/methodology.md)
-	possibleGap = 0.01 // 1–5% above median: ~84% pro se win rate; within ±1% is "in line" (~64%)
+	// possibleGap: within ±1% of the median is "in line" on every surface, and
+	// from +1% the reports state the value at the median rate.
+	possibleGap = 0.01
 	minEvidence = 3
 	maxEvidence = 6
 )
+
+// Tier bands on the share of similar homes whose building is assessed lower
+// per sq ft than the subject's. Ranking a home among its comps this way
+// separated Board of Review outcomes better than its gap from the median
+// (docs/dev/2026-11-26-tune.md). Strictly lower, so a home assessed the same
+// as its neighbors doesn't rise a band.
+const (
+	strongShare   = 0.75
+	possibleShare = 0.50
+	lowShare      = 0.25
+)
+
+// ShareLower is the share of comps assessed lower per sq ft than the subject.
+func (st Stats) ShareLower() float64 {
+	if st.NumComps == 0 {
+		return 0
+	}
+	return float64(st.CompsLower) / float64(st.NumComps)
+}
+
+// ShareBand is the band index (0 = at least three quarters lower … 3 = fewer
+// than a quarter) a share falls in.
+func ShareBand(share float64) int {
+	switch {
+	case share >= strongShare:
+		return 0
+	case share >= possibleShare:
+		return 1
+	case share >= lowShare:
+		return 2
+	default:
+		return 3
+	}
+}
 
 func median(xs []float64) float64 {
 	if len(xs) == 0 {
@@ -49,7 +83,7 @@ func computeStats(subject Home, comps []Comp) Stats {
 			land = append(land, r)
 		}
 	}
-	st := Stats{NumComps: len(comps), SubjectBldgAVPerSF: round(subject.BldgAVPerSF, 2)}
+	st := Stats{NumComps: len(comps), SubjectBldgAVPerSF: round(subject.BldgAVPerSF, 2), CompsLower: below}
 	if r := subject.LandAVPerSF(); r > 0 && len(land) > 0 {
 		st.SubjectLandAVPerSF, st.MedianLandAVPerSF = round(r, 2), round(median(land), 2)
 	}
@@ -170,22 +204,15 @@ func decide(r *Report) (string, []string) {
 			"At similar homes' median building rate per sq ft, plus your land's assessed value of %s, your assessed value would be %s, which is %s lower than now.",
 			money(s.LandAV), money(st.UniformityAV), money(st.PotentialAVReduction)))
 	}
-	// Rates: pro se, by the report's cut points, 2024–2025 (docs/dev/backtest-2026-11-25c/new/backtest.txt).
+	band := ShareBand(st.ShareLower())
+	why = append(why, fmt.Sprintf("In our test of past Board of Review decisions, homeowners who appealed on their own "+
+		"when %s of similar homes had a building assessed lower per sq ft got a reduction about %d%% of the time.",
+		shareBandWords[band], shareBandRates[band]))
 	switch {
-	case gap >= strongGap:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed at least 5% above similar homes' got a reduction about 89% of the time.")
-	case gap >= possibleGap:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed 1–5% above similar homes' got a reduction about 84% of the time.")
-	case gap > -possibleGap:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed within 1% of similar homes' got a reduction about 64% of the time.")
-	default:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed more than 1% below similar homes' got a reduction about 36% of the time.")
-	}
-	switch {
-	case gap >= strongGap && n >= minComps && ev >= minEvidence:
+	case band == 0 && n >= minComps && ev >= minEvidence:
 		return Strong, why
-	case gap >= possibleGap && ev >= minEvidence:
-		if gap >= strongGap {
+	case band <= 1 && ev >= minEvidence:
+		if band == 0 {
 			why = append(why, fmt.Sprintf("We found only %d similar homes, so this comparison rests on a small group.", n))
 		}
 		return Possible, why
@@ -193,6 +220,12 @@ func decide(r *Report) (string, []string) {
 		return Weak, why
 	}
 }
+
+var shareBandWords = [4]string{"at least three quarters", "half to three quarters", "a quarter to half", "fewer than a quarter"}
+
+// shareBandRates: pro se reduction rates by band, tax year 2025, which the
+// tuning never saw (docs/dev/tune-2026-11-26/backtest-2025.txt).
+var shareBandRates = [4]int{92, 81, 54, 25}
 
 // InLine reports whether a gap is within ±1% of the median. Every surface
 // describes such a home as in line with (or about equal to) similar homes.
