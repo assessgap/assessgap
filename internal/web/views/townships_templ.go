@@ -168,7 +168,7 @@ func Townships(s Site, x TownshipIndex) templ.Component {
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" class=\"flex flex-wrap items-center justify-between gap-x-5 gap-y-1 px-5 py-3 hover:bg-emerald-50 focus:bg-emerald-50\"><span class=\"font-medium text-slate-900\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" class=\"flex flex-col gap-y-0.5 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-x-5 hover:bg-emerald-50 focus:bg-emerald-50\"><span class=\"font-medium text-slate-900\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -732,7 +732,7 @@ func townshipFacts(t TownshipData) templ.Component {
 			}
 		}
 		if t.ProSe != nil || t.Attorney != nil {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "<h3 class=\"mt-6 font-semibold text-slate-900\">Recent Board of Review outcomes</h3><div class=\"mt-2 overflow-x-auto\"><table class=\"w-full text-sm\"><thead class=\"bg-stone-50 text-left text-slate-500\"><tr><th scope=\"col\" class=\"px-3 py-2 font-medium\">Filed by</th><th scope=\"col\" class=\"px-3 py-2 font-medium text-right\">Appeals</th><th scope=\"col\" class=\"px-3 py-2 font-medium text-right\">Got a reduction</th><th scope=\"col\" class=\"px-3 py-2 font-medium text-right\">Average reduction</th></tr></thead> <tbody class=\"divide-y divide-stone-100\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "<h3 class=\"mt-6 font-semibold text-slate-900\">Recent Board of Review outcomes</h3><div class=\"mt-2 overflow-x-auto\"><table class=\"w-full text-sm\"><thead class=\"bg-stone-50 text-left text-slate-500\"><tr><th scope=\"col\" class=\"px-2 sm:px-3 py-2 font-medium\">Filed by</th><th scope=\"col\" class=\"px-2 sm:px-3 py-2 font-medium text-right\">Appeals</th><th scope=\"col\" class=\"px-2 sm:px-3 py-2 font-medium text-right\">Got a reduction</th><th scope=\"col\" class=\"px-2 sm:px-3 py-2 font-medium text-right\">Average reduction</th></tr></thead> <tbody class=\"divide-y divide-stone-100\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -805,14 +805,14 @@ func appealsRow(label string, a *TownshipAppeals) templ.Component {
 		}
 		ctx = templ.InitializeContext(ctx)
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 67, "<tr><th scope=\"row\" class=\"px-3 py-2.5 text-left font-medium text-slate-900\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 67, "<tr><th scope=\"row\" class=\"px-2 sm:px-3 py-2.5 text-left font-medium text-slate-900\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var43 string
 		templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `townships.templ`, Line: 164, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `townships.templ`, Line: 164, Col: 90}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 		if templ_7745c5c3_Err != nil {
@@ -823,40 +823,40 @@ func appealsRow(label string, a *TownshipAppeals) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if a != nil {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 69, "<td class=\"px-3 py-2.5 text-right tabular-nums\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 69, "<td class=\"px-2 sm:px-3 py-2.5 text-right tabular-nums\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var44 string
 			templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(a.Appeals)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `townships.templ`, Line: 166, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `townships.templ`, Line: 166, Col: 70}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "</td><td class=\"px-3 py-2.5 text-right tabular-nums\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "</td><td class=\"px-2 sm:px-3 py-2.5 text-right tabular-nums\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var45 string
 			templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(a.Reduced)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `townships.templ`, Line: 167, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `townships.templ`, Line: 167, Col: 70}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "</td><td class=\"px-3 py-2.5 text-right tabular-nums\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "</td><td class=\"px-2 sm:px-3 py-2.5 text-right tabular-nums\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var46 string
 			templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(a.AvgCut)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `townships.templ`, Line: 168, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `townships.templ`, Line: 168, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var46))
 			if templ_7745c5c3_Err != nil {
@@ -867,7 +867,7 @@ func appealsRow(label string, a *TownshipAppeals) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "<td class=\"px-3 py-2.5 text-right tabular-nums\">0</td><td class=\"px-3 py-2.5 text-right\"></td><td class=\"px-3 py-2.5 text-right\"></td>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "<td class=\"px-2 sm:px-3 py-2.5 text-right tabular-nums\">0</td><td class=\"px-2 sm:px-3 py-2.5 text-right\"></td><td class=\"px-2 sm:px-3 py-2.5 text-right\"></td>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

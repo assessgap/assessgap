@@ -49,3 +49,9 @@ Read [docs/testing.md](docs/testing.md). In short: test only where a silent regr
 ## Pull requests
 
 Use `.github/pull_request_template.md`. "Numbers impact" and "Risk and rollback" are required, and a workflow checks them. Say so if an AI wrote the change.
+
+**Visual proof.** Any PR that changes what users see includes before and after screenshots, desktop and mobile ([CONTRIBUTING.md](CONTRIBUTING.md#visual-proof)):
+- run `scripts/screenshots.sh` against `main` and against the branch (and `scripts/pdf-pages.sh` for the evidence report), then look at every image;
+- push the images to the `pr-assets` branch under `pr-<number>/`;
+- link them in the PR body as `https://raw.githubusercontent.com/assessgap/assessgap/pr-assets/pr-<number>/<file>.png`;
+- never commit screenshots to code branches, and show no address or PIN that isn't already public in `testdata/golden` or the docs (`-redact`).
