@@ -86,6 +86,63 @@ func violations(text string) []string {
 	return out
 }
 
+// A quoted reduction rate ("61% got a reduction", "got a reduction about 92%
+// of the time") must carry the caveat close by: it is what happened to past
+// appeals, never a prediction for the homeowner reading it.
+var (
+	rateQuote = regexp.MustCompile(`(?i)\bgot a reduction\b`)
+	caveat    = regexp.MustCompile(`(?i)\b(not|aren't|isn't) a prediction for any one home\b`)
+)
+
+// caveatReach is how far after a quoted rate, in characters of visible text,
+// the caveat may be: far enough for the rows of a small table, short of the
+// next section.
+const caveatReach = 600
+
+// uncaveated lists quoted reduction rates in text with no caveat after them.
+func uncaveated(text string) []string {
+	text = strings.Join(strings.Fields(text), " ")
+	var out []string
+	for _, m := range rateQuote.FindAllStringIndex(text, -1) {
+		if !caveat.MatchString(text[m[0]:min(len(text), m[1]+caveatReach)]) {
+			out = append(out, "rate without the caveat: …"+text[max(0, m[0]-60):min(len(text), m[1]+60)]+"…")
+		}
+	}
+	return out
+}
+
+func TestUncaveated(t *testing.T) {
+	tests := []struct {
+		text string
+		bad  bool
+	}{
+		{"Homeowners like this got a reduction about 92% of the time. This is what happened to past appeals like this one; it is not a prediction for any one home.", false},
+		{"61% got a reduction (170 appeals). These are outcomes for people who chose to appeal. They aren't a prediction for any one home.", false},
+		{"Homeowners like this got a reduction about 92% of the time.", true},
+		{"61% got a reduction. They aren't a prediction for your home.", true},
+		{"It is not a prediction for any one home. 61% got a reduction.", true},
+		{"Nothing quoted here.", false},
+	}
+	for _, tt := range tests {
+		if got := len(uncaveated(tt.text)) > 0; got != tt.bad {
+			t.Errorf("uncaveated(%q) = %v, want bad=%v", tt.text, uncaveated(tt.text), tt.bad)
+		}
+	}
+}
+
+// TestComplianceCLIText scans the terminal report ("check", no -json) for every case.
+func TestComplianceCLIText(t *testing.T) {
+	db := fixture.Path(t)
+	for _, c := range golden.Cases {
+		var out bytes.Buffer
+		env := &cli.Env{Stdout: &out, Stderr: io.Discard, Getenv: func(string) string { return "" }}
+		cli.Run(context.Background(), env, append([]string{"check", "-db", db}, c.Args...))
+		for _, bad := range append(violations(out.String()), uncaveated(out.String())...) {
+			t.Errorf("%s (%s): terminal report: %s", c.Name, c.Args[0], bad)
+		}
+	}
+}
+
 func TestViolations(t *testing.T) {
 	tests := []struct {
 		text string
@@ -133,7 +190,8 @@ func TestComplianceReportJSON(t *testing.T) {
 			t.Fatalf("%s: %v", c.Name, err)
 		}
 		for _, s := range stringsIn(v) {
-			for _, bad := range violations(s) {
+			// Each string stands alone (the CLI and others quote reasons one at a time).
+			for _, bad := range append(violations(s), uncaveated(s)...) {
 				t.Errorf("%s (%s): report text: %s", c.Name, c.Args[0], bad)
 			}
 		}
@@ -155,7 +213,7 @@ func TestCompliancePacket(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%s: %v", c.Name, err)
 		}
-		for _, bad := range violations(txt) {
+		for _, bad := range append(violations(txt), uncaveated(txt)...) {
 			t.Errorf("%s (%s): evidence report: %s", c.Name, c.Args[0], bad)
 		}
 	}
@@ -177,7 +235,9 @@ func TestComplianceWebsite(t *testing.T) {
 
 	// Every indexed page (the sitemap: the static pages, /townships and each
 	// township's page), plus the report page for every case.
-	paths := []string{"/townships/lakeview"} // a redirect, followed to the page
+	// A redirect (followed to the page), both 404 pages and the search page.
+	paths := []string{"/townships/lakeview", "/townships/springfield", "/no-such-page", "/search?q=2329+n+lock"}
+	notFound := map[string]bool{"/townships/springfield": true, "/no-such-page": true}
 	resp, err := http.Get(ts.URL + "/sitemap.xml")
 	if err != nil {
 		t.Fatal(err)
@@ -211,7 +271,7 @@ func TestComplianceWebsite(t *testing.T) {
 		}
 		// Every case's page exists (unknown PINs get the 404 page, which is scanned too).
 		wantStatus := 200
-		if strings.HasPrefix(p, "/check/99999") {
+		if strings.HasPrefix(p, "/check/99999") || notFound[p] {
 			wantStatus = 404
 		}
 		if resp.StatusCode != wantStatus {
@@ -224,7 +284,8 @@ func TestComplianceWebsite(t *testing.T) {
 			}
 			text += " " + m[1]
 		}
-		for _, bad := range violations(html.UnescapeString(text)) {
+		text = html.UnescapeString(text)
+		for _, bad := range append(violations(text), uncaveated(text)...) {
 			t.Errorf("%s: page: %s", p, bad)
 		}
 	}
@@ -264,7 +325,8 @@ func TestComplianceTownshipStates(t *testing.T) {
 		if err := p.Render(ctx, &b); err != nil {
 			t.Fatal(err)
 		}
-		for _, bad := range violations(html.UnescapeString(tags.ReplaceAllString(b.String(), " "))) {
+		text := html.UnescapeString(tags.ReplaceAllString(b.String(), " "))
+		for _, bad := range append(violations(text), uncaveated(text)...) {
 			t.Errorf("township page %d: %s", i, bad)
 		}
 	}

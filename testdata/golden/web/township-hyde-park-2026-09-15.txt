@@ -3,6 +3,12 @@
 Attorney = null
 Homes = ""
 Name = "Hyde Park"
+Next.Dates = ""
+Next.Name = "Jefferson"
+Next.Slug = "jefferson"
+Prev.Dates = ""
+Prev.Name = "Hanover"
+Prev.Slug = "hanover"
 ProSe = null
 ScheduleAsOf = "November 24, 2026"
 Slug = "hyde-park"

@@ -4,17 +4,22 @@ import "fmt"
 
 templ Report(s Site, r ReportData) {
 	@Layout(s, r.Address+" · AssessGap", "How "+r.Address+"'s assessment compares with similar homes.") {
-		<div class="mx-auto max-w-5xl px-5 py-10 space-y-8">
+		<div class="mx-auto max-w-5xl px-5 py-6 sm:py-10 space-y-8">
 			<header>
-				<a href="/" class="text-sm text-emerald-700 hover:underline">← Check another home</a>
-				<h1 class="mt-3 text-3xl font-semibold tracking-tight text-slate-900">{ r.Address }</h1>
-				<p class="mt-1 text-slate-500">
+				@breadcrumbs([]Crumb{{Name: "Home", Path: "/"}, {Name: "Check", Path: "/search"}, {Name: reportName(r), Path: "/check/" + r.PIN}}, false)
+				<h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900 text-balance">{ r.Address }</h1>
+				<p class="mt-1 text-slate-600">
 					{ r.Location } · PIN { r.PINFmt } · Tax year { fmt.Sprint(r.Year) }
+					{ " " }
 					if r.Mailed {
-						<span class="ml-2 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-amber-200">Mailed value</span>
+						<span class="ml-1 whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-amber-200">Mailed value</span>
 					} else {
-						<span class="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200">Certified value</span>
+						<span class="ml-1 whitespace-nowrap rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-stone-200">Certified value</span>
 					}
+				</p>
+				<p class="mt-3 max-w-3xl text-sm text-slate-600">
+					AssessGap compares this home's assessed value with similar homes nearby, using public Cook County data. It is free and independent of the county.
+					<a href="/how-it-works" class="whitespace-nowrap text-emerald-700 underline underline-offset-4">How it works →</a>
 				</p>
 			</header>
 			if r.Window.Text != "" {
@@ -23,37 +28,81 @@ templ Report(s Site, r ReportData) {
 			if r.Unsupported != "" {
 				@unsupported(r)
 			} else {
+				@onThisPage(r)
 				@verdictCard(r)
 				@numbers(r)
-				@nbhd(r)
-				@evidence(r)
+				@evidenceList(r)
 				if len(r.Flags) > 0 {
 					@flags(r)
 				}
+				@nbhd(r)
 				@nextSteps(r)
+				@homesGrid(r)
 				if len(r.Sales) > 0 {
 					@sales(r)
 				}
 			}
-			<p class="text-xs text-slate-400">{ r.Disclaimer } { r.StageLabel }</p>
+			<p class="text-xs text-slate-600">{ r.Disclaimer } { r.StageLabel }</p>
 		</div>
 	}
+}
+
+// reportName is the report's last breadcrumb: the address, or the PIN for a
+// parcel with no address on record.
+func reportName(r ReportData) string {
+	if r.Address != "" {
+		return r.Address
+	}
+	return "PIN " + r.PINFmt
+}
+
+// onThisPage links each section of the report, so a phone reaches any of
+// them in one tap, and offers the PDF up front when there is one.
+templ onThisPage(r ReportData) {
+	<nav aria-labelledby="otp" class="rounded-2xl bg-white px-4 py-3 ring-1 ring-stone-200">
+		<h2 id="otp" class="text-sm font-medium text-slate-600">On this page</h2>
+		<ul class="mt-1 flex flex-wrap items-center gap-x-1 text-sm">
+			@otpLink("#summary", "Summary")
+			@otpLink("#numbers", "Your numbers")
+			if len(r.Evidence) > 0 {
+				@otpLink("#lower", "Homes assessed lower")
+			}
+			if len(r.Flags) > 0 {
+				@otpLink("#details", "Details to check")
+			}
+			@otpLink("#appeals", "Past appeals")
+			@otpLink("#options", "How to file")
+			@otpLink("#homes", "All similar homes")
+			if len(r.Sales) > 0 {
+				@otpLink("#sales", "Sales")
+			}
+			if r.Verdict != "weak" {
+				<li class="ml-auto">
+					<a href={ templ.SafeURL("/check/" + r.PIN + "/report.pdf") } download class="my-1 inline-flex min-h-11 items-center rounded-xl bg-emerald-700 px-4 font-medium text-white hover:bg-emerald-800">Download the PDF</a>
+				</li>
+			}
+		</ul>
+	</nav>
+}
+
+templ otpLink(href, label string) {
+	<li><a href={ templ.SafeURL(href) } class="inline-flex min-h-11 items-center rounded-lg px-2 text-emerald-800 underline underline-offset-4 hover:bg-emerald-50">{ label }</a></li>
 }
 
 func verdictStyle(v string) (ring, badge string) {
 	switch v {
 	case "strong":
-		return "ring-emerald-300 bg-emerald-50/60", "bg-emerald-600 text-white"
+		return "ring-emerald-300 bg-emerald-50/60", "bg-emerald-700 text-white"
 	case "possible":
-		return "ring-amber-300 bg-amber-50/60", "bg-amber-500 text-white"
+		return "ring-amber-300 bg-amber-50/60", "bg-amber-100 text-amber-900 ring-1 ring-amber-300"
 	default:
-		return "ring-stone-200 bg-white", "bg-slate-200 text-slate-700"
+		return "ring-stone-200 bg-white", "bg-stone-200 text-slate-800"
 	}
 }
 
 templ verdictCard(r ReportData) {
 	{{ ring, badge := verdictStyle(r.Verdict) }}
-	<section class={ "rounded-3xl p-6 sm:p-8 ring-1", ring }>
+	<section id="summary" class={ "rounded-3xl p-6 sm:p-8 ring-1", ring }>
 		<span class={ "inline-block rounded-full px-3 py-1 text-sm font-medium", badge }>{ r.Badge }</span>
 		<h2 class="mt-4 text-2xl font-semibold tracking-tight text-slate-900 text-balance">{ r.Headline }</h2>
 		@chart(r.Chart, r.ChartNarrow)
@@ -73,9 +122,9 @@ templ chart(wide, narrow Chart) {
 		<div class="sm:hidden">
 			@chartSVG(narrow)
 		</div>
-		<figcaption class="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-500">
+		<figcaption class="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-600">
 			<span class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-rose-500"></span>{ wide.SubjectLbl }</span>
-			<span class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-emerald-500"></span>Similar homes with the building assessed lower per sq ft</span>
+			<span class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-emerald-600"></span>Most similar homes assessed lower (listed below)</span>
 			<span class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-slate-300"></span>Other similar homes</span>
 		</figcaption>
 	</figure>
@@ -86,12 +135,12 @@ templ chartSVG(c Chart) {
 		<line x1={ px(c.L.Left) } x2={ px(c.L.Right) } y1={ px(c.L.Base) } y2={ px(c.L.Base) } class="stroke-stone-300" stroke-width="1"></line>
 		for _, t := range c.Ticks {
 			<line x1={ px(t.X) } x2={ px(t.X) } y1={ px(c.L.Base) } y2={ px(c.L.Base + 5) } class="stroke-stone-300"></line>
-			<text x={ px(t.X) } y={ px(c.L.Base + c.L.Font*1.3) } text-anchor="middle" class="fill-slate-400">{ t.Label }</text>
+			<text x={ px(t.X) } y={ px(c.L.Base + c.L.Font*1.3) } text-anchor="middle" class="fill-slate-500">{ t.Label }</text>
 		}
 		<line x1={ px(c.MedianX) } x2={ px(c.MedianX) } y1={ px(c.L.Top) } y2={ px(c.L.Base) } class="stroke-slate-500" stroke-width="1.5" stroke-dasharray="4 4"></line>
 		<text x={ px(c.MedianX) } y={ px(c.L.Top - c.L.Font*0.5) } text-anchor={ c.MedAnchor } class="fill-slate-600">{ c.MedLbl }</text>
 		for _, d := range c.Dots {
-			<circle cx={ px(d.X) } cy={ px(d.Y) } r={ px(c.L.DotR) } class={ templ.KV("fill-emerald-500", d.Evidence), templ.KV("fill-slate-300", !d.Evidence) }>
+			<circle cx={ px(d.X) } cy={ px(d.Y) } r={ px(c.L.DotR) } class={ templ.KV("fill-emerald-600", d.Evidence), templ.KV("fill-slate-300", !d.Evidence) }>
 				<title>{ d.Title }</title>
 			</circle>
 		}
@@ -101,7 +150,7 @@ templ chartSVG(c Chart) {
 }
 
 templ numbers(r ReportData) {
-	<section class="space-y-3">
+	<section id="numbers" aria-label="Your numbers" class="space-y-3">
 		if r.Reduction != "" {
 			<div class="grid gap-4 sm:grid-cols-3">
 				@numberCard("Your assessed value", r.SubjectAV, "What the Assessor has on record for "+fmt.Sprint(r.Year)+": building "+r.SubjectBldgAV+" plus land "+r.SubjectLandAV+".")
@@ -113,20 +162,20 @@ templ numbers(r ReportData) {
 				@numberCard("Your assessed value", r.SubjectAV, "What the Assessor has on record for "+fmt.Sprint(r.Year)+": building "+r.SubjectBldgAV+" plus land "+r.SubjectLandAV+".")
 			</div>
 		}
-		<p class="text-sm text-slate-500">{ r.LandNote }</p>
+		<p class="text-sm text-slate-600">{ r.LandNote }</p>
 	</section>
 }
 
 templ numberCard(label, value, note string) {
 	<div class="rounded-2xl bg-white p-5 ring-1 ring-stone-200">
-		<p class="text-sm text-slate-500">{ label }</p>
+		<p class="text-sm text-slate-600">{ label }</p>
 		<p class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{ value }</p>
-		<p class="mt-2 text-sm text-slate-500">{ note }</p>
+		<p class="mt-2 text-sm text-slate-600">{ note }</p>
 	</div>
 }
 
 templ nbhd(r ReportData) {
-	<section class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
+	<section id="appeals" class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
 		<h2 class="text-lg font-semibold text-slate-900">How Board of Review appeals went in your neighborhood</h2>
 		if r.ProSe != nil {
 			<p class="mt-3 text-slate-700">
@@ -142,55 +191,72 @@ templ nbhd(r ReportData) {
 		if r.SmallSample {
 			<p class="mt-3 text-sm text-amber-800">Small sample: fewer than 20 self-filed appeals here, so treat these rates as rough.</p>
 		}
-		<p class="mt-3 text-sm text-slate-500">These are outcomes for people who chose to appeal, who usually had a reason to. They aren't a prediction for your home.</p>
+		<p class="mt-3 text-sm text-slate-600">These are outcomes for people who chose to appeal, who usually had a reason to. They aren't a prediction for any one home.</p>
 	</section>
 }
 
-templ evidence(r ReportData) {
+templ evidenceList(r ReportData) {
 	if len(r.Evidence) > 0 {
-		<section class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
+		<section id="lower" class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
 			<h2 class="text-lg font-semibold text-slate-900">Similar homes with the building assessed lower</h2>
-			<p class="mt-1 text-sm text-slate-500">The most similar homes whose building is assessed lower per square foot than yours ({ r.Subject.PerSF }), with how each differs from your home.</p>
+			<p class="mt-1 text-sm text-slate-600">The most similar homes whose building is assessed lower per square foot than yours ({ r.Subject.PerSF }), with how each differs from your home.</p>
 			<ol class="mt-4 divide-y divide-stone-100">
 				for _, c := range r.Evidence {
 					<li class="py-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
 						<div>
-							<p class="font-medium text-slate-900">{ c.Address } <span class="whitespace-nowrap text-xs font-normal text-slate-400">{ c.PINFmt }</span></p>
+							<p class="font-medium text-slate-900">{ c.Address } <span class="whitespace-nowrap text-xs font-normal text-slate-500">{ c.PINFmt }</span></p>
 							<p class="text-sm text-slate-600">{ c.Differences }</p>
 						</div>
-						<p class="shrink-0 tabular-nums font-medium text-slate-900">{ c.PerSF }<span class="text-sm font-normal text-slate-500"> per sq ft</span></p>
+						<p class="shrink-0 tabular-nums font-medium text-slate-900">{ c.PerSF }{ " " }<span class="text-sm font-normal text-slate-600">per sq ft</span></p>
 					</li>
 				}
 			</ol>
 		</section>
 	}
-	<section class="rounded-2xl bg-white ring-1 ring-stone-200 overflow-hidden">
+}
+
+// gridCaption says exactly which rows are shaded: the subject, and the
+// evidence homes listed above (not every home assessed lower).
+func gridCaption(r ReportData) string {
+	c := "Compared on: " + r.SearchDesc + ". Your home is the first row."
+	switch n := len(r.Evidence); n {
+	case 0:
+	case 1:
+		c += " The green row is the home listed above as assessed lower."
+	default:
+		c += fmt.Sprintf(" Green rows are the %d homes listed above as assessed lower.", n)
+	}
+	return c + " Scroll sideways for every detail."
+}
+
+templ homesGrid(r ReportData) {
+	<section id="homes" class="rounded-2xl bg-white ring-1 ring-stone-200 overflow-hidden">
 		<div class="p-6 pb-3">
-			<h2 class="text-lg font-semibold text-slate-900">Similar homes</h2>
-			<p class="mt-1 text-sm text-slate-500">Compared on: { r.SearchDesc }. Highlighted rows are similar homes whose building is assessed lower per square foot than yours. Scroll sideways for every detail.</p>
+			<h2 id="homes-h" class="text-lg font-semibold text-slate-900">Similar homes</h2>
+			<p class="mt-1 text-sm text-slate-600">{ gridCaption(r) }</p>
 		</div>
-		<div class="overflow-x-auto">
+		<div class="overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-700" tabindex="0" role="region" aria-labelledby="homes-h">
 			<table class="w-full text-sm whitespace-nowrap">
-				<thead class="bg-stone-50 text-left text-slate-500">
+				<thead class="bg-stone-50 text-left text-slate-600">
 					<tr>
-						<th class="sticky left-0 z-10 bg-stone-50 px-4 sm:px-6 py-2 font-medium">Address</th>
-						<th class="px-3 py-2 font-medium text-right">Building per sq ft</th>
-						<th class="px-3 py-2 font-medium text-right">Away</th>
-						<th class="px-3 py-2 font-medium text-right">Sq ft</th>
-						<th class="px-3 py-2 font-medium text-right">Built</th>
-						<th class="px-3 py-2 font-medium">Class</th>
-						<th class="px-3 py-2 font-medium">Stories</th>
-						<th class="px-3 py-2 font-medium">Construction</th>
-						<th class="px-3 py-2 font-medium text-right">Beds</th>
-						<th class="px-3 py-2 font-medium text-right">Baths</th>
-						<th class="px-3 py-2 font-medium">Basement</th>
-						<th class="px-3 py-2 font-medium">Central air</th>
-						<th class="px-3 py-2 font-medium text-right">Fireplaces</th>
-						<th class="px-3 py-2 font-medium">Garage</th>
-						<th class="px-3 py-2 font-medium text-right">Land sq ft</th>
-						<th class="px-3 py-2 font-medium text-right">Building AV</th>
-						<th class="px-3 py-2 font-medium text-right">Land AV</th>
-						<th class="px-4 sm:px-6 py-2 font-medium text-right">Total AV</th>
+						<th scope="col" class="sticky left-0 z-[1] bg-stone-50 px-4 sm:px-6 py-2 font-medium">Address</th>
+						<th scope="col" class="px-3 py-2 font-medium text-right">Building per sq ft</th>
+						<th scope="col" class="px-3 py-2 font-medium text-right">Away</th>
+						<th scope="col" class="px-3 py-2 font-medium text-right">Sq ft</th>
+						<th scope="col" class="px-3 py-2 font-medium text-right">Built</th>
+						<th scope="col" class="px-3 py-2 font-medium">Class</th>
+						<th scope="col" class="px-3 py-2 font-medium">Stories</th>
+						<th scope="col" class="px-3 py-2 font-medium">Construction</th>
+						<th scope="col" class="px-3 py-2 font-medium text-right">Beds</th>
+						<th scope="col" class="px-3 py-2 font-medium text-right">Baths</th>
+						<th scope="col" class="px-3 py-2 font-medium">Basement</th>
+						<th scope="col" class="px-3 py-2 font-medium">Central air</th>
+						<th scope="col" class="px-3 py-2 font-medium text-right">Fireplaces</th>
+						<th scope="col" class="px-3 py-2 font-medium">Garage</th>
+						<th scope="col" class="px-3 py-2 font-medium text-right">Land sq ft</th>
+						<th scope="col" class="px-3 py-2 font-medium text-right">Building AV</th>
+						<th scope="col" class="px-3 py-2 font-medium text-right">Land AV</th>
+						<th scope="col" class="px-4 sm:px-6 py-2 font-medium text-right">Total AV</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-stone-100">
@@ -217,14 +283,18 @@ func rowBG(h HomeRow, subject bool) string {
 
 templ homeTR(h HomeRow, subject bool) {
 	<tr class={ rowBG(h, subject), templ.KV("font-medium", subject) }>
-		<td class={ "sticky left-0 z-10 px-4 sm:px-6 py-2.5", rowBG(h, subject) }>
+		<th scope="row" class={ "sticky left-0 z-[1] px-4 sm:px-6 py-2.5 text-left font-[inherit]", rowBG(h, subject) }>
 			if subject {
 				Your home
 			} else {
 				{ h.Address }
 			}
-			<span class="block text-xs font-normal text-slate-400">{ h.PINFmt }</span>
-		</td>
+			if h.Evidence {
+				<span class="sr-only">(listed above as assessed lower)</span>
+			}
+			{ " " }
+			<span class="block text-xs font-normal text-slate-500">{ h.PINFmt }</span>
+		</th>
 		<td class="px-3 py-2.5 text-right tabular-nums font-medium">{ h.PerSF }</td>
 		<td class="px-3 py-2.5 text-right tabular-nums">{ h.Away }</td>
 		<td class="px-3 py-2.5 text-right tabular-nums">{ h.SqFt }</td>
@@ -246,7 +316,7 @@ templ homeTR(h HomeRow, subject bool) {
 }
 
 templ flags(r ReportData) {
-	<section class="rounded-2xl bg-amber-50 p-6 ring-1 ring-amber-200">
+	<section id="details" class="rounded-2xl bg-amber-50 p-6 ring-1 ring-amber-200">
 		<h2 class="text-lg font-semibold text-amber-900">Worth double-checking</h2>
 		<p class="mt-1 text-sm text-amber-800">If the Assessor has a detail about your home wrong, correcting it can matter as much as the comparison.</p>
 		<ul class="mt-3 space-y-2 text-amber-900">
@@ -258,13 +328,18 @@ templ flags(r ReportData) {
 }
 
 templ nextSteps(r ReportData) {
-	<section class="rounded-3xl bg-slate-900 p-6 sm:p-8 text-slate-100">
+	<section id="options" class="rounded-3xl bg-slate-900 p-6 sm:p-8 text-slate-100">
 		<h2 class="text-xl font-semibold text-white">Your options</h2>
 		<ul class="mt-4 space-y-3 text-slate-300">
 			<li>
 				<strong class="font-semibold text-white">File yourself, for free.</strong>
 				The Board of Review accepts appeals from homeowners when your township is open. If it says no, you can take it to the state
 				Property Tax Appeal Board, and you can appeal again next year.
+				if r.Window.TownshipURL != "" {
+					<span class="mt-1 block">
+						<a href={ templ.SafeURL(r.Window.TownshipURL + "#file") } class="inline-flex min-h-11 items-center font-medium text-emerald-300 underline underline-offset-4">How to file in { r.Window.TownshipName } Township →</a>
+					</span>
+				}
 			</li>
 			if r.Verdict != "weak" {
 				<li>
@@ -272,7 +347,7 @@ templ nextSteps(r ReportData) {
 					It lists the similar homes whose building is assessed lower per square foot than yours, with their PINs and details, the statistics, and step-by-step
 					instructions for filing with the Board of Review. You still file and sign everything yourself.
 					<span class="mt-3 block">
-						<a href={ templ.SafeURL("/check/" + r.PIN + "/report.pdf") } download class="inline-block rounded-xl bg-emerald-500 px-4 py-2.5 font-medium text-white hover:bg-emerald-600">
+						<a href={ templ.SafeURL("/check/" + r.PIN + "/report.pdf") } download class="inline-flex min-h-11 items-center rounded-xl bg-emerald-400 px-4 font-medium text-slate-950 hover:bg-emerald-300">
 							Download the PDF
 						</a>
 					</span>
@@ -296,9 +371,9 @@ templ nextSteps(r ReportData) {
 }
 
 templ sales(r ReportData) {
-	<section class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
+	<section id="sales" class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
 		<h2 class="text-lg font-semibold text-slate-900">Recorded sales of this property</h2>
-		<p class="mt-1 text-sm text-slate-500">From county records, for reference.</p>
+		<p class="mt-1 text-sm text-slate-600">From county records, for reference.</p>
 		<ul class="mt-3 text-slate-700 tabular-nums">
 			for _, s := range r.Sales {
 				<li>{ s.Date }: { s.Price }</li>
@@ -323,16 +398,16 @@ templ unsupported(r ReportData) {
 }
 
 templ windowBanner(w Window) {
-	<section class={ "rounded-2xl px-5 py-4 ring-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
+	<section aria-label="Filing window" class={ "rounded-2xl px-5 py-4 ring-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
 		templ.KV("bg-emerald-50 ring-emerald-200 text-emerald-900", w.State == "open"),
 		templ.KV("bg-sky-50 ring-sky-200 text-sky-900", w.State == "upcoming" || w.State == "unscheduled"),
 		templ.KV("bg-stone-100 ring-stone-200 text-slate-700", w.State == "closed") }>
 		<p class="font-medium">{ w.Text }</p>
-		<span class="flex shrink-0 flex-wrap gap-x-5 gap-y-1">
+		<span class="flex shrink-0 flex-wrap gap-x-5">
 			if w.TownshipURL != "" {
-				<a href={ templ.SafeURL(w.TownshipURL) } class="py-1 text-sm font-semibold underline underline-offset-4">{ w.TownshipName } Township dates and steps →</a>
+				<a href={ templ.SafeURL(w.TownshipURL) } class="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">{ w.TownshipName } Township dates and steps →</a>
 			}
-			<a href={ templ.SafeURL(w.LinkURL) } rel="noopener" class="py-1 text-sm font-semibold underline underline-offset-4">{ w.LinkText } →</a>
+			<a href={ templ.SafeURL(w.LinkURL) } rel="noopener" class="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">{ w.LinkText } →</a>
 		</span>
 	</section>
 }

@@ -23,6 +23,7 @@ type TownshipData struct {
 	ScheduleAsOf    string // when the schedule was last checked against the Board's site
 	Homes           string // supported homes in AssessGap's copy of the data
 	ProSe, Attorney *TownshipAppeals
+	Prev, Next      TownshipLink // the townships before and after it, A–Z (wrapping)
 }
 
 // TownshipLink is one township in the /townships list.
@@ -38,6 +39,7 @@ type TownshipGroup struct {
 
 // TownshipIndex is the /townships page.
 type TownshipIndex struct {
+	All          []TownshipLink // every township, A–Z
 	Groups       []TownshipGroup
 	ScheduleAsOf string
 }

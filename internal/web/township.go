@@ -185,7 +185,22 @@ func townshipView(name string, f townshipFacts, now time.Time) views.TownshipDat
 	if f.found { // otherwise show no count rather than a confident 0
 		v.Homes = humanize.Comma(int64(f.homes))
 	}
+	all := townshipLinks()
+	for i, l := range all {
+		if l.Name == name {
+			v.Prev, v.Next = all[(i+len(all)-1)%len(all)], all[(i+1)%len(all)]
+		}
+	}
 	return v
+}
+
+// townshipLinks is every township's link, A–Z (bor.Townships' order).
+func townshipLinks() []views.TownshipLink {
+	ls := make([]views.TownshipLink, len(bor.Townships))
+	for i, t := range bor.Townships {
+		ls[i] = views.TownshipLink{Name: t, Slug: townshipSlug(t)}
+	}
+	return ls
 }
 
 // scheduleAsOf renders bor.ScheduleAsOf ("2026-11-24") as "November 24, 2026".
@@ -224,7 +239,7 @@ func townshipIndex(now time.Time) views.TownshipIndex {
 			}
 		}
 	}
-	return views.TownshipIndex{Groups: groups, ScheduleAsOf: scheduleAsOf()}
+	return views.TownshipIndex{All: townshipLinks(), Groups: groups, ScheduleAsOf: scheduleAsOf()}
 }
 
 func (s *Server) handleTownships(w http.ResponseWriter, r *http.Request) {
@@ -234,7 +249,8 @@ func (s *Server) handleTownships(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleTownship(w http.ResponseWriter, r *http.Request) {
 	name, canonical, ok := resolveTownship(r.PathValue("slug"))
 	if !ok {
-		s.notFound(w, r)
+		w.WriteHeader(http.StatusNotFound)
+		s.render(w, r, views.NotFoundTownship(s.site, townshipLinks()))
 		return
 	}
 	if !canonical {

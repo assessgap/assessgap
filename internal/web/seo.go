@@ -26,7 +26,7 @@ var indexedPaths = func() []string {
 // the home page, so no address or PIN ends up in a third party's preview cache.
 func (s *Server) share(r *http.Request) views.Share {
 	o := origin(r)
-	sh := views.Share{Origin: o, URL: o + "/", Image: o + s.ogImage, Private: true}
+	sh := views.Share{Origin: o, URL: o + "/", Image: o + s.ogImage, Private: true, Path: r.URL.Path}
 	if slices.Contains(indexedPaths, r.URL.Path) {
 		sh.URL, sh.Private = o+r.URL.Path, false
 		sh.Canonical = sh.URL

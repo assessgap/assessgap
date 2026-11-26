@@ -1,5 +1,6 @@
 # Township page data (web.townshipView, web.townshipIndex) on a fixed date
 # Regenerate deliberately: go test ./internal/golden ./internal/web -run Golden -update
+All = {}
 Groups[0].Heading = "Open now"
 Groups[0].State = "open"
 Groups[0].Townships[0].Dates = "Closes September 29, 2026 (15 days left)"

@@ -35,6 +35,8 @@ func NotifyForm(pin, reason, errMsg string) templ.Component {
 }
 
 // NotifyFormFor carries a township slug when there's no PIN (township pages).
+// It sits on dark cards and on a white one, so its text inherits the card's
+// colour rather than picking one that fails contrast on the other.
 func NotifyFormFor(pin, township, reason, errMsg string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -59,7 +61,7 @@ func NotifyFormFor(pin, township, reason, errMsg string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templruntime.NewAttributeExpression(pin).Resolve(ctx)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages.templ`, Line: 10, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages.templ`, Line: 12, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 		if templ_7745c5c3_Err != nil {
@@ -77,7 +79,7 @@ func NotifyFormFor(pin, township, reason, errMsg string) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templruntime.NewAttributeExpression(township).Resolve(ctx)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages.templ`, Line: 12, Col: 56}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages.templ`, Line: 14, Col: 56}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
 			if templ_7745c5c3_Err != nil {
@@ -95,7 +97,7 @@ func NotifyFormFor(pin, township, reason, errMsg string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templruntime.NewAttributeExpression(reason).Resolve(ctx)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages.templ`, Line: 14, Col: 51}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages.templ`, Line: 16, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5)
 		if templ_7745c5c3_Err != nil {
@@ -126,19 +128,19 @@ func NotifyFormFor(pin, township, reason, errMsg string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " class=\"min-w-0 flex-1 rounded-xl bg-white px-4 py-2.5 text-slate-900 ring-1 ring-stone-300 outline-none focus:ring-2 focus:ring-emerald-500\"> <button type=\"submit\" class=\"rounded-xl bg-emerald-500 px-4 font-medium text-white hover:bg-emerald-600\">Notify me</button></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " class=\"min-h-11 min-w-0 flex-1 rounded-xl bg-white px-4 py-2.5 text-slate-900 ring-1 ring-stone-300 outline-hidden focus:ring-2 focus:ring-emerald-500\"> <button type=\"submit\" class=\"min-h-11 rounded-xl bg-emerald-400 px-4 font-medium text-slate-950 ring-1 ring-emerald-600/40 hover:bg-emerald-300\">Notify me</button></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if errMsg != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<p id=\"email-error\" role=\"alert\" class=\"text-sm text-rose-400\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<p id=\"email-error\" role=\"alert\" class=\"text-sm font-semibold\"><span aria-hidden=\"true\">⚠ </span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(errMsg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages.templ`, Line: 31, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages.templ`, Line: 33, Col: 110}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -149,7 +151,7 @@ func NotifyFormFor(pin, township, reason, errMsg string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<p class=\"text-xs opacity-60\">One or two emails about your appeal window. No spam, and you can unsubscribe anytime.</p></form>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<p class=\"text-xs opacity-80\">One or two emails about your appeal window. No spam, and you can unsubscribe anytime.</p></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -212,7 +214,7 @@ func prose(s Site, title, desc string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<article class=\"mx-auto max-w-2xl px-5 py-14 space-y-4 text-slate-700 leading-relaxed [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:text-slate-900 [&_h2]:pt-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_a]:text-emerald-700 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-1\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<article class=\"mx-auto max-w-2xl px-5 py-8 sm:py-14 space-y-4 text-slate-700 leading-relaxed [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:text-slate-900 [&_h2]:pt-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_a]:text-emerald-700 [&_a]:underline [&_a]:underline-offset-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-1\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -263,13 +265,153 @@ func HowItWorks(s Site) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<h1>How it works</h1><p>In Cook County, your property tax bill depends on your home's assessed value. The Assessor sets it with a model that values every home in the county, and the Board of Review hears appeals from owners who think theirs is too high.</p><h2>What we compare</h2><p>One ground the Board of Review accepts is <em>lack of uniformity</em>: similar homes nearby are assessed lower than yours. We look up homes in your Assessor neighborhood with the same property class (or the same broad group), similar size (within 25% of your square footage) and similar age (within 15 years). Then we keep the 30 that match best, counting how close they are to your home most, then size, age, bathrooms, lot, style and exterior.</p><p>Your assessed value has two parts: the building and the land. We compare the building part of your assessment, per square foot, because the Assessor values land separately at a neighborhood rate. So for each home we divide the building's assessed value by its building square footage. If yours is well above the median of similar homes, that's the kind of evidence a uniformity appeal uses. Comparing the total instead would make a home on a bigger lot look over-assessed even when its building is assessed like its neighbors'.</p><p>We check the land separately: if your land is assessed at a different rate per square foot of land than similar homes', we point that out so you can check it with the Assessor.</p><p>For each similar home we list the details the Property Tax Appeal Board weighs when it compares homes: distance, design, construction, living area, age, bathrooms, basement, central air, fireplaces and garage, and how each one differs from yours.</p><h2>How we describe the comparison</h2><p>We don't tell you whether to appeal. We show how your building's assessed value per square foot compares with the median of similar homes, how many of them are assessed lower than yours, and how appeals have gone for homeowners in your neighborhood. We offer the free evidence report (a PDF) when at least 3 similar homes have a building assessed lower per square foot than yours and yours is at least 1% above the median.</p><h2>If an appeal doesn't work</h2><p>Each tax year you can appeal to the Assessor and then to the Board of Review. If the Board of Review doesn't lower your assessment, you can appeal to the state Property Tax Appeal Board. And you can appeal again the next year.</p><p>We chose how to pick and compare similar homes using about 370,000 Board of Review decisions from 2023 and 2024, then tested the result once on about 220,000 decisions from 2025 that the choice never used. Among homeowners who appealed on their own in 2025, those whose building was assessed at least 1% above similar homes' median got a reduction about 92% of the time if it was also higher than at least three quarters of them, and about 84% otherwise. Within 1% of the median: about 67%. More than 1% below: about 52% if it was still higher than at least a quarter of them, and about 25% if not. People who appeal usually already have a reason to, so these rates aren't a prediction for any one home.</p><h2>What we don't do</h2><ul><li>We don't estimate what your home would sell for, and nothing here is an appraisal.</li><li>We aren't a law firm and don't give legal advice. We don't file anything for you or represent you.</li><li>We aren't affiliated with the Assessor, the Board of Review or any government office.</li></ul><h2>Where the data comes from</h2><p>Everything comes from Cook County's public open data portal: parcel characteristics, assessed values, sales and Board of Review appeal outcomes. We update our copy as the county publishes new data. If the county's data about your home is wrong, our comparison will be too, so check the details we show.</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<h1>How it works</h1><nav aria-labelledby=\"otp\" class=\"rounded-2xl bg-white px-4 py-3 ring-1 ring-stone-200 text-sm\"><h2 id=\"otp\" class=\"pt-0! text-sm! font-medium! text-slate-600!\">On this page</h2><div class=\"flex flex-wrap gap-x-4\"><a href=\"#compare\" class=\"inline-flex min-h-11 items-center\">What we compare</a> <a href=\"#tested\" class=\"inline-flex min-h-11 items-center\">How we tested it</a> <a href=\"#dont\" class=\"inline-flex min-h-11 items-center\">What we don't do</a> <a href=\"#faq\" class=\"inline-flex min-h-11 items-center\">Common questions</a></div></nav><p>In Cook County, your property tax bill depends on your home's assessed value. The Assessor sets it with a model that values every home in the county, and the Board of Review hears appeals from owners who think theirs is too high.</p><h2 id=\"compare\">What we compare</h2><p>One ground the Board of Review accepts is <em>lack of uniformity</em>: similar homes nearby are assessed lower than yours. We look up homes in your Assessor neighborhood with the same property class (or the same broad group), similar size (within 25% of your square footage) and similar age (within 15 years). Then we keep the 30 that match best, counting how close they are to your home most, then size, age, bathrooms, lot, style and exterior.</p><p>Your assessed value has two parts: the building and the land. We compare the building part of your assessment, per square foot, because the Assessor values land separately at a neighborhood rate. So for each home we divide the building's assessed value by its building square footage. If yours is well above the median of similar homes, that's the kind of evidence a uniformity appeal uses. Comparing the total instead would make a home on a bigger lot look over-assessed even when its building is assessed like its neighbors'.</p><p>We check the land separately: if your land is assessed at a different rate per square foot of land than similar homes', we point that out so you can check it with the Assessor.</p><p>For each similar home we list the details the Property Tax Appeal Board weighs when it compares homes: distance, design, construction, living area, age, bathrooms, basement, central air, fireplaces and garage, and how each one differs from yours.</p><h2 id=\"describe\">How we describe the comparison</h2><p>We don't tell you whether to appeal. We show how your building's assessed value per square foot compares with the median of similar homes, how many of them are assessed lower than yours, and how appeals have gone for homeowners in your neighborhood. We offer the free evidence report (a PDF) when at least 3 similar homes have a building assessed lower per square foot than yours and yours is at least 1% above the median.</p><h2 id=\"tested\">How we tested it</h2><p>We chose how to pick and compare similar homes using about 370,000 Board of Review decisions from 2023 and 2024, then tested the result once on about 220,000 decisions from 2025 that the choice never used. Among homeowners who appealed on their own in 2025, those whose building was assessed at least 1% above similar homes' median got a reduction about 92% of the time if it was also higher than at least three quarters of them, and about 84% otherwise. Within 1% of the median: about 67%. More than 1% below: about 52% if it was still higher than at least a quarter of them, and about 25% if not. People who appeal usually already have a reason to, so these rates aren't a prediction for any one home.</p><h2 id=\"if-not\">If an appeal doesn't work</h2><p>Each tax year you can appeal to the Assessor and then to the Board of Review. If the Board of Review doesn't lower your assessment, you can appeal to the state Property Tax Appeal Board. And you can appeal again the next year.</p><h2 id=\"dont\">What we don't do</h2><ul><li>We don't estimate what your home would sell for, and nothing here is an appraisal.</li><li>We aren't a law firm and don't give legal advice. We don't file anything for you or represent you.</li><li>We aren't affiliated with the Assessor, the Board of Review or any government office.</li></ul><h2 id=\"data\">Where the data comes from</h2><p>Everything comes from Cook County's public open data portal: parcel characteristics, assessed values, sales and Board of Review appeal outcomes. We update our copy as the county publishes new data. If the county's data about your home is wrong, our comparison will be too, so check the details we show.</p><h2 id=\"faq\">Common questions</h2><div class=\"divide-y divide-stone-200 border-y border-stone-200\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Var12 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+				if !templ_7745c5c3_IsBuffer {
+					defer func() {
+						templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err == nil {
+							templ_7745c5c3_Err = templ_7745c5c3_BufErr
+						}
+					}()
+				}
+				ctx = templ.InitializeContext(ctx)
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "No. We compare assessed values between similar homes. That is a uniformity comparison, which is one of the grounds the Board of Review accepts. We never estimate what a home would sell for.")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				return nil
+			})
+			templ_7745c5c3_Err = faq("Does this tell me what my home is worth?").Render(templ.WithChildren(ctx, templ_7745c5c3_Var12), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Var13 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+				if !templ_7745c5c3_IsBuffer {
+					defer func() {
+						templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err == nil {
+							templ_7745c5c3_Err = templ_7745c5c3_BufErr
+						}
+					}()
+				}
+				ctx = templ.InitializeContext(ctx)
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "The Assessor values hundreds of thousands of homes with a model. Some homes end up assessed higher per square foot than near-identical neighbors. The Board of Review exists to correct that.")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				return nil
+			})
+			templ_7745c5c3_Err = faq("Why would my assessment be out of line?").Render(templ.WithChildren(ctx, templ_7745c5c3_Var13), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Var14 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+				if !templ_7745c5c3_IsBuffer {
+					defer func() {
+						templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err == nil {
+							templ_7745c5c3_Err = templ_7745c5c3_BufErr
+						}
+					}()
+				}
+				ctx = templ.InitializeContext(ctx)
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "No. AssessGap is independent. We use the county's public open data, and you file with the Board of Review yourself.")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				return nil
+			})
+			templ_7745c5c3_Err = faq("Is this the Assessor's or the Board of Review's website?").Render(templ.WithChildren(ctx, templ_7745c5c3_Var14), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Var15 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+				if !templ_7745c5c3_IsBuffer {
+					defer func() {
+						templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err == nil {
+							templ_7745c5c3_Err = templ_7745c5c3_BufErr
+						}
+					}()
+				}
+				ctx = templ.InitializeContext(ctx)
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "The Board of Review opens each township for about 30 days, on its own schedule. See <a href=\"/townships\">appeal dates by township</a>, or leave your email on your report and we'll tell you when yours opens.")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				return nil
+			})
+			templ_7745c5c3_Err = faq("When can I appeal?").Render(templ.WithChildren(ctx, templ_7745c5c3_Var15), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div><p class=\"flex flex-wrap gap-x-6 pt-4\"><a href=\"/#check\" class=\"inline-flex min-h-11 items-center font-medium\">Check your home →</a> <a href=\"/townships\" class=\"inline-flex min-h-11 items-center font-medium\">Appeal dates by township →</a></p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
 		templ_7745c5c3_Err = prose(s, "How it works", "How AssessGap compares your assessment with similar homes.").Render(templ.WithChildren(ctx, templ_7745c5c3_Var11), templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+// faq is one question, closed until tapped, so the answers don't make the page long.
+func faq(q string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var16 := templ.GetChildren(ctx)
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<details class=\"group py-1\"><summary class=\"flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 font-medium text-slate-900 [&::-webkit-details-marker]:hidden\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var17 string
+		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(q)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages.templ`, Line: 153, Col: 6}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, " <span aria-hidden=\"true\" class=\"text-slate-500 transition-transform group-open:rotate-45\">+</span></summary><p class=\"pb-4 text-slate-600\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templ_7745c5c3_Var16.Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</p></details>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -294,7 +436,7 @@ func Terms(s Site) templ.Component {
 		}
 		ctx = templ.InitializeContext(ctx)
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Var13 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Var19 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 			if !templ_7745c5c3_IsBuffer {
@@ -306,13 +448,13 @@ func Terms(s Site) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<h1>Terms of use</h1><p class=\"text-sm text-slate-500\">Draft, last updated November 24, 2026.</p><p>By using AssessGap you agree to these terms.</p><h2>What AssessGap is</h2><p>AssessGap is an information tool. It compares assessed values of similar homes using public Cook County data. It is not a law firm, does not provide legal advice, does not represent you before any government body, and is not an appraisal or an opinion of any property's value. AssessGap is not affiliated with the Cook County Assessor, the Board of Review or any government office.</p><h2>Your decisions</h2><p>Whether to appeal, and everything you file, is your decision and your responsibility. You can file an appeal yourself at no cost without using AssessGap. Results depend on public data that may contain errors, and appeal outcomes are never guaranteed.</p><h2>No warranty</h2><p>AssessGap is provided \"as is.\" To the extent the law allows, we disclaim all warranties and are not liable for any indirect or consequential damages.</p><h2>Acceptable use</h2><p>Don't scrape the site in bulk, interfere with it, or use it for anything unlawful.</p><h2>Contact</h2><p>Questions: <a href=\"mailto:support@assessgap.com\">support@assessgap.com</a>.</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<h1>Terms of use</h1><p class=\"text-sm text-slate-500\">Draft, last updated November 24, 2026.</p><p>By using AssessGap you agree to these terms.</p><h2>What AssessGap is</h2><p>AssessGap is an information tool. It compares assessed values of similar homes using public Cook County data. It is not a law firm, does not provide legal advice, does not represent you before any government body, and is not an appraisal or an opinion of any property's value. AssessGap is not affiliated with the Cook County Assessor, the Board of Review or any government office.</p><h2>Your decisions</h2><p>Whether to appeal, and everything you file, is your decision and your responsibility. You can file an appeal yourself at no cost without using AssessGap. Results depend on public data that may contain errors, and appeal outcomes are never guaranteed.</p><h2>No warranty</h2><p>AssessGap is provided \"as is.\" To the extent the law allows, we disclaim all warranties and are not liable for any indirect or consequential damages.</p><h2>Acceptable use</h2><p>Don't scrape the site in bulk, interfere with it, or use it for anything unlawful.</p><h2>Contact</h2><p>Questions: <a href=\"mailto:support@assessgap.com\">support@assessgap.com</a>.</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = prose(s, "Terms of use", "AssessGap terms of use.").Render(templ.WithChildren(ctx, templ_7745c5c3_Var13), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = prose(s, "Terms of use", "AssessGap terms of use.").Render(templ.WithChildren(ctx, templ_7745c5c3_Var19), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -337,7 +479,7 @@ func Privacy(s Site) templ.Component {
 		}
 		ctx = templ.InitializeContext(ctx)
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Var15 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Var21 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 			if !templ_7745c5c3_IsBuffer {
@@ -349,13 +491,13 @@ func Privacy(s Site) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<h1>Privacy</h1><p class=\"text-sm text-slate-500\">Draft, last updated November 24, 2026.</p><h2>What we collect</h2><ul><li><strong>Searches and pages you view.</strong> Our server logs record the pages requested, including PINs, for troubleshooting and counting usage. The property data itself is public county record.</li><li><strong>Your email, if you give it to us</strong>, along with the PIN and township you asked about, so we can tell you when your appeal window opens.</li></ul><p>We don't use advertising trackers or third-party analytics, and we don't set tracking cookies.</p><h2>What we do with it</h2><p>We use your email only for the notices you asked for. We don't sell or share it, except with the service that sends our email.</p><h2>Deleting your data</h2><p>Email <a href=\"mailto:support@assessgap.com\">support@assessgap.com</a> and we'll delete your email and anything tied to it.</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<h1>Privacy</h1><p class=\"text-sm text-slate-500\">Draft, last updated November 24, 2026.</p><h2>What we collect</h2><ul><li><strong>Searches and pages you view.</strong> Our server logs record the pages requested, including PINs, for troubleshooting and counting usage. The property data itself is public county record.</li><li><strong>Your email, if you give it to us</strong>, along with the PIN and township you asked about, so we can tell you when your appeal window opens.</li></ul><p>We don't use advertising trackers or third-party analytics, and we don't set tracking cookies.</p><h2>What we do with it</h2><p>We use your email only for the notices you asked for. We don't sell or share it, except with the service that sends our email.</p><h2>Deleting your data</h2><p>Email <a href=\"mailto:support@assessgap.com\">support@assessgap.com</a> and we'll delete your email and anything tied to it.</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = prose(s, "Privacy", "What AssessGap collects and why.").Render(templ.WithChildren(ctx, templ_7745c5c3_Var15), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = prose(s, "Privacy", "What AssessGap collects and why.").Render(templ.WithChildren(ctx, templ_7745c5c3_Var21), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
