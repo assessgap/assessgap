@@ -21,6 +21,8 @@ let redact = args.count > 4 ? Array(args[4...]) : []
 
 // redactBoxes: page-space boxes covering each REDACT match, grown a character
 // at a time to the end of its run of text (a table cell, or up to a ":" or "·").
+// PDFKit joins table cells with plain spaces, so a cell ends where the box
+// would jump by more than a character's width.
 func redactBoxes(_ page: PDFPage) -> [CGRect] {
     var boxes: [CGRect] = []
     for needle in redact {
@@ -33,6 +35,8 @@ func redactBoxes(_ page: PDFPage) -> [CGRect] {
                 let next = wider.bounds(for: page)
                 if let last = text.last, "\n\r\t:·".contains(last) { break }
                 if text.count <= (sel.string ?? "").count || next.height > box.height * 1.5 { break }
+                // A jump wider than any character is the gap to the next table cell.
+                if next.maxX - box.maxX > 8 { break }
                 sel.extend(atEnd: 1)
                 box = next
             }
