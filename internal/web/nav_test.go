@@ -39,7 +39,7 @@ func TestHeaderNav(t *testing.T) {
 			continue
 		}
 		for _, link := range []string{"/#check", "/townships", "/how-it-works"} {
-			tags := regexp.MustCompile(`<a href="` + regexp.QuoteMeta(link) + `"[^>]*>`).FindAllString(h, -1)
+			tags := regexp.MustCompile(`<a href="`+regexp.QuoteMeta(link)+`"[^>]*>`).FindAllString(h, -1)
 			if len(tags) != 2 {
 				t.Errorf("%s: header links %s %d times, want 2 (wide nav and phone menu)", tt.path, link, len(tags))
 			}
