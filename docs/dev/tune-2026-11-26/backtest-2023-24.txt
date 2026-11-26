@@ -1,0 +1,84 @@
+$ go run ./cmd/assessgap backtest -db data/cook-c.db -years 2023,2024 -tsv data/tune/backtest-new-2023-24.tsv
+  (the engine as shipped on this branch, on the tuning years; progress lines and the per-year
+  verdict tables' duplicates removed)
+
+in-scope BOR appeals (PIN-years) 2023,2024: 368881
+scored in 5m47s; errors 0; skipped (unsupported) 2348
+      10  Class 100 is not residential
+       2  Class 200 is not supported
+       2  Class 241 is not supported
+       1  Class EX is not residential
+     157  Multi-family buildings (class 211) are not supported yet.
+      13  Multi-family buildings (class 212) are not supported yet.
+     286  No building characteristics on record for this PIN.
+       6  No building square footage on record for this PIN
+    1871  This parcel has more than one building on record
+
+**Tax year all**
+
+| verdict | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| strong | 22361 | 93.0% | 10.0% | 38815 | 79.3% | 9.2% | 61176 | 84.3% | 9.5% |
+| possible | 22195 | 82.4% | 8.0% | 46200 | 66.6% | 7.2% | 68395 | 71.8% | 7.5% |
+| weak | 67514 | 39.5% | 7.5% | 169448 | 28.8% | 6.5% | 236962 | 31.9% | 6.9% |
+
+**Tax year 2023**
+
+| verdict | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| strong | 11053 | 93.7% | 10.0% | 19618 | 80.3% | 9.0% | 30671 | 85.1% | 9.4% |
+| possible | 11092 | 83.8% | 8.2% | 23247 | 67.2% | 7.2% | 34339 | 72.5% | 7.6% |
+| weak | 32218 | 42.2% | 7.7% | 83433 | 28.8% | 6.7% | 115651 | 32.5% | 7.1% |
+
+**Tax year 2024**
+
+| verdict | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| strong | 11308 | 92.3% | 10.0% | 19197 | 78.2% | 9.3% | 30505 | 83.4% | 9.6% |
+| possible | 11103 | 81.1% | 7.9% | 22953 | 66.1% | 7.1% | 34056 | 71.0% | 7.4% |
+| weak | 35296 | 37.1% | 7.4% | 86015 | 28.9% | 6.2% | 121311 | 31.3% | 6.6% |
+
+**By subject building AV/sf vs. comp median (all years)**
+
+| gap | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| <3 comps | 54 | 50.0% | 12.8% | 353 | 26.3% | 11.6% | 407 | 29.5% | 11.9% |
+| < -10% | 16308 | 20.2% | 9.1% | 47414 | 15.2% | 7.9% | 63722 | 16.5% | 8.3% |
+| -10..-5% | 15811 | 28.3% | 7.7% | 39410 | 20.8% | 6.6% | 55221 | 23.0% | 7.0% |
+| -5..0% | 27186 | 49.4% | 7.2% | 63518 | 37.7% | 6.2% | 90704 | 41.2% | 6.6% |
+| 0..5% | 26042 | 78.8% | 7.3% | 54132 | 62.7% | 6.3% | 80174 | 68.0% | 6.7% |
+| 5..10% | 12759 | 90.8% | 8.3% | 22652 | 76.4% | 7.6% | 35411 | 81.6% | 7.9% |
+| 10..20% | 8878 | 91.5% | 10.2% | 16218 | 76.0% | 9.3% | 25096 | 81.5% | 9.7% |
+| 20..30% | 2420 | 89.4% | 13.0% | 4987 | 74.1% | 11.7% | 7407 | 79.1% | 12.2% |
+| >= 30% | 2612 | 81.9% | 17.6% | 5779 | 63.3% | 15.4% | 8391 | 69.1% | 16.2% |
+
+**By the gap cut points the reports used until 2026-11-26 (all years)**
+
+| gap | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| <3 comps | 54 | 50.0% | 12.8% | 353 | 26.3% | 11.6% | 407 | 29.5% | 11.9% |
+| >= +5% | 26669 | 90.0% | 10.2% | 49636 | 74.5% | 9.3% | 76305 | 80.0% | 9.7% |
+| +1..+5% | 17892 | 84.3% | 7.4% | 35425 | 69.4% | 6.5% | 53317 | 74.4% | 6.8% |
+| in line (±1%) | 14667 | 64.2% | 7.2% | 33646 | 49.1% | 6.0% | 48313 | 53.7% | 6.4% |
+| < -1% | 52788 | 32.6% | 7.7% | 135403 | 23.8% | 6.7% | 188191 | 26.3% | 7.1% |
+
+**By the report's groups: gap from the median, then share of similar homes assessed lower (all years)**
+
+| group | pro se n | win | avg cut | attorney n | win | avg cut | all n | win | avg cut |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| <3 comps | 54 | 50.0% | 12.8% | 353 | 26.3% | 11.6% | 407 | 29.5% | 11.9% |
+| >= +1%, >= 3/4 lower | 22402 | 93.0% | 10.0% | 39016 | 79.1% | 9.2% | 61418 | 84.2% | 9.5% |
+| >= +1%, < 3/4 lower | 22159 | 82.5% | 8.0% | 46045 | 66.7% | 7.2% | 68204 | 71.8% | 7.5% |
+| in line (±1%) | 14667 | 64.2% | 7.2% | 33646 | 49.1% | 6.0% | 48313 | 53.7% | 6.4% |
+| < -1%, >= 1/4 lower | 23928 | 47.4% | 7.6% | 58909 | 35.2% | 6.6% | 82837 | 38.7% | 6.9% |
+| < -1%, < 1/4 lower | 28860 | 20.4% | 8.0% | 76494 | 15.1% | 6.9% | 105354 | 16.5% | 7.3% |
+
+**How well each score separates reductions from no change (AUC, 3+ comps)**
+
+Rank = the percentile among the comps, the gap breaking ties (docs/dev/2026-11-26-tune.md).
+
+| filer | n | AUC of the gap | AUC of the rank |
+|---|--:|--:|--:|
+| pro se | 112016 | 0.8147 | 0.8302 |
+| attorney | 254110 | 0.7658 | 0.7802 |
+| all | 366126 | 0.7802 | 0.7950 |

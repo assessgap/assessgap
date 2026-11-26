@@ -1,0 +1,7 @@
+# Phase 3: refine around the best phase 2 rule, and two simpler versions of
+# it, to see which parts carry the gain (2023–2024 only).
+{"name":"w6_wsf2_bsmt0_k30_pctile_gap","stat":"pctile_gap","params":{"WMiles":6,"WSF":2,"WBasement":0,"MaxComps":30}}
+{"name":"w4_wsf1_bsmt0_k30_pctile_gap","stat":"pctile_gap","params":{"WMiles":4,"WSF":1,"WBasement":0,"MaxComps":30}}
+{"name":"w4_wsf2_bsmt0_k40_pctile_gap","stat":"pctile_gap","params":{"WMiles":4,"WSF":2,"WBasement":0,"MaxComps":40}}
+{"name":"w4_k30_pctile_gap","stat":"pctile_gap","params":{"WMiles":4,"MaxComps":30}}
+{"name":"k30_pctile_gap","stat":"pctile_gap","params":{"MaxComps":30}}

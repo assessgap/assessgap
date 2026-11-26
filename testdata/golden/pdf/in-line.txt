@@ -25,16 +25,16 @@ Building
 1,455 sq ft, built 1927, 3 bedrooms, 1 bath
 Comparison with similar homes
 The property's building is assessed at $13.87 per square foot of building area (building AV $20,175 ÷ 1,455
-sq ft). The median of 20 similar homes in the same Assessor neighborhood is $13.75 per square foot, so the
+sq ft). The median of 30 similar homes in the same Assessor neighborhood is $13.75 per square foot, so the
 property is about equal to the median.
 The building part of the assessment is compared, per square foot, because the Assessor values land
 separately at a neighborhood rate per square foot of land.
-12 of the 20 comparable homes have a building assessed lower per square foot than the property. The
-property ranks at the 60th percentile of the comparable homes by building AV per square foot.
+19 of the 30 comparable homes have a building assessed lower per square foot than the property. The
+property ranks at the 63rd percentile of the comparable homes by building AV per square foot.
 How comparable homes were chosen: same neighborhood, class 203, building sqft within ±25%, built within
 ±15 years (Assessor neighborhood 71280), excluding multi-building parcels and homes without recorded
-square footage or a building assessment. The 20 most similar by size, age, baths, lot, design, construction,
-basement and distance (the nearer home first when two are equally similar) are listed on page 2.
+square footage or a building assessment. The 30 most similar by distance (weighted most), size, age, baths,
+lot, design and construction (the nearer home first when two are equally similar) are listed on page 2.
 Uniformity figure
 Applying the comparable homes' median building rate of $13.75 per square foot to the property's 1,455
 square feet, and adding the property's land AV of $6,825, gives an assessed value of $26,831, about the
@@ -132,24 +132,6 @@ $20,007
 $6,993
 $27,000
 $13.75
-13-33-111-032-0000
-2124 N Latrobe Ave
-<0.1 mi
-203
-1.5-story
-Masonry
-1,455
-1927
-3 / 1.5
-Full, unfinished
-No
-0
-2-car
-3,780
-$20,007
-$6,993
-$27,000
-$13.75
 13-33-111-031-0000
 2128 N Latrobe Ave
 <0.1 mi
@@ -168,8 +150,26 @@ $20,007
 $6,993
 $27,000
 $13.72
-13-33-111-035-0000
-2116 N Latrobe Ave
+13-33-111-029-0000
+2134 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,553
+1927
+4 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,780
+$21,338
+$6,993
+$28,331
+$13.74
+13-33-111-032-0000
+2124 N Latrobe Ave
 <0.1 mi
 203
 1.5-story
@@ -180,7 +180,7 @@ Masonry
 Full, unfinished
 No
 0
-1-car
+2-car
 3,780
 $20,007
 $6,993
@@ -204,25 +204,7 @@ $20,007
 $6,993
 $27,000
 $13.72
-Other comparable homes (14)
-13-33-111-039-0000
-2102 N Latrobe Ave
-0.1 mi
-203
-1.5-story
-Masonry
-1,455
-1927
-3 / 1
-Full, finished
-No
-0
-2-car
-3,780
-$22,007
-$6,993
-$29,000
-$15.13
+Other comparable homes (24)
 13-33-111-023-0000
 2152 N Latrobe Ave
 <0.1 mi
@@ -241,55 +223,73 @@ $22,007
 $6,993
 $29,000
 $15.13
-13-33-111-037-0000
-2110 N Latrobe Ave
+13-33-111-026-0000
+2142 N Latrobe Ave
 <0.1 mi
 203
 1.5-story
 Masonry
-1,455
+1,498
 1927
 3 / 1.5
 Full, unfinished
-No
+Yes
 0
 2-car
 3,780
-$21,007
+$22,007
 $6,993
-$28,000
-$14.44
-13-33-111-036-0000
-2112 N Latrobe Ave
-<0.1 mi
-203
-1.5-story
-Masonry
-1,458
-1927
-3 / 1.5
-Full, finished
-No
-0
-2-car
-3,780
-$23,007
-$6,993
-$30,000
-$15.78
-13-33-111-038-0000
-2106 N Latrobe Ave
+$29,000
+$14.69
+13-33-111-039-0000
+2102 N Latrobe Ave
 0.1 mi
 203
 1.5-story
 Masonry
 1,455
 1927
+3 / 1
+Full, finished
+No
+0
+2-car
+3,780
+$22,007
+$6,993
+$29,000
+$15.13
+13-33-108-007-0000
+2239 N Latrobe Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,509
+1925
+3 / 1
+Full, finished
+Yes
+0
+2-car
+3,780
+$23,007
+$6,993
+$30,000
+$15.25
+13-33-111-035-0000
+2116 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,455
+1927
 3 / 1.5
 Full, unfinished
 No
 0
-2-car
+1-car
 3,780
 $20,007
 $6,993
@@ -313,42 +313,78 @@ $20,007
 $6,993
 $27,000
 $14.24
-13-33-108-007-0000
-2239 N Latrobe Ave
-0.1 mi
+13-33-111-036-0000
+2112 N Latrobe Ave
+<0.1 mi
 203
 1.5-story
 Masonry
-1,509
-1925
-3 / 1
+1,458
+1927
+3 / 1.5
 Full, finished
-Yes
+No
 0
 2-car
 3,780
 $23,007
 $6,993
 $30,000
-$15.25
-13-33-111-026-0000
-2142 N Latrobe Ave
+$15.78
+13-33-111-037-0000
+2110 N Latrobe Ave
 <0.1 mi
 203
 1.5-story
 Masonry
-1,498
+1,455
 1927
 3 / 1.5
 Full, unfinished
-Yes
+No
 0
 2-car
 3,780
-$22,007
+$21,007
 $6,993
-$29,000
-$14.69
+$28,000
+$14.44
+13-33-111-038-0000
+2106 N Latrobe Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,455
+1927
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,780
+$20,007
+$6,993
+$27,000
+$13.75
+13-33-111-028-0000
+2136 N Latrobe Ave
+<0.1 mi
+203
+1.5-story
+Masonry
+1,552
+1927
+4 / 2
+Full, unfinished
+No
+0
+1.5-car
+3,780
+$23,007
+$6,993
+$30,000
+$14.82
 13-33-114-006-0000
 2047 N Latrobe Av...
 0.2 mi
@@ -367,24 +403,24 @@ $17,774
 $7,226
 $25,000
 $12.74
-13-33-114-012-0000
-2029 N Latrobe Ave
-0.2 mi
+13-33-215-013-0000
+2129 N Laramie Ave
+0.1 mi
 203
 1.5-story
 Masonry
-1,395
-1926
+1,540
+1924
 3 / 1
 Full, unfinished
 No
 0
-1-car
-3,875
-$17,831
-$7,169
-$25,000
-$12.78
+2-car
+3,150
+$18,173
+$5,828
+$24,001
+$11.80
 13-33-114-001-0000
 2063 N Latrobe Ave
 0.1 mi
@@ -403,24 +439,78 @@ $19,075
 $7,925
 $27,000
 $13.11
-13-33-223-028-0000
-2026 N Leamingto...
+13-33-114-012-0000
+2029 N Latrobe Ave
 0.2 mi
 203
 1.5-story
 Masonry
-1,427
-1925
+1,395
+1926
 3 / 1
 Full, unfinished
 No
 0
-2-car
-3,525
-$18,479
-$6,521
+1-car
+3,875
+$17,831
+$7,169
 $25,000
-$12.95
+$12.78
+13-33-108-002-0000
+2255 N Latrobe Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,636
+1926
+3 / 1.5
+Full, unfinished
+Yes
+0
+2-car
+3,780
+$23,007
+$6,993
+$30,000
+$14.06
+13-33-108-004-0000
+2249 N Latrobe Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,285
+1925
+4 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,780
+$20,007
+$6,993
+$27,000
+$15.57
+13-33-215-041-0000
+2108 N Leamingto...
+0.2 mi
+203
+1.5-story
+Masonry
+1,347
+1924
+3 / 1
+Full, unfinished
+No
+0
+1.5-car
+3,150
+$18,173
+$5,828
+$24,001
+$13.49
 13-33-113-018-0000
 2038 N Latrobe Ave
 0.2 mi
@@ -439,31 +529,121 @@ $20,007
 $6,993
 $27,000
 $13.67
-13-33-224-011-0000
-2025 N Leamingto...
+13-33-111-033-0000
+2122 N Latrobe Ave
+<0.1 mi
+203
+1-story
+Masonry
+1,455
+1927
+3 / 1.5
+Full, unfinished
+No
+0
+None
+3,780
+$20,007
+$6,993
+$27,000
+$13.75
+13-33-207-007-0000
+2241 N Laramie Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,248
+1922
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,843
+$16,890
+$7,110
+$24,000
+$13.53
+13-33-113-017-0000
+2040 N Latrobe Av...
 0.2 mi
 203
 1.5-story
 Masonry
-1,467
-1924
-3 / 1
+1,562
+1928
+3 / 1.5
 Full, finished
 No
 0
 2-car
-3,125
-$21,219
-$5,781
+3,780
+$20,465
+$6,993
+$27,458
+$13.10
+13-33-207-005-0000
+2247 N Laramie Ave
+0.1 mi
+203
+1.5-story
+Masonry
+1,248
+1922
+4 / 1
+Full, finished
+No
+0
+2-car
+3,843
+$19,890
+$7,110
 $27,000
-$14.46
-Median building AV / sq ft of the 20 comparable homes: $13.75. Subject: $13.87 (about equal to the median).
+$15.94
+13-33-223-028-0000
+2026 N Leamingto...
+0.2 mi
+203
+1.5-story
+Masonry
+1,427
+1925
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,525
+$18,479
+$6,521
+$25,000
+$12.95
+13-33-207-004-0000
+2251 N Laramie Av...
+0.1 mi
+203
+1.5-story
+Masonry
+1,248
+1922
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,843
+$16,890
+$7,110
+$24,000
+$13.53
+Median building AV / sq ft of the 30 comparable homes: $13.75. Subject: $13.87 (about equal to the median).
 Differences of each evidence comparable from the subject (theirs vs the subject's):
 1. 2154 N Latrobe Ave: under 0.1 mi away · 1 more half bath
 2. 2130 N Latrobe Ave: under 0.1 mi away · 1 more half bath · central air vs none · no garage vs 1-car
-3. 2124 N Latrobe Ave: under 0.1 mi away · 1 more half bath · 2-car garage vs 1-car
-4. 2128 N Latrobe Ave: under 0.1 mi away · 1 more half bath · 2-car garage vs 1-car
-5. 2116 N Latrobe Ave: under 0.1 mi away · 1 more half bath
+3. 2128 N Latrobe Ave: under 0.1 mi away · 1 more half bath · 2-car garage vs 1-car
+4. 2134 N Latrobe Ave: under 0.1 mi away · 7% larger · 1 more half bath · 2-car garage vs 1-car
+5. 2124 N Latrobe Ave: under 0.1 mi away · 1 more half bath · 2-car garage vs 1-car
 6. 2118 N Latrobe Ave: under 0.1 mi away · 1 more half bath · 2-car garage vs 1-car
 Filing steps: Cook County Board of Review
 PIN 13-33-111-021-0000 · Tax year 2026

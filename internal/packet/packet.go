@@ -83,6 +83,7 @@ type pager struct {
 	y    float64
 	page int
 	m    float64 // the current page's margin
+	rowH float64 // grid row height (page 2)
 }
 
 // newPage starts a portrait page with the standard margin.
@@ -172,8 +173,8 @@ func (p *pager) summary(generated time.Time) {
 		below, st.NumComps, ordinal(int(math.Round(st.SubjectPercentile)))))
 	if r.Search != nil {
 		p.body(fmt.Sprintf("How comparable homes were chosen: %s (Assessor neighborhood %s), excluding multi-building "+
-			"parcels and homes without recorded square footage or a building assessment. The %d most similar by size, "+
-			"age, baths, lot, design, construction, basement and distance (the nearer home first when two are equally "+
+			"parcels and homes without recorded square footage or a building assessment. The %d most similar by distance "+
+			"(weighted most), size, age, baths, lot, design and construction (the nearer home first when two are equally "+
 			"similar) are listed on page 2.", r.Search.Description, r.Nbhd, st.NumComps))
 	}
 
@@ -286,14 +287,21 @@ var columns = []column{
 }
 
 const (
-	cellSize   = 6.8
-	rowH       = 11.5
-	cellPad    = 3.0
-	gridMargin = 36.0 // 0.5 in on the landscape grid page
+	cellSize    = 6.8
+	rowH        = 11.5
+	compactRowH = 8.4 // still clears 6.8 pt type with its descenders
+	cellPad     = 3.0
+	gridMargin  = 36.0 // 0.5 in on the landscape grid page
 )
 
 func (p *pager) grid() {
 	r := p.r
+	// Up to 30 comps must fit on the one landscape page, so a long grid uses
+	// shorter rows; the type size stays the same.
+	p.rowH = rowH
+	if len(r.Comps) > 20 {
+		p.rowH = compactRowH
+	}
 	p.newPageSized("Comparable property grid", pageH, pageW, gridMargin) // landscape
 	m, cw := p.m, p.cur.w-2*p.m
 	p.para(m, cw, regular, 8, fmt.Sprintf(
@@ -348,6 +356,9 @@ func (p *pager) grid() {
 			}
 			p.para(m, cw, regular, 7, fmt.Sprintf("%d. %s: %s", i+1, addr, c.Differences))
 			p.y -= 4
+			if p.rowH < rowH {
+				p.y-- // a long grid leaves less room below it
+			}
 		}
 	}
 }
@@ -378,7 +389,7 @@ func (p *pager) header(x0 float64) {
 }
 
 func (p *pager) row(x0 float64, c comps.Comp, f font, gray float64) {
-	p.cells(x0, rowH, f, gray, func(col column) string { return col.val(c) })
+	p.cells(x0, p.rowH, f, gray, func(col column) string { return col.val(c) })
 }
 
 // cells draws one table row of height h with column rules and a bottom rule;
@@ -401,9 +412,9 @@ func (p *pager) cells(x0, h float64, f font, gray float64, val func(column) stri
 
 // section draws a full-width label row.
 func (p *pager) section(x0, w float64, title string) {
-	p.fillRect(x0, p.y, w, rowH, 0.96)
-	p.text(x0+cellPad, p.y+rowH-4.5, bold, cellSize, title)
-	p.y += rowH
+	p.fillRect(x0, p.y, w, p.rowH, 0.96)
+	p.text(x0+cellPad, p.y+baseline(p.rowH), bold, cellSize, title)
+	p.y += p.rowH
 	p.line(x0, p.y, x0+w, p.y, 0.4)
 }
 
@@ -412,12 +423,23 @@ func (p *pager) section(x0, w float64, title string) {
 // shortened into a different number.
 func (p *pager) cell(x, y, w, h float64, f font, s string, right, truncate bool) {
 	s, size := cellText(f, w-2*cellPad, s, truncate)
-	base := y + h - 4.5
+	base := y + baseline(h)
 	if right {
 		p.textRight(x+w-cellPad, base, f, size, s)
 	} else {
 		p.text(x+cellPad, base, f, size, s)
 	}
+}
+
+// baseline is where text sits in a row of height h: 4.5 pt above the bottom
+// in a full row. A compact row centers the type between its cap height and
+// descenders (Helvetica: 0.718 and 0.207 of the size), so caps don't touch
+// the rule above.
+func baseline(h float64) float64 {
+	if h >= rowH {
+		return h - 4.5
+	}
+	return (h + (0.718-0.207)*cellSize) / 2
 }
 
 // cellText returns s as drawn in a cell of inner width w, and its font size.

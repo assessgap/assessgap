@@ -1,0 +1,14 @@
+# Phase 2: combine what helped in phase 1 (distance weight, lower size
+# weight, no basement penalty, 30 comps, percentile rank), 2023–2024 only.
+{"name":"w4_wsf2","params":{"WMiles":4,"WSF":2}}
+{"name":"w4_bsmt0","params":{"WMiles":4,"WBasement":0}}
+{"name":"w4_wsf2_bsmt0","params":{"WMiles":4,"WSF":2,"WBasement":0}}
+{"name":"w4_wsf2_bsmt0_k30","params":{"WMiles":4,"WSF":2,"WBasement":0,"MaxComps":30}}
+{"name":"miles_w8","params":{"WMiles":8}}
+{"name":"w4_cap2","params":{"WMiles":4,"CapMiles":2}}
+{"name":"w4_maxmiles0.5","params":{"WMiles":4,"MaxMiles":0.5}}
+{"name":"w2_wsf2","params":{"WMiles":2,"WSF":2}}
+{"name":"stat_pctile_gap","stat":"pctile_gap"}
+{"name":"pctile_k30","stat":"pctile","params":{"MaxComps":30}}
+{"name":"w4_wsf2_bsmt0_pctile","stat":"pctile","params":{"WMiles":4,"WSF":2,"WBasement":0}}
+{"name":"w4_wsf2_bsmt0_k30_pctile_gap","stat":"pctile_gap","params":{"WMiles":4,"WSF":2,"WBasement":0,"MaxComps":30}}

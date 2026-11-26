@@ -8,13 +8,65 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-// Verdict thresholds on how far the subject's building AV/sqft sits above the comp median.
 const (
-	strongGap   = 0.05 // backtest: pro se win rate plateaus ~89% from +5% (docs/methodology.md)
-	possibleGap = 0.01 // 1–5% above median: ~84% pro se win rate; within ±1% is "in line" (~64%)
+	// possibleGap: within ±1% of the median is "in line" on every surface; from
+	// +1% the reports state the value at the median rate, and the evidence
+	// report may be offered.
+	possibleGap = 0.01
 	minEvidence = 3
 	maxEvidence = 6
 )
+
+// Shares of similar homes whose building is assessed lower per sq ft than
+// the subject's (strictly, so a home assessed the same as its neighbors gains
+// nothing). A home's rank among its comps separated Board of Review outcomes
+// better than its gap from the median (docs/dev/2026-11-26-tune.md).
+const (
+	strongShare = 0.75
+	lowShare    = 0.25
+)
+
+// ShareLower is the share of comps assessed lower per sq ft than the subject.
+func (st Stats) ShareLower() float64 {
+	if st.NumComps == 0 {
+		return 0
+	}
+	return float64(st.CompsLower) / float64(st.NumComps)
+}
+
+// Group places a comparison in one of the five groups the reports quote
+// backtest rates for. The gap from the median comes first, because every
+// surface states it, so a quoted rate never describes a home as above the
+// median when the report says it is in line or below. Within the above- and
+// below-median groups the share assessed lower splits further:
+//
+//	0: at least 1% above the median, higher than at least three quarters
+//	1: at least 1% above the median, higher than fewer than three quarters
+//	2: within 1% of the median
+//	3: more than 1% below the median, higher than at least a quarter
+//	4: more than 1% below the median, higher than fewer than a quarter
+func Group(st Stats) int {
+	gap, share := st.PctAboveMedian, st.ShareLower()
+	switch {
+	case AboveMedian(gap) && share >= strongShare:
+		return 0
+	case AboveMedian(gap):
+		return 1
+	case InLine(gap):
+		return 2
+	case share >= lowShare:
+		return 3
+	default:
+		return 4
+	}
+}
+
+// RankScore orders homes by their percentile among their comps, the gap
+// breaking ties (it moves the score by under one percentile step). It is the
+// score the 2026-11-26 tuning validated, for the backtest's AUC.
+func RankScore(st Stats) float64 {
+	return st.SubjectPercentile + 0.0005*max(-1, min(1, st.PctAboveMedian))
+}
 
 func median(xs []float64) float64 {
 	if len(xs) == 0 {
@@ -49,7 +101,7 @@ func computeStats(subject Home, comps []Comp) Stats {
 			land = append(land, r)
 		}
 	}
-	st := Stats{NumComps: len(comps), SubjectBldgAVPerSF: round(subject.BldgAVPerSF, 2)}
+	st := Stats{NumComps: len(comps), SubjectBldgAVPerSF: round(subject.BldgAVPerSF, 2), CompsLower: below}
 	if r := subject.LandAVPerSF(); r > 0 && len(land) > 0 {
 		st.SubjectLandAVPerSF, st.MedianLandAVPerSF = round(r, 2), round(median(land), 2)
 	}
@@ -65,6 +117,14 @@ func computeStats(subject Home, comps []Comp) Stats {
 	st.UniformityAV = round(st.MedianBldgAVPerSF*subject.BldgSF+subject.LandAV, 0)
 	st.PotentialAVReduction = max(0, round(subject.AV-st.UniformityAV, 0))
 	return st
+}
+
+// ComputeStats is computeStats for callers outside the package (tools/tune).
+func ComputeStats(subject Home, comps []Comp) Stats { return computeStats(subject, comps) }
+
+// DataFlags returns the "worth double-checking" items a report would show.
+func DataFlags(subject Home, pool []Home, comps []Comp) []Flag {
+	return append(characteristicFlags(subject, pool), landFlag(subject, comps, computeStats(subject, comps))...)
 }
 
 // evidenceComps picks the most similar comps whose building is assessed lower
@@ -162,22 +222,14 @@ func decide(r *Report) (string, []string) {
 			"At similar homes' median building rate per sq ft, plus your land's assessed value of %s, your assessed value would be %s, which is %s lower than now.",
 			money(s.LandAV), money(st.UniformityAV), money(st.PotentialAVReduction)))
 	}
-	// Rates: pro se, by the report's cut points, 2024–2025 (docs/dev/backtest-2026-11-25c/new/backtest.txt).
+	g := Group(*st)
+	why = append(why, fmt.Sprintf("In our test of past Board of Review decisions, homeowners who appealed on their own "+
+		"with a building assessed %s got a reduction about %d%% of the time.", groupWords[g], groupRates[g]))
 	switch {
-	case gap >= strongGap:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed at least 5% above similar homes' got a reduction about 89% of the time.")
-	case gap >= possibleGap:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed 1–5% above similar homes' got a reduction about 84% of the time.")
-	case gap > -possibleGap:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed within 1% of similar homes' got a reduction about 64% of the time.")
-	default:
-		why = append(why, "In our test of past Board of Review decisions, homeowners who appealed on their own with a building assessed more than 1% below similar homes' got a reduction about 36% of the time.")
-	}
-	switch {
-	case gap >= strongGap && n >= minComps && ev >= minEvidence:
+	case g == 0 && n >= minComps && ev >= minEvidence:
 		return Strong, why
-	case gap >= possibleGap && ev >= minEvidence:
-		if gap >= strongGap {
+	case g <= 1 && ev >= minEvidence:
+		if g == 0 {
 			why = append(why, fmt.Sprintf("We found only %d similar homes, so this comparison rests on a small group.", n))
 		}
 		return Possible, why
@@ -185,6 +237,18 @@ func decide(r *Report) (string, []string) {
 		return Weak, why
 	}
 }
+
+var groupWords = [5]string{
+	"at least 1% above similar homes' median, and higher than at least three quarters of them,",
+	"at least 1% above similar homes' median, but higher than fewer than three quarters of them,",
+	"within 1% of similar homes' median",
+	"more than 1% below similar homes' median, but higher than at least a quarter of them,",
+	"more than 1% below similar homes' median, and higher than fewer than a quarter of them,",
+}
+
+// groupRates: pro se reduction rates by Group, tax year 2025, which the
+// tuning never saw (docs/dev/tune-2026-11-26/backtest-2025.txt).
+var groupRates = [5]int{92, 84, 67, 52, 25}
 
 // InLine reports whether a gap is within ±1% of the median. Every surface
 // describes such a home as in line with (or about equal to) similar homes.

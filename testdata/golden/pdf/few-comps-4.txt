@@ -33,9 +33,9 @@ separately at a neighborhood rate per square foot of land.
 property ranks at the 75th percentile of the comparable homes by building AV per square foot.
 How comparable homes were chosen: same neighborhood, multi-story homes, building sqft within ±50%,
 built within ±40 years (Assessor neighborhood 71280), excluding multi-building parcels and homes without
-recorded square footage or a building assessment. The 4 most similar by size, age, baths, lot, design,
-construction, basement and distance (the nearer home first when two are equally similar) are listed on page
-2.
+recorded square footage or a building assessment. The 4 most similar by distance (weighted most), size,
+age, baths, lot, design and construction (the nearer home first when two are equally similar) are listed on
+page 2.
 Uniformity figure
 Applying the comparable homes' median building rate of $22.05 per square foot to the property's 2,172
 square feet, and adding the property's land AV of $5,781, gives an assessed value of $53,674. That is

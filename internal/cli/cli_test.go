@@ -184,7 +184,7 @@ func TestCheckText(t *testing.T) {
 	}{
 		// Figures the terminal report formats itself (the report's numbers are in the goldens).
 		{[]string{"check", "13331030130000"}, 0, []string{
-			"2329 N Lockwood Ave, Chicago", "(mailed value, not yet certified)", "20 of 20 similar homes",
+			"2329 N Lockwood Ave, Chicago", "(mailed value, not yet certified)", "30 of 30 similar homes",
 			"Filed by homeowners: 61% got a reduction (170 appeals, 2023–2025); average cut 9%"}},
 		// Two comps tie the subject exactly; only the 7 strictly lower count.
 		{[]string{"check", "13331050170000"}, 0, []string{"Assessed lower         7 of 9 similar homes"}},

@@ -352,7 +352,8 @@ func auc(xs []scored) float64 {
 	return (rankSumWins - float64(wins)*float64(wins+1)/2) / (float64(wins) * float64(losses))
 }
 
-// tierOrder and tierBucket group gaps by the report's own cut points.
+// tierOrder and tierBucket group gaps by the cut points the reports used
+// until 2026-11-26, kept so runs stay comparable across versions.
 var tierOrder = []string{"<3 comps", ">= +5%", "+1..+5%", "in line (±1%)", "< -1%"}
 
 func tierBucket(gap float64, n int) string {
@@ -392,12 +393,14 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 		byKey        = map[key]*outcome{}
 		byGap        = map[string]map[bool]*outcome{}
 		byTier       = map[string]map[bool]*outcome{}
+		byGroup      = map[string]map[bool]*outcome{}
 		gaps         = map[bool][]scored{}
+		ranks        = map[bool][]scored{} // percentile among comps, the gap breaking ties
 		skipped      = map[string]int{}
 		reportErrors int
 	)
 	if perAppeal != nil {
-		fmt.Fprintln(perAppeal, "pin\tyear\tpro_se\twon\tnum_comps\tgap\tverdict")
+		fmt.Fprintln(perAppeal, "pin\tyear\tpro_se\twon\tnum_comps\tgap\tverdict\tcomps_lower\tpercentile")
 	}
 	bucket := func(m map[string]map[bool]*outcome, k string) map[bool]*outcome {
 		if m[k] == nil {
@@ -432,11 +435,14 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 		st := r.Stats
 		bucket(byGap, gapBucket(st.PctAboveMedian, st.NumComps))[a.pro].add(a.won, a.cut.Float64)
 		bucket(byTier, tierBucket(st.PctAboveMedian, st.NumComps))[a.pro].add(a.won, a.cut.Float64)
+		bucket(byGroup, groupBucket(*st))[a.pro].add(a.won, a.cut.Float64)
 		if st.NumComps >= 3 {
 			gaps[a.pro] = append(gaps[a.pro], scored{st.PctAboveMedian, a.won})
+			ranks[a.pro] = append(ranks[a.pro], scored{comps.RankScore(*st), a.won})
 		}
 		if perAppeal != nil {
-			fmt.Fprintf(perAppeal, "%s\t%d\t%t\t%t\t%d\t%.4f\t%s\n", a.pin, a.year, a.pro, a.won, st.NumComps, st.PctAboveMedian, v)
+			fmt.Fprintf(perAppeal, "%s\t%d\t%t\t%t\t%d\t%.4f\t%s\t%d\t%.1f\n", a.pin, a.year, a.pro, a.won, st.NumComps, st.PctAboveMedian, v,
+				st.CompsLower, st.SubjectPercentile)
 		}
 	}
 	fmt.Fprintf(w, "scored in %s; errors %d; skipped (unsupported) %d\n",
@@ -463,20 +469,38 @@ func evalBacktest(ctx context.Context, w io.Writer, logf func(string, ...any), d
 			printOutcomeRow(w, g, *m[true], *m[false])
 		}
 	}
-	fmt.Fprintf(w, "\n**By report tier cut points (all years)**\n\n")
+	fmt.Fprintf(w, "\n**By the gap cut points the reports used until 2026-11-26 (all years)**\n\n")
 	printOutcomeHeader(w, "gap")
 	for _, g := range tierOrder {
 		if m := byTier[g]; m != nil {
 			printOutcomeRow(w, g, *m[true], *m[false])
 		}
 	}
+	fmt.Fprintf(w, "\n**By the report's groups: gap from the median, then share of similar homes assessed lower (all years)**\n\n")
+	printOutcomeHeader(w, "group")
+	for _, g := range groupOrder {
+		if m := byGroup[g]; m != nil {
+			printOutcomeRow(w, g, *m[true], *m[false])
+		}
+	}
 	all := append(append([]scored(nil), gaps[true]...), gaps[false]...)
-	fmt.Fprintf(w, "\n**How well the gap separates reductions from no change (AUC, 3+ comps)**\n\n")
-	fmt.Fprintf(w, "| filer | n | AUC |\n|---|--:|--:|\n")
-	fmt.Fprintf(w, "| pro se | %d | %.3f |\n", len(gaps[true]), auc(gaps[true]))
-	fmt.Fprintf(w, "| attorney | %d | %.3f |\n", len(gaps[false]), auc(gaps[false]))
-	fmt.Fprintf(w, "| all | %d | %.3f |\n", len(all), auc(all))
+	allRanks := append(append([]scored(nil), ranks[true]...), ranks[false]...)
+	fmt.Fprintf(w, "\n**How well each score separates reductions from no change (AUC, 3+ comps)**\n\n")
+	fmt.Fprintf(w, "Rank = the percentile among the comps, the gap breaking ties (docs/dev/2026-11-26-tune.md).\n\n")
+	fmt.Fprintf(w, "| filer | n | AUC of the gap | AUC of the rank |\n|---|--:|--:|--:|\n")
+	fmt.Fprintf(w, "| pro se | %d | %.4f | %.4f |\n", len(gaps[true]), auc(gaps[true]), auc(ranks[true]))
+	fmt.Fprintf(w, "| attorney | %d | %.4f | %.4f |\n", len(gaps[false]), auc(gaps[false]), auc(ranks[false]))
+	fmt.Fprintf(w, "| all | %d | %.4f | %.4f |\n", len(all), auc(all), auc(allRanks))
 	return nil
+}
+
+var groupOrder = []string{"<3 comps", ">= +1%, >= 3/4 lower", ">= +1%, < 3/4 lower", "in line (±1%)", "< -1%, >= 1/4 lower", "< -1%, < 1/4 lower"}
+
+func groupBucket(st comps.Stats) string {
+	if st.NumComps < 3 {
+		return "<3 comps"
+	}
+	return groupOrder[1+comps.Group(st)]
 }
 
 func printOutcomeHeader(w io.Writer, first string) {

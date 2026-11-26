@@ -90,6 +90,7 @@ type Stats struct {
 	MedianBldgAVPerSF    float64 `json:"median_comp_bldg_av_per_sf"`
 	PctAboveMedian       float64 `json:"pct_above_median"`   // e.g. 0.12 = 12% above
 	SubjectPercentile    float64 `json:"subject_percentile"` // 0–100 among comps
+	CompsLower           int     `json:"comps_lower"`        // comps with a building assessed lower per sq ft (strictly)
 	UniformityAV         float64 `json:"uniformity_av"`      // median comp rate × subject sf + subject land AV
 	PotentialAVReduction float64 `json:"potential_av_reduction"`
 	// Land, checked separately: the subject's land AV per land sq ft and the

@@ -25,19 +25,19 @@ Building
 1,428 sq ft, built 1908, 3 bedrooms, 1 bath
 Comparison with similar homes
 The property's building is assessed at $6.66 per square foot of building area (building AV $9,505 ÷ 1,428 sq
-ft). The median of 20 similar homes in the same Assessor neighborhood is $11.51 per square foot, so the
-property is 42% below the median.
+ft). The median of 30 similar homes in the same Assessor neighborhood is $11.75 per square foot, so the
+property is 43% below the median.
 The building part of the assessment is compared, per square foot, because the Assessor values land
 separately at a neighborhood rate per square foot of land.
-0 of the 20 comparable homes have a building assessed lower per square foot than the property. The
+0 of the 30 comparable homes have a building assessed lower per square foot than the property. The
 property ranks at the 0th percentile of the comparable homes by building AV per square foot.
 How comparable homes were chosen: same neighborhood, class 203, building sqft within ±25%, built within
 ±15 years (Assessor neighborhood 71280), excluding multi-building parcels and homes without recorded
-square footage or a building assessment. The 20 most similar by size, age, baths, lot, design, construction,
-basement and distance (the nearer home first when two are equally similar) are listed on page 2.
+square footage or a building assessment. The 30 most similar by distance (weighted most), size, age, baths,
+lot, design and construction (the nearer home first when two are equally similar) are listed on page 2.
 Uniformity figure
-Applying the comparable homes' median building rate of $11.51 per square foot to the property's 1,428
-square feet, and adding the property's land AV of $13,495, gives an assessed value of $29,931, which is not
+Applying the comparable homes' median building rate of $11.75 per square foot to the property's 1,428
+square feet, and adding the property's land AV of $13,495, gives an assessed value of $30,274, which is not
 below the current assessed value of $23,000.
 Please verify
 •
@@ -101,7 +101,25 @@ $13,495
 $23,000
 $6.66
 Evidence comparables (0): similar homes with the building assessed lower per sq ft
-Other comparable homes (20)
+Other comparable homes (30)
+13-33-206-022-0000
+4834 W Belden Ave
+<0.1 mi
+203
+1.5-story
+Frame
+1,440
+1911
+3 / 1
+Partial, unfinished
+No
+0
+1-car
+3,937
+$14,717
+$7,284
+$22,001
+$10.22
 13-33-205-005-0000
 4943 W Medill Ave
 0.1 mi
@@ -120,96 +138,24 @@ $13,259
 $8,741
 $22,000
 $9.82
-13-33-230-011-0000
-2035 N La Crosse...
-0.3 mi
+13-33-211-010-0000
+2231 N Lavergne...
+0.2 mi
 203
 1.5-story
 Frame
-1,440
-1908
-3 / 1
-Full, unfinished
-No
-0
-1.5-car
-3,275
-$16,941
-$6,059
-$23,000
-$11.76
-13-33-201-010-0000
-5127 W Medill Ave
-0.4 mi
-203
-1.5-story
-Frame
-1,433
+1,253
 1908
 3 / 1.5
 Full, unfinished
-Yes
-0
-2-car
-3,625
-$22,294
-$6,706
-$29,000
-$15.56
-13-33-220-032-0000
-2124 N Lamon Ave
-0.3 mi
-203
-1.5-story
-Frame
-1,380
-1912
-3 / 1
-Full, unfinished
 No
 0
-1-car
-3,780
-$17,007
-$6,993
-$24,000
-$12.32
-13-33-228-004-0000
-2051 N Laporte Ave
-0.3 mi
-203
-1.5-story
-Frame
-1,434
-1912
-3 / 1
-Full, unfinished
-No
-0
-2-car
-3,150
-$16,173
-$5,828
-$22,001
-$11.28
-13-33-103-017-0000
-2317 N Lockwood...
-0.6 mi
-203
-1.5-story
-Frame
-1,460
-1908
-2 / 1
-Full, finished
-Yes
-0
-2-car
-3,402
-$23,706
-$6,294
-$30,000
-$16.24
+None
+6,300
+$9,345
+$11,655
+$21,000
+$7.46
 13-33-212-036-0000
 2212 N Lamon Ave
 0.2 mi
@@ -246,150 +192,6 @@ $15,240
 $6,760
 $22,000
 $11.12
-13-33-209-014-0000
-2219 N Leclaire Ave
-0.3 mi
-203
-1.5-story
-Frame
-1,421
-1913
-2 / 1
-Full, finished
-No
-0
-2-car
-3,780
-$17,007
-$6,993
-$24,000
-$11.97
-13-33-219-010-0000
-2127 N Lavergne...
-0.3 mi
-203
-1.5-story
-Frame
-1,386
-1913
-3 / 1
-Full, unfinished
-No
-0
-2-car
-4,725
-$13,259
-$8,741
-$22,000
-$9.57
-13-33-212-040-0000
-2200 N Lamon Ave...
-0.2 mi
-203
-1.5-story
-Frame
-1,495
-1913
-3 / 1
-Full, unfinished
-No
-0
-2-car
-4,032
-$17,541
-$7,459
-$25,000
-$11.73
-13-33-206-022-0000
-4834 W Belden Ave
-<0.1 mi
-203
-1.5-story
-Frame
-1,440
-1911
-3 / 1
-Partial, unfinished
-No
-0
-1-car
-3,937
-$14,717
-$7,284
-$22,001
-$10.22
-13-33-211-010-0000
-2231 N Lavergne...
-0.2 mi
-203
-1.5-story
-Frame
-1,253
-1908
-3 / 1.5
-Full, unfinished
-No
-0
-None
-6,300
-$9,345
-$11,655
-$21,000
-$7.46
-13-33-208-008-0000
-2237 N Leamingto...
-0.4 mi
-203
-1.5-story
-Frame
-1,392
-1913
-3 / 1
-Full, unfinished
-No
-0
-1.5-car
-3,780
-$15,007
-$6,993
-$22,000
-$10.78
-13-33-208-009-0000
-2235 N Leamingto...
-0.4 mi
-203
-1.5-story
-Frame
-1,392
-1913
-3 / 1
-Full, unfinished
-No
-0
-1-car
-3,780
-$18,007
-$6,993
-$25,000
-$12.94
-13-33-208-010-0000
-2233 N Leamingto...
-0.4 mi
-203
-1.5-story
-Frame
-1,392
-1913
-2 / 1
-Full, unfinished
-No
-0
-None
-3,780
-$13,007
-$6,993
-$20,000
-$9.34
 13-33-213-019-0000
 2205 N Lamon Ave
 0.2 mi
@@ -408,42 +210,186 @@ $20,720
 $6,999
 $27,719
 $15.77
-13-33-208-015-0000
-2217 N Leamingto...
-0.4 mi
+13-33-212-040-0000
+2200 N Lamon Ave...
+0.2 mi
 203
 1.5-story
 Frame
-1,392
+1,495
 1913
 3 / 1
 Full, unfinished
 No
 0
 2-car
-3,780
-$18,007
-$6,993
+4,032
+$17,541
+$7,459
 $25,000
-$12.94
-13-33-217-013-0000
-2119 N Leclaire Ave
-0.4 mi
+$11.73
+13-33-211-008-0000
+2237 N Lavergne...
+0.2 mi
 203
 1.5-story
 Frame
-1,605
+1,126
 1908
-3 / 1
+4 / 1.5
+Full, finished
+No
+0
+2-car
+5,877
+$13,128
+$10,873
+$24,001
+$11.66
+13-33-214-004-0000
+2249 N La Crosse...
+<0.1 mi
+203
+1.5-story
+Frame
+1,400
+1903
+3 / 2
 Full, unfinished
 No
 0
 2-car
-4,725
-$15,259
-$8,741
+4,425
+$15,814
+$8,186
 $24,000
-$9.51
+$11.30
+13-33-213-021-0000
+2201 N Lamon Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,314
+1903
+4 / 1
+Full, unfinished
+No
+0
+2-car
+3,150
+$16,173
+$5,828
+$22,001
+$12.31
+13-33-213-013-0000
+2221 N Lamon Ave
+0.1 mi
+203
+1.5-story
+Frame
+1,123
+1900
+3 / 1
+Full, unfinished
+No
+0
+None
+3,150
+$13,173
+$5,828
+$19,001
+$11.73
+13-33-212-038-0000
+2206 N Lamon Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,489
+1913
+3 / 1.5
+Full, finished
+No
+0
+1-car
+3,654
+$16,240
+$6,760
+$23,000
+$10.91
+13-33-220-032-0000
+2124 N Lamon Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,380
+1912
+3 / 1
+Full, unfinished
+No
+0
+1-car
+3,780
+$17,007
+$6,993
+$24,000
+$12.32
+13-33-212-039-0000
+2204 N Lamon Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,370
+1913
+3 / 1.5
+Full, finished
+No
+0
+2-car
+3,654
+$16,240
+$6,760
+$23,000
+$11.85
+13-33-219-004-0000
+2149 N Lavergne...
+0.3 mi
+203
+1.5-story
+Frame
+1,348
+1913
+3 / 1
+Partial, finished
+No
+0
+None
+4,725
+$12,895
+$8,741
+$21,636
+$9.57
+13-33-213-034-0000
+2224 N La Crosse...
+0.1 mi
+203
+1.5-story
+Frame
+1,134
+1898
+3 / 1
+Full, unfinished
+No
+0
+None
+3,150
+$14,173
+$5,828
+$20,001
+$12.50
 13-33-220-030-0000
 2130 N Lamon Ave
 0.2 mi
@@ -462,7 +408,241 @@ $15,007
 $6,993
 $22,000
 $11.09
-Median building AV / sq ft of the 20 comparable homes: $11.51. Subject: $6.66 (42% below the median).
+13-33-206-023-0000
+4830 W Belden Av...
+<0.1 mi
+203
+1.5-story
+Frame
+1,632
+1911
+5 / 3
+Full, finished
+Yes
+0
+2-car
+3,937
+$29,717
+$7,284
+$37,001
+$18.21
+13-33-230-011-0000
+2035 N La Crosse...
+0.3 mi
+203
+1.5-story
+Frame
+1,440
+1908
+3 / 1
+Full, unfinished
+No
+0
+1.5-car
+3,275
+$16,941
+$6,059
+$23,000
+$11.76
+13-33-219-010-0000
+2127 N Lavergne...
+0.3 mi
+203
+1.5-story
+Frame
+1,386
+1913
+3 / 1
+Full, unfinished
+No
+0
+2-car
+4,725
+$13,259
+$8,741
+$22,000
+$9.57
+13-33-213-017-0000
+2211 N Lamon Ave
+0.1 mi
+203
+1.5-story
+Frame
+1,489
+1903
+5 / 2
+Full, unfinished
+No
+0
+2-car
+3,783
+$22,001
+$6,999
+$29,000
+$14.78
+13-33-212-035-0000
+2214 N Lamon Ave
+0.2 mi
+203
+1.5-story
+Frame
+1,370
+1913
+4 / 2
+Full, finished
+No
+0
+2-car
+3,679
+$18,194
+$6,806
+$25,000
+$13.28
+13-33-213-018-0000
+2207 N Lamon Ave 1
+0.2 mi
+203
+1.5-story
+Frame
+1,489
+1903
+4 / 2
+Full, unfinished
+No
+0
+2-car
+3,780
+$18,007
+$6,993
+$25,000
+$12.09
+13-33-221-022-0000
+4838 W Shakespe...
+0.2 mi
+203
+1.5-story
+Frame
+1,374
+1898
+3 / 1
+Full, unfinished
+No
+0
+2-car
+4,221
+$14,191
+$7,809
+$22,000
+$10.33
+13-33-211-011-0000
+2227 N Lavergne...
+0.2 mi
+203
+1.5-story
+Frame
+1,076
+1911
+3 / 1.5
+Full, unfinished
+Yes
+1
+2-car
+3,150
+$16,515
+$5,828
+$22,343
+$15.35
+13-33-219-027-0000
+2128 N Laporte Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,224
+1913
+3 / 1
+Full, unfinished
+No
+0
+1.5-car
+4,199
+$12,232
+$7,768
+$20,000
+$9.99
+13-33-209-034-0000
+2210 N Lawler Ave
+0.3 mi
+203
+1.5-story
+Frame
+1,254
+1913
+3 / 1
+Full, unfinished
+No
+0
+1-car
+5,355
+$11,093
+$9,907
+$21,000
+$8.85
+13-33-210-025-0000
+2250 N Lavergne...
+0.2 mi
+203
+1.5-story
+Frame
+1,543
+1903
+2 / 1.5
+Full, finished
+No
+0
+2-car
+3,150
+$19,173
+$5,828
+$25,001
+$12.43
+13-33-213-038-0000
+2214 N La Crosse...
+0.1 mi
+203
+1-story
+Frame
+1,128
+1903
+4 / 1
+Full, finished
+No
+0
+2-car
+3,780
+$18,007
+$6,993
+$25,000
+$15.96
+13-33-213-014-0000
+2219 N Lamon Ave
+0.1 mi
+203
+1-story
+Frame
+1,104
+1903
+3 / 1
+Full, unfinished
+No
+0
+2-car
+3,654
+$18,240
+$6,760
+$25,000
+$16.52
+Median building AV / sq ft of the 30 comparable homes: $11.75. Subject: $6.66 (43% below the median).
 Filing steps: Cook County Board of Review
 PIN 13-33-206-038-0000 · Tax year 2026
 Page 3 of 3

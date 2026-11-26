@@ -25,20 +25,20 @@ Building
 1,668 sq ft, built 1908, 4 bedrooms, 0.5 baths
 Comparison with similar homes
 The property's building is assessed at $26.24 per square foot of building area (building AV $43,765 ÷ 1,668
-sq ft). The median of 20 similar homes in the same Assessor neighborhood is $24.94 per square foot, so the
-property is 5% above the median.
+sq ft). The median of 30 similar homes in the same Assessor neighborhood is $25.55 per square foot, so the
+property is 3% above the median.
 The building part of the assessment is compared, per square foot, because the Assessor values land
 separately at a neighborhood rate per square foot of land.
-13 of the 20 comparable homes have a building assessed lower per square foot than the property. The
-property ranks at the 65th percentile of the comparable homes by building AV per square foot.
+18 of the 30 comparable homes have a building assessed lower per square foot than the property. The
+property ranks at the 60th percentile of the comparable homes by building AV per square foot.
 How comparable homes were chosen: same neighborhood, class 205, building sqft within ±25%, built within
 ±15 years (Assessor neighborhood 27080), excluding multi-building parcels and homes without recorded
-square footage or a building assessment. The 20 most similar by size, age, baths, lot, design, construction,
-basement and distance (the nearer home first when two are equally similar) are listed on page 2.
+square footage or a building assessment. The 30 most similar by distance (weighted most), size, age, baths,
+lot, design and construction (the nearer home first when two are equally similar) are listed on page 2.
 Uniformity figure
-Applying the comparable homes' median building rate of $24.94 per square foot to the property's 1,668
-square feet, and adding the property's land AV of $8,235, gives an assessed value of $49,835. That is
-$2,165 less than the current assessed value of $52,000.
+Applying the comparable homes' median building rate of $25.55 per square foot to the property's 1,668
+square feet, and adding the property's land AV of $8,235, gives an assessed value of $50,852. That is
+$1,148 less than the current assessed value of $52,000.
 Please verify
 •
 Please verify the bathroom count: the record shows no full bathrooms.
@@ -99,24 +99,6 @@ $8,235
 $52,000
 $26.24
 Evidence comparables (6): similar homes with the building assessed lower per sq ft
-16-17-130-019-0000
-811 S Humphrey A...
-<0.1 mi
-205
-2-story
-Stucco
-1,736
-1908
-4 / 1
-Full, unfinished
-No
-0
-2-car
-6,300
-$43,660
-$11,340
-$55,000
-$25.15
 16-17-123-006-0000
 714 S Humphrey A...
 0.1 mi
@@ -135,24 +117,24 @@ $39,314
 $7,686
 $47,000
 $21.74
-16-17-127-024-0000
-813 S Lombard Ave
-0.1 mi
+16-17-130-019-0000
+811 S Humphrey A...
+<0.1 mi
 205
 2-story
 Stucco
-1,632
+1,736
 1908
-3 / 1.5
+4 / 1
 Full, unfinished
 No
 0
-1-car
-4,125
-$38,575
-$7,425
-$46,000
-$23.64
+2-car
+6,300
+$43,660
+$11,340
+$55,000
+$25.15
 16-17-123-005-0000
 712 S Humphrey A...
 0.1 mi
@@ -171,43 +153,97 @@ $36,987
 $7,686
 $44,673
 $24.58
-16-17-125-029-0000
-831 S Highland Ave
-0.3 mi
-205
-2-story
-Stucco
-1,781
-1908
-4 / 1.5
-Full, unfinished
-Yes
-0
-2-car
-4,725
-$46,495
-$8,505
-$55,000
-$26.11
-16-17-122-030-0000
-737 S Humphrey A...
+16-17-122-028-0000
+731 S Humphrey A...
 <0.1 mi
 205
 2-story
 Stucco
-1,662
-1919
+1,584
+1916
+3 / 1
+Full, unfinished
+No
+1
+2-car
+5,040
+$38,928
+$9,072
+$48,000
+$24.58
+16-17-127-024-0000
+813 S Lombard Ave
+0.1 mi
+205
+2-story
+Stucco
+1,632
+1908
+3 / 1.5
+Full, unfinished
+No
+0
+1-car
+4,125
+$38,575
+$7,425
+$46,000
+$23.64
+16-17-129-010-0000
+816 S Taylor Ave
+<0.1 mi
+205
+2-story
+Stucco
+1,531
+1914
 3 / 1
 Full, unfinished
 No
 0
 2-car
-4,410
-$40,062
-$7,938
-$48,000
-$24.10
-Other comparable homes (14)
+3,969
+$37,856
+$7,144
+$45,000
+$24.73
+Other comparable homes (24)
+16-17-121-025-0000
+719 S Lyman Ave
+<0.1 mi
+205
+2-story
+Stucco
+1,320
+1909
+3 / 1
+Full, unfinished
+Yes
+0
+2-car
+4,514
+$37,875
+$8,125
+$46,000
+$28.69
+16-17-121-034-0000
+747 S Lyman Ave
+<0.1 mi
+205
+2-story
+Stucco
+1,820
+1913
+4 / 1.5
+Full, finished
+Yes
+1
+2-car
+4,392
+$51,094
+$7,906
+$59,000
+$28.07
 16-17-128-024-0000
 817 S Taylor Ave
 0.1 mi
@@ -244,114 +280,204 @@ $43,314
 $7,686
 $51,000
 $28.03
-16-17-130-025-0000
-829 S Humphrey A...
-0.1 mi
-205
-2-story
-Stucco
-1,685
-1906
-3 / 1.5
-Full, unfinished
-Yes
-0
-2-car
-6,300
-$44,660
-$11,340
-$56,000
-$26.50
-16-17-101-032-0000
-533 S Highland Ave
-0.4 mi
-205
-2-story
-Stucco
-1,713
-1913
-3 / 1
-Full, unfinished
-No
-0
-2-car
-4,199
-$39,442
-$7,558
-$47,000
-$23.03
-16-17-122-028-0000
-731 S Humphrey A...
+16-17-122-014-0000
+736 S Lyman Ave
 <0.1 mi
 205
 2-story
 Stucco
-1,584
-1916
-3 / 1
+1,936
+1913
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+4,410
+$47,062
+$7,938
+$55,000
+$24.31
+16-17-123-010-0000
+726 S Humphrey A...
+0.1 mi
+205
+2-story
+Stucco
+1,960
+1907
+4 / 1.5
 Full, unfinished
 No
 1
 2-car
-5,040
-$38,928
-$9,072
-$48,000
-$24.58
-16-17-102-022-0000
-544 S Highland Ave
-0.3 mi
+4,270
+$48,314
+$7,686
+$56,000
+$24.65
+16-17-121-031-0000
+737 S Lyman Ave
+<0.1 mi
 205
 2-story
 Stucco
-1,498
+1,944
+1913
+4 / 1.5
+Full, unfinished
+Yes
+0
+1-car
+6,100
+$49,020
+$10,980
+$60,000
+$25.22
+16-17-129-023-0000
+803 S Lyman Ave
+<0.1 mi
+205
+2-story
+Stucco
+1,568
+1914
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+4,880
+$39,216
+$8,784
+$48,000
+$25.01
+16-17-121-032-0000
+741 S Lyman Ave
+<0.1 mi
+205
+2-story
+Stucco
+1,559
+1916
+3 / 1.5
+Full, unfinished
+No
+0
+2-car
+3,904
+$39,973
+$7,027
+$47,000
+$25.64
+16-17-122-004-0000
+710 S Lyman Ave
+<0.1 mi
+205
+2-story
+Stucco
+1,452
+1909
+3 / 2
+Full, unfinished
+No
+1
+2-car
+4,410
+$39,062
+$7,938
+$47,000
+$26.90
+16-17-121-020-0000
+705 S Lyman Ave
+<0.1 mi
+205
+2-story
+Frame
+1,320
 1908
 3 / 1
 Full, unfinished
 No
 0
-2-car
-3,125
-$35,375
-$5,625
-$41,000
-$23.61
-16-17-129-010-0000
-816 S Taylor Ave
+1-car
+4,514
+$34,875
+$8,125
+$43,000
+$26.42
+16-17-121-027-0000
+727 S Lyman Ave
 <0.1 mi
 205
 2-story
 Stucco
-1,531
+1,644
 1914
+3 / 2
+Full, finished
+Yes
+0
+2-car
+4,575
+$47,765
+$8,235
+$56,000
+$29.05
+16-17-122-030-0000
+737 S Humphrey A...
+<0.1 mi
+205
+2-story
+Stucco
+1,662
+1919
 3 / 1
 Full, unfinished
 No
 0
 2-car
-3,969
-$37,856
-$7,144
-$45,000
-$24.73
-16-17-119-016-0000
-740 S Harvey Ave
+4,410
+$40,062
+$7,938
+$48,000
+$24.10
+16-17-122-012-0000
+732 S Lyman Ave
+<0.1 mi
+205
+2-story
+Masonry
+1,848
+1908
+3 / 1.5
+Full, unfinished
+No
+1
+2-car
+4,410
+$47,062
+$7,938
+$55,000
+$25.47
+16-17-123-014-0000
+736 S Humphrey A...
 0.1 mi
 205
 2-story
-Frame
-1,597
-1909
-4 / 1
-Full, finished
+Stucco
+2,024
+1906
+4 / 1.5
+Full, unfinished
 Yes
-0
+1
 2-car
-4,687
-$41,063
-$8,437
-$49,500
-$25.71
+4,305
+$52,251
+$7,749
+$60,000
+$25.82
 16-17-123-015-0000
 740 S Humphrey A...
 0.1 mi
@@ -388,86 +514,140 @@ $44,713
 $11,398
 $56,111
 $27.60
-16-17-130-012-0000
-832 S Lyman Ave
+16-17-121-014-0000
+736 S Taylor Ave
+<0.1 mi
+205
+2-story
+Stucco
+1,628
+1910
+3 / 2.5
+Full, finished
+No
+0
+2-car
+4,725
+$46,495
+$8,505
+$55,000
+$28.56
+16-17-127-023-0000
+811 S Lombard Ave
 0.1 mi
 205
 2-story
-Frame
-1,650
-1908
-3 / 1.5
-Full, finished
-No
-0
-2.5-car
-4,725
-$43,495
-$8,505
-$52,000
-$26.36
-16-17-121-025-0000
-719 S Lyman Ave
-<0.1 mi
-205
-2-story
 Stucco
-1,320
-1909
-3 / 1
+1,982
+1908
+4 / 1.5
 Full, unfinished
 Yes
-0
-2-car
-4,514
-$37,875
-$8,125
-$46,000
-$28.69
-16-17-121-001-0000
-700 S Taylor Ave
-<0.1 mi
-205
-2-story
-Stucco
-1,652
-1916
-3 / 1.5
-Full, unfinished
-No
 0
 2-car
 4,125
-$40,575
+$53,575
 $7,425
+$61,000
+$27.03
+16-17-121-018-0000
+744 S Taylor Ave
+<0.1 mi
+205
+2-story
+Frame
+1,440
+1908
+4 / 1.5
+Full, unfinished
+No
+0
+2-car
+4,914
+$39,155
+$8,845
 $48,000
-$24.56
-16-17-125-024-0000
-817 S Highland Ave
-0.3 mi
+$27.19
+16-17-122-003-0000
+706 S Lyman Ave
+<0.1 mi
 205
 2-story
 Stucco
-1,686
-1910
-4 / 2
-Full, finished
+1,864
+1914
+3 / 1.5
+Full, unfinished
 Yes
+0
+3-car
+4,410
+$48,062
+$7,938
+$56,000
+$25.78
+16-17-122-029-0000
+735 S Humphrey A...
+<0.1 mi
+205
+2-story
+Stucco
+1,950
+1914
+3 / 1.5
+Full, unfinished
+No
+1
+None
+4,410
+$46,062
+$7,938
+$54,000
+$23.62
+16-17-130-025-0000
+829 S Humphrey A...
+0.1 mi
+205
+2-story
+Stucco
+1,685
+1906
+3 / 1.5
+Full, unfinished
+Yes
+0
+2-car
+6,300
+$44,660
+$11,340
+$56,000
+$26.50
+16-17-122-011-0000
+728 S Lyman Ave
+<0.1 mi
+205
+2-story
+Stucco
+1,876
+1913
+3 / 2
+Full, unfinished
+No
 1
 2-car
-4,725
-$48,495
-$8,505
-$57,000
-$28.76
-Median building AV / sq ft of the 20 comparable homes: $24.94. Subject: $26.24 (5% above the median).
+4,410
+$47,062
+$7,938
+$55,000
+$25.09
+Median building AV / sq ft of the 30 comparable homes: $25.55. Subject: $26.24 (3% above the median).
 Differences of each evidence comparable from the subject (theirs vs the subject's):
-1. 811 S Humphrey Ave: under 0.1 mi away · 1 more full bath · 1 fewer half bath
-2. 714 S Humphrey Ave: 0.1 mi away · 8% larger · 1 more full bath · 1 fewer half bath · no garage vs 2-car
-3. 813 S Lombard Ave: 0.1 mi away · 1 more full bath · 1-car garage vs 2-car
-4. 712 S Humphrey Ave: 0.1 mi away · 10% smaller · 1 more full bath · 1 fewer half bath · central air vs none · 1 fireplace vs none · 2.5-car garage vs 2-car
-5. 831 S Highland Ave: 0.3 mi away · 7% larger · 1 more full bath · central air vs none
-6. 737 S Humphrey Ave: under 0.1 mi away · built 11 years later · 1 more full bath · 1 fewer half bath
+1. 714 S Humphrey Ave: 0.1 mi away · 8% larger · 1 more full bath · 1 fewer half bath · no garage vs 2-car
+2. 811 S Humphrey Ave: under 0.1 mi away · 1 more full bath · 1 fewer half bath
+3. 712 S Humphrey Ave: 0.1 mi away · 10% smaller · 1 more full bath · 1 fewer half bath · central air vs none · 1 fireplace vs none · 2.5-car garage vs 2-car
+4. 731 S Humphrey Ave: under 0.1 mi away · 5% smaller · 1 more full bath · 1 fewer half bath · 1 fireplace vs none
+5. 813 S Lombard Ave: 0.1 mi away · 1 more full bath · 1-car garage vs 2-car
+6. 816 S Taylor Ave: under 0.1 mi away · 8% smaller · 1 more full bath · 1 fewer half bath
 Filing steps: Cook County Board of Review
 PIN 16-17-121-030-0000 · Tax year 2026
 Page 3 of 3
