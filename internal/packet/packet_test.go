@@ -38,7 +38,14 @@ func TestRenderEveryHome(t *testing.T) {
 			t.Fatalf("%s: %v", pin, err)
 		}
 		var buf bytes.Buffer
-		if err := Render(&buf, r, when); err != nil {
+		err = Render(&buf, r, when)
+		if pin == tooFewPIN {
+			if !errors.Is(err, ErrUnsupported) {
+				t.Errorf("%s (1 similar home): err = %v, want ErrUnsupported", pin, err)
+			}
+			continue
+		}
+		if err != nil {
 			t.Errorf("%s: %v", pin, err)
 			continue
 		}
@@ -74,11 +81,16 @@ func TestRenderEveryHome(t *testing.T) {
 			}
 		}
 	}
-	// The frozen fixture has 2,102 supported homes; this keeps the loop honest.
-	if rendered != 2102 {
-		t.Errorf("rendered %d reports, want 2102", rendered)
+	// The frozen fixture has 2,102 supported homes, one of them with too few
+	// similar homes; this keeps the loop honest.
+	if rendered != 2101 {
+		t.Errorf("rendered %d reports, want 2101", rendered)
 	}
 }
+
+// tooFewPIN is the fixture's only supported home with fewer than 3 similar
+// homes (golden case too-few-comps: 1).
+const tooFewPIN = "13332280060000"
 
 // TestGridFitsEveryValue covers what the fixture may not: every value the
 // Assessor publishes for the decoded columns (docs/data-inventory.md), in
@@ -200,6 +212,9 @@ func TestUnsupported(t *testing.T) {
 		{"no report", nil},
 		{"condo", condo},
 		{"subject but no statistics", &comps.Report{PIN: "S", Subject: &s}},
+		// Without the guard, page 1 says "the median of 0 similar homes ... is $0.00".
+		{"no similar homes", &comps.Report{PIN: "S", Subject: &s, Stats: &comps.Stats{}}},
+		{"2 similar homes", &comps.Report{PIN: "S", Subject: &s, Stats: &comps.Stats{NumComps: 2}}},
 	}
 	for _, tt := range tests {
 		if err := Render(&bytes.Buffer{}, tt.r, when); !errors.Is(err, ErrUnsupported) {

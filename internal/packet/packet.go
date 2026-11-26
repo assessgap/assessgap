@@ -28,6 +28,10 @@ const Pages = 3
 // ErrUnsupported means the report has no comparison to print.
 var ErrUnsupported = errors.New("packet: report has no comparison")
 
+// TooFewReason is why a supported home with fewer than 3 similar homes gets
+// no evidence report.
+const TooFewReason = "too few similar homes were found to compare"
+
 const (
 	margin   = 54.0 // 0.75 in
 	contentW = pageW - 2*margin
@@ -51,6 +55,12 @@ func build(r *comps.Report, generated time.Time) (*doc, error) {
 			reason = r.Unsupported
 		}
 		return nil, fmt.Errorf("%w: %s", ErrUnsupported, reason)
+	}
+	// With fewer than 3 similar homes every surface says there are too few to
+	// compare (comps' decide, the web page, the CLI), so there is no median to
+	// print: with none, page 1 would state a $0.00 median.
+	if r.Stats.NumComps < 3 {
+		return nil, fmt.Errorf("%w: %s", ErrUnsupported, TooFewReason)
 	}
 	p := &pager{doc: newDoc(fmt.Sprintf("Assessment comparison, PIN %s, tax year %d", formatPIN(r.PIN), r.Year)), r: r}
 	for _, page := range []func(){func() { p.summary(generated) }, p.grid, func() { p.steps(generated) }} {
