@@ -53,7 +53,7 @@ func runTownship(ctx context.Context, env *Env, args []string) error {
 func stateName(st bor.Status) string {
 	switch st.State {
 	case bor.Open:
-		return fmt.Sprintf("open (%d days left)", st.DaysLeft)
+		return "open (" + daysLeft(st) + ")"
 	case bor.Upcoming:
 		return "upcoming"
 	case bor.Closed:

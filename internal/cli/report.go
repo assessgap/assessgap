@@ -12,7 +12,7 @@ import (
 )
 
 func runReport(ctx context.Context, env *Env, args []string) error {
-	fs := newFlags(env, "report", "[-db path] [-year N] -o out.pdf <address-or-PIN>")
+	fs := newFlags(env, "report", "[-db path | -live] [-year N] -o out.pdf <address-or-PIN>")
 	db := fs.String("db", "", "county database (default $ASSESSGAP_DB, else "+DefaultDB+")")
 	year := fs.Int("year", 0, "tax year (default: latest year with an assessed value)")
 	out := fs.String("o", "", "output PDF path (required)")

@@ -71,17 +71,21 @@ func titleCase(s string) string {
 
 func day(t time.Time) string { return t.Format("Jan 2, 2006") }
 
+// daysLeft is "N days left", or "last day" when the window closes today.
+func daysLeft(st bor.Status) string {
+	if st.DaysLeft == 1 {
+		return "last day"
+	}
+	return fmt.Sprintf("%d days left", st.DaysLeft)
+}
+
 // windowText is one sentence on a township's Board of Review filing window.
 func windowText(township string, now time.Time) string {
 	st := bor.StatusOf(township, now)
 	switch st.State {
 	case bor.Open:
-		left := fmt.Sprintf("%d days left", st.DaysLeft)
-		if st.DaysLeft == 1 {
-			left = "last day"
-		}
 		return fmt.Sprintf("open now. File by %s (%s); evidence due %s. Portal: %s",
-			day(st.Group.Close), left, day(st.Group.EvidenceDue), bor.PortalURL)
+			day(st.Group.Close), daysLeft(st), day(st.Group.EvidenceDue), bor.PortalURL)
 	case bor.Upcoming:
 		return fmt.Sprintf("opens %s, closes %s; evidence due %s. Dates: %s",
 			day(st.Group.Open), day(st.Group.Close), day(st.Group.EvidenceDue), bor.DatesURL)

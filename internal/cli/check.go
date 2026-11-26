@@ -17,7 +17,7 @@ import (
 )
 
 func runCheck(ctx context.Context, env *Env, args []string) error {
-	fs := newFlags(env, "check", "[-db path] [-year N] [-json] <address-or-PIN>")
+	fs := newFlags(env, "check", "[-db path | -live] [-year N] [-json [-brief]] <address-or-PIN>")
 	db := fs.String("db", "", "county database (default $ASSESSGAP_DB, else "+DefaultDB+")")
 	year := fs.Int("year", 0, "tax year (default: latest year with an assessed value)")
 	live := fs.Bool("live", false, "fetch this home's data from the county's open data API instead of a local database (PIN only)")
