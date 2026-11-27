@@ -42,7 +42,7 @@ comps.Report  ──►  web (report page, via web/views)
 | | `internal/store` | Opening SQLite (pragmas), loading raw CSV pages |
 | | `internal/ingest` | Dataset list, the columns we keep, `build.sql` |
 | | `internal/refresh` | Validation and finalizing of a rebuilt database |
-| | `internal/live` | One home's data from the API, for live mode |
+| | `internal/live` | One home's data from the API, for live mode: the fetch plan in `live.go` (`Fetch` and its three rounds), the dataset plumbing in `queries.go` |
 | Tests | `internal/fixture`, `internal/golden`, `internal/e2e` | The frozen fixture database, the golden files, and end-to-end tests of the built binary (test-only) |
 | Tools | `tools/*` | Fixture rebuild, tuning, share image, PR checks (not part of the binary) |
 
@@ -102,6 +102,6 @@ Counts are source files you edit, not counting generated files (`*_templ.go`, `a
 
 **A page:** route in `web/server.go`, the template in `web/views/pages.templ` (or a new `.templ`), `indexedPaths` in `web/seo.go` for the sitemap, the header or footer in `web/views/nav.go` and `nav.templ`, and `PAGES` in `ops/stats.py`.
 
-**Another assessment stage or year:** a new year needs a new `bor` schedule. Data years roll forward on their own. A new stage (say Board of Review final values, already in `build.sql`) touches the "certified, else mailed" choice, which is written in SQL in `comps/load.go`, `refresh/refresh.go` and `live/live.go`, plus each surface's wording (`web/report.go`, `packet/summary.go`, `cli/check.go`).
+**Another assessment stage or year:** a new year needs a new `bor` schedule. Data years roll forward on their own. A new stage (say Board of Review final values, already in `build.sql`) touches the "certified, else mailed" choice, which is written in SQL in `comps/load.go`, `refresh/refresh.go` and `live/queries.go` (`subjectYear`), plus each surface's wording (`web/report.go`, `packet/summary.go`, `cli/check.go`).
 
 **Another county:** not planned. The seam would be the typed tables: a county fills the same schema from its own `ingest`. Cook specifics are 14-digit PINs (`search`), class codes (`comps/scope.go`), 5-digit neighborhoods and PIN blocks (`live`), and the `bor` package.
