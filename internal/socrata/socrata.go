@@ -67,13 +67,22 @@ func (c *Client) Fetch(ctx context.Context, d Dataset, dir string) (int, error) 
 			c.Log("%s: page %d (%d rows)", d.Name, page, rows)
 		}
 		if rows < c.PageSize {
-			if rows == 0 {
+			// An empty last page is dropped, but an empty first page is kept:
+			// its header lets load create an empty table, so a small
+			// -pin-prefix build with no condos (say) still loads and builds.
+			if rows == 0 && (page > 0 || emptyFile(path)) {
 				os.Remove(path)
 				return page, nil
 			}
 			return page + 1, nil
 		}
 	}
+}
+
+// emptyFile reports whether path is missing or has no bytes (no header).
+func emptyFile(path string) bool {
+	fi, err := os.Stat(path)
+	return err != nil || fi.Size() == 0
 }
 
 func (c *Client) fetchPage(ctx context.Context, d Dataset, offset int, path string) (int, error) {

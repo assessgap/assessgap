@@ -18,7 +18,7 @@ Early. The website, the `assessgap` command (which can check a home straight fro
 ## Install the command
 
 - **Download:** prebuilt `assessgap` binaries for macOS, Linux and Windows (Intel and ARM) are on the [Releases](https://github.com/assessgap/assessgap/releases) page once a release is published. Unpack the archive and put `assessgap` on your `PATH`. `checksums.txt` lists each archive's SHA-256.
-- **With Go 1.26+:** `go install github.com/assessgap/assessgap/cmd/assessgap@latest`
+- **With Go 1.26.5+:** `go install github.com/assessgap/assessgap/cmd/assessgap@latest`
 
 `assessgap version` prints the version, commit and build date.
 
@@ -35,7 +35,7 @@ assessgap township jefferson                   # your township's Board of Review
 Live mode is for checking a home at a time; searching by address needs a local database (below).
 
 ## Run it yourself
-Requires Go 1.26+. Everything is pure Go (SQLite via `modernc.org/sqlite`), so there's no cgo.
+Requires Go 1.26.5+. Everything is pure Go (SQLite via `modernc.org/sqlite`), so there's no cgo.
 
 Everything is one command, `assessgap` (`go install ./cmd/assessgap`, or `go run ./cmd/assessgap` as below). Flags may go before or after the address or PIN.
 
@@ -59,7 +59,7 @@ go run ./cmd/assessgap township jefferson
 go run ./cmd/assessgap serve -app data-sample/app.db
 ```
 
-**No download needed for one home:** if there's no database (no `-db`, no `$ASSESSGAP_DB`, no `./data/cook.db`), `assessgap check <PIN>` and `assessgap report <PIN> -o x.pdf` fetch just that home's neighborhood from the county's open data API (about 10 requests and a few MB, usually a few seconds). Force it with `-live`. Searching by address still needs a local database.
+**No download needed for one home:** if there's no database (no `-db`, no `$ASSESSGAP_DB`, no `./data/cook.db`), `assessgap check <PIN>` and `assessgap report <PIN> -o x.pdf` fetch just that home's neighborhood from the county's open data API (about 10 requests and a few MB, usually 3 to 15 seconds). Force it with `-live`. Searching by address still needs a local database.
 
 Without `-db` or `$ASSESSGAP_DB`, `check`, `report`, `serve`, `backtest`, `sample` and `live-eval` use `./data/cook.db`; the `db` steps take their paths from `-db` or `-data` only. For the whole county, run `assessgap db sync` with no flags: about 45 minutes and 9 GB. `ops/refresh.sh` rebuilds the full database safely (fresh download, validation, atomic swap) using `assessgap db fetch|load|build|validate|finalize`. `assessgap backtest -years 2025` reproduces the methodology's 2025 tables against a full database (`tools/tune` reproduces the tuning; see the methodology).
 

@@ -10,7 +10,7 @@ One CSV page per ingested dataset, with only the columns `build.sql` reads (`ing
 |---|---|
 | Neighborhoods | Assessor neighborhoods **27080** (Oak Park Township; 2026 values certified), **39082** (Worth Township; certified) and **71280** (Jefferson Township, Chicago; 2026 values mailed, not yet certified) |
 | Rows | every row, in every dataset, for every PIN whose parcel or assessed-value record is in those neighborhoods: 3,851 parcels, 19,251 assessed values (2022–2026), 6,054 characteristic cards, 7,702 addresses, 1,510 sales, 604 condo cards, 3,416 Board of Review appeals (2021–2025), 3,181 Assessor appeals |
-| Size | 3.8 MB of plain, diffable CSV |
+| Size | 4.6 MB of plain, diffable CSV |
 | Taken from | a full local build (`assessgap db sync`) whose downloads were made on 2026-11-24. Rebuilt on 2026-11-25 from the same download to add the assessed values' building and land columns (`*_bldg`, `*_land`); no existing value changed |
 | Why these three | three townships with different AV stages (mailed vs certified), all three class groups, condos, two-flats, multi-building parcels, commercial and exempt parcels, and real Board of Review appeal history (288 to 977 appeals per neighborhood in 2023–2025) |
 
@@ -54,7 +54,7 @@ go run ./cmd/assessgap check -db data-fixture/cook.db 13331030130000
 |---|---|---|
 | `check/` | `assessgap check -json` for 32 cases (exit status, stderr, and every field of the report) | `internal/golden` |
 | `pdf/` | the evidence report's text, for 5 PINs, prepared on a fixed date | `internal/golden` |
-| `web/` | the report page's formatted figures (`web.toView`) for 8 cases, plus the township pages and the townships index on fixed dates; the date-dependent filing window and the chart geometry are left out | `internal/web` |
+| `web/` | the report page's formatted figures (`web.toView`) for 8 report cases, with the date-dependent filing window and the chart geometry left out; and the township pages and index for 5 cases on fixed dates | `internal/web` |
 
 Structured output is flattened to one `path = value` line per field, sorted, with floats rounded to 6 decimal places, so a diff names the field that changed. On a mismatch the test prints `case (PIN): field: old → new`.
 

@@ -26,6 +26,9 @@ func runLiveEval(ctx context.Context, env *Env, args []string) error {
 	if _, err := parseArgs(fl, args); err != nil {
 		return err
 	}
+	if *n < 1 { // nothing to compare; the summary would print NaN
+		return &exitError{code: 2, msg: "-n must be at least 1"}
+	}
 	db, err := openCounty(dbPath(env, *dbFlag))
 	if err != nil {
 		return err
