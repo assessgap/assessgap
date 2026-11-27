@@ -59,7 +59,7 @@ func build(r *comps.Report, generated time.Time) (*doc, error) {
 	// With fewer than 3 similar homes every surface says there are too few to
 	// compare (comps' decide, the web page, the CLI), so there is no median to
 	// print: with none, page 1 would state a $0.00 median.
-	if r.Stats.NumComps < 3 {
+	if r.Stats.TooFewToCompare() {
 		return nil, fmt.Errorf("%w: %s", ErrUnsupported, TooFewReason)
 	}
 	p := &pager{doc: newDoc(fmt.Sprintf("Assessment comparison, PIN %s, tax year %d", format.PIN(r.PIN), r.Year)), r: r}
@@ -190,7 +190,7 @@ func (p *pager) summary(generated time.Time) {
 
 	p.heading("Uniformity figure")
 	switch {
-	case comps.AboveMedian(st.PctAboveMedian) && st.PotentialAVReduction >= 1:
+	case st.StatesReduction():
 		p.body(fmt.Sprintf(
 			"Applying the comparable homes' median building rate of %s per square foot to the property's %s square feet, "+
 				"and adding the property's land AV of %s, gives an assessed value of %s. That is %s less than the current "+

@@ -146,7 +146,7 @@ func writeText(w io.Writer, r *comps.Report, now time.Time) error {
 		fmt.Fprintf(tw, "Assessed lower\t%d of %d similar homes\t\n", countBelow(r), st.NumComps)
 		fmt.Fprintf(tw, "At the median rate\t%s assessed value\t(median × this home's sq ft + its land AV %s", format.Money(st.UniformityAV), format.Money(s.LandAV))
 		// Like the web page and the reasons: a difference is stated only at 1% or more above the median.
-		if comps.AboveMedian(st.PctAboveMedian) && st.PotentialAVReduction >= 1 {
+		if st.StatesReduction() {
 			fmt.Fprintf(tw, "; %s below this home's", format.Money(st.PotentialAVReduction))
 		}
 		fmt.Fprintln(tw, ")")
@@ -156,7 +156,7 @@ func writeText(w io.Writer, r *comps.Report, now time.Time) error {
 	if r.Search != nil {
 		p.line("Compared on: %s.", r.Search.Description)
 	}
-	if st.NumComps < 3 {
+	if st.TooFewToCompare() {
 		p.line("Too few similar homes were found for a meaningful comparison.")
 	}
 

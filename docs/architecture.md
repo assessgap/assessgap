@@ -70,8 +70,8 @@ cmd/assessgap ─► cli ─► web ─► web/views
 |---|---|
 | Core types (home, comparable, statistics, report) | `comps/types.go` |
 | Comparison rules: search steps, weights, how many homes | `comps/select.go` (`DefaultParams`: steps, weights, `MinComps` 8, `MaxComps` 30) |
-| Thresholds: in line (±1%), groups, evidence counts, land tolerance | `comps/analyze.go` (constants at the top) |
-| The rates quoted to homeowners (backtest of 2025 decisions) | `comps/analyze.go` (`groupRates`), copied into `web/views/pages.templ` and `docs/methodology.md` |
+| Thresholds: in line (±1%), too few to compare (3), evidence counts, groups, land tolerance | `comps/analyze.go` (constants at the top). Surfaces ask `comps.InLine`, `AboveMedian`, `Stats.TooFewToCompare` and `Stats.StatesReduction`, never a literal. The backtest's buckets in `cli/eval.go` keep their own numbers on purpose, so runs stay comparable across versions |
+| The rates quoted to homeowners (backtest of 2025 decisions) | `comps/analyze.go` (`groupRates`), also typed into `web/views/pages.templ` and `docs/methodology.md`. `comps/rates_test.go` fails if the three disagree |
 | Supported classes | `comps/scope.go` |
 | Report text from the engine (reasons, flags, differences) | `comps/analyze.go`, `comps/describe.go` |
 | Filing windows, deadlines, portal URLs | `bor/bor.go` (one hand-edited session a year). `bor.StatusOf` decides the state and `State.Slug()` names it. Each surface words it: `web/window.go`, `cli/format.go` (`windowText`), `packet/packet.go` (`windowStep`) |

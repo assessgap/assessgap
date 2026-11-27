@@ -49,7 +49,7 @@ func toView(r *comps.Report) views.ReportData {
 	v.SubjectAV, v.UniformityAV = format.Money(s.AV), format.Money(st.UniformityAV)
 	v.SubjectBldgAV, v.SubjectLandAV, v.LandNote = format.Money(s.BldgAV), format.Money(s.LandAV), comps.LandNote
 	// Shown only when the reasons state it too (1% or more above the median).
-	if comps.AboveMedian(st.PctAboveMedian) && st.PotentialAVReduction >= 1 {
+	if st.StatesReduction() {
 		v.Reduction = format.Money(st.PotentialAVReduction)
 	}
 	v.Subject = homeRow(comps.Comp{Home: s, Miles: 0}, false)
@@ -98,7 +98,7 @@ func homeRow(c comps.Comp, evidence bool) views.HomeRow {
 func headline(r *comps.Report) string {
 	st := r.Stats
 	switch {
-	case st == nil || st.NumComps < 3:
+	case st == nil || st.TooFewToCompare():
 		return "We found too few similar homes to compare."
 	case comps.InLine(st.PctAboveMedian):
 		return "Your home's building is assessed about the same per square foot as similar homes nearby."
@@ -111,7 +111,7 @@ func headline(r *comps.Report) string {
 
 // badge is the short fact shown above the headline.
 func badge(r *comps.Report) string {
-	if r.Stats == nil || r.Stats.NumComps < 3 {
+	if r.Stats == nil || r.Stats.TooFewToCompare() {
 		return "Too few similar homes"
 	}
 	return fmt.Sprintf("%d of %d similar homes have a building assessed lower per sq ft",
