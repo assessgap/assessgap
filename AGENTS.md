@@ -11,6 +11,8 @@ AssessGap helps Cook County homeowners appeal their own property assessments by 
 
 ## Layout
 
+[docs/architecture.md](docs/architecture.md) has the data flow, the dependency rules (enforced by `cmd/assessgap/imports_test.go`), where things live and how to add common things. Read it before adding a package or an import between packages.
+
 | Path | What |
 |---|---|
 | `cmd/assessgap`, `internal/cli` | The `assessgap` command |

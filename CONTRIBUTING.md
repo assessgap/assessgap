@@ -6,7 +6,7 @@ Thanks for helping. A few ground rules keep this useful and safe for homeowners:
 - **Facts, not legal advice.** Describe data and published procedures. Don't tell users what to argue or whether to appeal.
 - **Cite official sources** for anything about Board of Review or Assessor procedures, and note the date you checked.
 - **Numbers must be right.** Every figure a homeowner sees comes from county data through tested code, and any change to one is reviewed as a diff.
-- Keep it simple: standard library first, small packages, table-driven tests. [AGENTS.md](AGENTS.md) has the conventions (it's written for AI coding agents, but applies to everyone).
+- Keep it simple: standard library first, small packages, table-driven tests. [AGENTS.md](AGENTS.md) has the conventions (it's written for AI coding agents, but applies to everyone), and [docs/architecture.md](docs/architecture.md) the package map, the dependency rules and how to add common things.
 
 Bigger changes: open an issue first so we can agree on the approach.
 

@@ -9,12 +9,12 @@ package packet
 import (
 	"errors"
 	"fmt"
-	"github.com/assessgap/assessgap/internal/bor"
 	"io"
 	"math"
 	"strings"
 	"time"
 
+	"github.com/assessgap/assessgap/internal/bor"
 	"github.com/assessgap/assessgap/internal/comps"
 	"github.com/dustin/go-humanize"
 )
