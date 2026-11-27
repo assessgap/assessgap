@@ -3,7 +3,9 @@ package cli
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"time"
 
@@ -31,7 +33,7 @@ func runServe(ctx context.Context, env *Env, args []string) error {
 	defer cook.Close()
 	app, err := store.OpenApp(*appPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("app database %s: %w", *appPath, err)
 	}
 	defer app.Close()
 	site, err := web.New(cook, app, *dev, log)
@@ -56,8 +58,14 @@ func runServe(ctx context.Context, env *Env, args []string) error {
 			log.Error("shutdown", "err", err)
 		}
 	}()
-	log.Info("listening", "addr", *addr, "dev", *dev)
-	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+	// Bind before logging "listening", so the line means the port is taken
+	// (a bad -addr fails here instead of after a misleading log line).
+	ln, err := net.Listen("tcp", *addr)
+	if err != nil {
+		return err
+	}
+	log.Info("listening", "addr", ln.Addr().String(), "dev", *dev)
+	if err := srv.Serve(ln); !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	<-drained

@@ -1,0 +1,38 @@
+name: fuzz
+# Nightly, and on demand: run each fuzz target for a few minutes. The seed
+# corpora (testdata/fuzz/) already run as ordinary tests in scripts/check.sh;
+# this job looks for new inputs. A failure uploads the crasher so it can be
+# committed as a regression seed with the fix.
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { pkg: ./internal/search, name: FuzzParsePIN }
+          - { pkg: ./internal/search, name: FuzzNormalizeQuery }
+          - { pkg: ./internal/web, name: FuzzTownshipSlug }
+          - { pkg: ./internal/web, name: FuzzSearchRoute }
+          - { pkg: ./internal/web, name: FuzzCheckRoute }
+          - { pkg: ./internal/live, name: FuzzFetchCountyRows }
+          - { pkg: ./internal/live, name: FuzzSQLQuote }
+          - { pkg: ./internal/socrata, name: FuzzFetchPage }
+          - { pkg: ./internal/ingest, name: FuzzBuildFields }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go test ${{ matrix.target.pkg }} -run '^$' -fuzz '^${{ matrix.target.name }}$' -fuzztime 3m
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crasher-${{ matrix.target.name }}
+          path: "**/testdata/fuzz/${{ matrix.target.name }}/"

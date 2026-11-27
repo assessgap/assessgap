@@ -48,6 +48,9 @@ func runSample(ctx context.Context, env *Env, args []string) error {
 	if _, err := parseArgs(fl, args); err != nil {
 		return err
 	}
+	if *n < 1 { // a negative n would slice pins[:n]
+		return &exitError{code: 2, msg: "-n must be at least 1"}
+	}
 	db, e, err := evalEngine(env, *dbFlag)
 	if err != nil {
 		return err
