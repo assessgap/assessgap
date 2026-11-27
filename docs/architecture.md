@@ -36,7 +36,8 @@ comps.Report  ──►  web (report page, via web/views)
 | | `internal/packet` | The evidence report PDF (its own minimal PDF writer, `pdf.go`) |
 | Engine and facts | `internal/comps` | The comparison: types (`types.go`), loading (`load.go`), selection (`select.go`), statistics and reasons (`analyze.go`), wording of differences (`describe.go`), scope (`scope.go`) |
 | | `internal/bor` | Board of Review calendar and filing facts, township names, Chicago time |
-| | `internal/search` | PIN parsing and formatting, address lookup |
+| | `internal/search` | PIN parsing, address lookup |
+| | `internal/format` | How figures and names read on every surface: money, rates, percents, the gap, baths, distance, addresses, PINs |
 | Data | `internal/socrata` | Socrata API client |
 | | `internal/store` | Opening SQLite (pragmas), loading raw CSV pages |
 | | `internal/ingest` | Dataset list, the columns we keep, `build.sql` |
@@ -50,12 +51,12 @@ comps.Report  ──►  web (report page, via web/views)
 ```
 cmd/assessgap ─► cli ─► web ─► web/views
                   │      └───► packet ─┐
-                  │                    ├─► comps, bor, search   (leaves)
+                  │                    ├─► comps, bor, search, format   (leaves)
                   ├─► live ─► ingest ─► store ─► socrata        (leaf)
                   └─► refresh ─► ingest
 ```
 
-1. **Leaves import nothing from this module:** `comps`, `bor`, `search`, `socrata`. The engine must stay usable by any surface or tool.
+1. **Leaves import nothing from this module:** `comps`, `bor`, `search`, `format`, `socrata`. The engine must stay usable by any surface or tool, and `format` takes the engine's thresholds as arguments (`format.Gap(g, comps.InLine(g))`) rather than importing them.
 2. **Presentation (`web`, `web/views`, `packet`) never imports the data side** (`store`, `ingest`, `refresh`, `live`, `socrata`). It reads a `comps.Report`, or the served tables through the `*sql.DB` it's given.
 3. **The data side never imports presentation or `cli`.**
 4. **Only `cli` imports `web`; only `web` imports `web/views`; only `cmd/assessgap` imports `cli`.** `fixture` and `golden` are imported only by tests; `e2e` holds only tests.
@@ -78,7 +79,7 @@ cmd/assessgap ─► cli ─► web ─► web/views
 | Typed schema | `ingest/build.sql` |
 | SQLite pragmas | `store/open.go` |
 | Website limits and timeouts | `web/server.go`, `web/limit.go`, `cli/serve.go` |
-| Formatting of money, rates, percents, addresses | one copy per surface: `cli/format.go`, `web/report.go`, `packet/packet.go` |
+| Formatting of money, rates, percents, addresses, PINs | `internal/format`. Each surface keeps only its own wording and its placeholder for an unknown value (`cli/format.go`, `web/report.go`, the end of `packet/packet.go`). `comps` keeps its own `money`/`pct`, which round slightly differently, for the reasons text |
 | Database path rules (`-db`, `$ASSESSGAP_DB`, live by default) | `cli/source.go` |
 | Goldens and fixture | `internal/golden/cases.go`, `testdata/` ([testdata/README.md](../testdata/README.md)) |
 

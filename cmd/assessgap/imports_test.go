@@ -22,9 +22,10 @@ const module = "github.com/assessgap/assessgap/"
 var allowedImports = map[string][]string{
 	"cmd/assessgap": {"internal/cli"},
 
-	// Leaves: rules and facts with no internal imports.
+	// Leaves: rules, facts and formatting, with no internal imports.
 	"internal/bor":     nil,
 	"internal/comps":   nil,
+	"internal/format":  nil,
 	"internal/search":  nil,
 	"internal/socrata": nil,
 
@@ -35,13 +36,14 @@ var allowedImports = map[string][]string{
 	"internal/live":    {"internal/comps", "internal/ingest", "internal/socrata", "internal/store"},
 
 	// Presentation (the read side).
-	"internal/packet":    {"internal/bor", "internal/comps"},
+	"internal/packet":    {"internal/bor", "internal/comps", "internal/format"},
 	"internal/web/views": {"internal/bor"},
-	"internal/web":       {"internal/bor", "internal/comps", "internal/packet", "internal/search", "internal/web/views"},
+	"internal/web": {"internal/bor", "internal/comps", "internal/format", "internal/packet", "internal/search",
+		"internal/web/views"},
 
 	// The command wires everything together.
-	"internal/cli": {"internal/bor", "internal/comps", "internal/ingest", "internal/live", "internal/packet",
-		"internal/refresh", "internal/search", "internal/store", "internal/web"},
+	"internal/cli": {"internal/bor", "internal/comps", "internal/format", "internal/ingest", "internal/live",
+		"internal/packet", "internal/refresh", "internal/search", "internal/store", "internal/web"},
 
 	// Test support, imported only from _test.go files. internal/e2e holds only
 	// tests (it runs the built binary) and a doc.go.

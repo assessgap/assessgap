@@ -49,18 +49,6 @@ func TestParsePIN(t *testing.T) {
 	}
 }
 
-func TestFormatPIN(t *testing.T) {
-	tests := []struct{ in, want string }{
-		{"13281000270000", "13-28-100-027-0000"},
-		{"1328", "1328"},
-	}
-	for _, tt := range tests {
-		if got := FormatPIN(tt.in); got != tt.want {
-			t.Errorf("FormatPIN(%q) = %q, want %q", tt.in, got, tt.want)
-		}
-	}
-}
-
 func TestExact(t *testing.T) {
 	house := []Match{
 		{PIN: "1", Address: "5555 W BELMONT AVE"},

@@ -11,6 +11,7 @@ import (
 
 	"github.com/assessgap/assessgap/internal/bor"
 	"github.com/assessgap/assessgap/internal/comps"
+	"github.com/assessgap/assessgap/internal/format"
 	"github.com/assessgap/assessgap/internal/web/views"
 	"github.com/dustin/go-humanize"
 )
@@ -139,11 +140,11 @@ func appealsView(t appealTotals, has bool) *views.TownshipAppeals {
 	}
 	v := &views.TownshipAppeals{
 		Appeals: humanize.Comma(int64(t.appeals)),
-		Reduced: pct(float64(t.reduced) / float64(t.appeals)),
+		Reduced: format.Pct(float64(t.reduced) / float64(t.appeals)),
 		Years:   fmt.Sprintf("%d–%d", t.first, t.last),
 	}
 	if t.cutReduced > 0 {
-		v.AvgCut = pct(t.cutWeighted / float64(t.cutReduced))
+		v.AvgCut = format.Pct(t.cutWeighted / float64(t.cutReduced))
 	}
 	return v
 }

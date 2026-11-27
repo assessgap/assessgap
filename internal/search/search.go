@@ -95,14 +95,6 @@ func ParsePIN(q string) (string, bool) {
 	return "", false
 }
 
-// FormatPIN renders a 14-digit PIN as 13-28-100-027-0000.
-func FormatPIN(p string) string {
-	if len(p) != 14 {
-		return p
-	}
-	return p[0:2] + "-" + p[2:4] + "-" + p[4:7] + "-" + p[7:10] + "-" + p[10:14]
-}
-
 const prefixSQL = `
 SELECT pin, address, COALESCE(city, ''), COALESCE(class, '')
 FROM parcel

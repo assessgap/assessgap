@@ -16,6 +16,7 @@ import (
 
 	"github.com/assessgap/assessgap/internal/comps"
 	"github.com/assessgap/assessgap/internal/fixture"
+	"github.com/assessgap/assessgap/internal/format"
 )
 
 func TestMain(m *testing.M) { os.Exit(fixture.Main(m)) }
@@ -62,7 +63,7 @@ func TestRenderEveryHome(t *testing.T) {
 			t.Fatal(err)
 		}
 		for _, c := range r.Comps {
-			if n := strings.Count(txt, formatPIN(c.PIN)); n != 1 {
+			if n := strings.Count(txt, format.PIN(c.PIN)); n != 1 {
 				t.Errorf("%s: comp %s appears %d times", pin, c.PIN, n)
 			}
 		}

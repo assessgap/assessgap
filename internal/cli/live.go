@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/assessgap/assessgap/internal/comps"
+	"github.com/assessgap/assessgap/internal/format"
 	"github.com/assessgap/assessgap/internal/ingest"
 	"github.com/assessgap/assessgap/internal/live"
 	"github.com/assessgap/assessgap/internal/search"
@@ -40,7 +41,7 @@ func lookupLive(ctx context.Context, env *Env, q string, year int) (*comps.Repor
 	}
 	res, err := newFetcher(env).Fetch(ctx, pin, year)
 	if errors.Is(err, live.ErrNotFound) {
-		return nil, fmt.Errorf("PIN %s has no assessed value in the county's open data", search.FormatPIN(pin))
+		return nil, fmt.Errorf("PIN %s has no assessed value in the county's open data", format.PIN(pin))
 	}
 	if err != nil {
 		return nil, fmt.Errorf("fetching from the county's open data API: %w", err)

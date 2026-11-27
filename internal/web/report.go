@@ -8,15 +8,14 @@ import (
 
 	"github.com/assessgap/assessgap/internal/bor"
 	"github.com/assessgap/assessgap/internal/comps"
-	"github.com/assessgap/assessgap/internal/search"
+	"github.com/assessgap/assessgap/internal/format"
 	"github.com/assessgap/assessgap/internal/web/views"
-	"github.com/dustin/go-humanize"
 )
 
 // toView formats a comps.Report for the report page.
 func toView(r *comps.Report) views.ReportData {
 	v := views.ReportData{
-		PIN: r.PIN, PINFmt: formatPIN(r.PIN), Address: titleCase(r.Address),
+		PIN: r.PIN, PINFmt: format.PIN(r.PIN), Address: format.TitleCase(r.Address),
 		Year: r.Year, Unsupported: r.Unsupported, IsCondo: r.Class == "299",
 		Mailed: r.AVStage != "certified", Disclaimer: r.Disclaimer,
 	}
@@ -24,7 +23,7 @@ func toView(r *comps.Report) views.ReportData {
 	v.Window = window(r.Township, time.Now())
 	v.StageLabel = stageLabel(r)
 	for _, n := range r.NbhdAppeals {
-		row := &views.NbhdRow{WinRate: pct(n.WinRate), AvgCut: pct(n.AvgCutPct), Appeals: n.Appeals,
+		row := &views.NbhdRow{WinRate: format.Pct(n.WinRate), AvgCut: format.Pct(n.AvgCutPct), Appeals: n.Appeals,
 			Years: fmt.Sprintf("%d–%d", n.FirstYear, n.LastYear)}
 		if n.ProSe {
 			v.ProSe = row
@@ -43,23 +42,16 @@ func toView(r *comps.Report) views.ReportData {
 	// it: st.SubjectBldgAVPerSF is already cut to the cent, so at a half cent
 	// the headline printed one cent more than those two (the PDF had the same split).
 	v.SubjectBldgAVPerSF, v.MedianBldgAVPerSF = perSF(s.BldgAVPerSF), perSF(st.MedianBldgAVPerSF)
-	switch g := st.PctAboveMedian; {
-	case comps.InLine(g):
-		v.GapLabel = "about equal to"
-	case g > 0:
-		v.GapLabel = pct(g) + " above"
-	default:
-		v.GapLabel = pctAbs(g) + " below"
-	}
+	v.GapLabel = format.Gap(st.PctAboveMedian, comps.InLine(st.PctAboveMedian))
 	v.NumComps = st.NumComps
 	if r.Search != nil {
 		v.SearchDesc = r.Search.Description
 	}
-	v.SubjectAV, v.UniformityAV = money(s.AV), money(st.UniformityAV)
-	v.SubjectBldgAV, v.SubjectLandAV, v.LandNote = money(s.BldgAV), money(s.LandAV), comps.LandNote
+	v.SubjectAV, v.UniformityAV = format.Money(s.AV), format.Money(st.UniformityAV)
+	v.SubjectBldgAV, v.SubjectLandAV, v.LandNote = format.Money(s.BldgAV), format.Money(s.LandAV), comps.LandNote
 	// Shown only when the reasons state it too (1% or more above the median).
 	if comps.AboveMedian(st.PctAboveMedian) && st.PotentialAVReduction >= 1 {
-		v.Reduction = money(st.PotentialAVReduction)
+		v.Reduction = format.Money(st.PotentialAVReduction)
 	}
 	v.Subject = homeRow(comps.Comp{Home: s, Miles: 0}, false)
 	v.Subject.Away = ""
@@ -75,7 +67,7 @@ func toView(r *comps.Report) views.ReportData {
 		v.Flags = append(v.Flags, fl.Message)
 	}
 	for _, sa := range r.Sales {
-		v.Sales = append(v.Sales, views.SaleRow{Date: shortDate(sa.Date), Price: money(sa.Price)})
+		v.Sales = append(v.Sales, views.SaleRow{Date: shortDate(sa.Date), Price: format.Money(sa.Price)})
 	}
 	v.Chart = newChart(s, r.Comps, r.Evidence, st.MedianBldgAVPerSF, wideChart)
 	v.ChartNarrow = newChart(s, r.Comps, r.Evidence, st.MedianBldgAVPerSF, narrowChart)
@@ -90,28 +82,17 @@ func homeRow(c comps.Comp, evidence bool) views.HomeRow {
 	}
 	land := ""
 	if h.LandSF > 0 {
-		land = num(h.LandSF)
+		land = format.Num(h.LandSF)
 	}
 	f := h.Features()
 	return views.HomeRow{
-		Address: titleCase(h.Address), PIN: h.PIN, PINFmt: formatPIN(h.PIN),
-		Away: milesText(c.Miles), Class: h.Class, Stories: f.Stories, Construction: f.Construction,
-		SqFt: num(h.BldgSF), YearBuilt: yr, Beds: fmt.Sprint(h.Beds), Baths: baths(h),
+		Address: format.TitleCase(h.Address), PIN: h.PIN, PINFmt: format.PIN(h.PIN),
+		Away: format.Miles(c.Miles, ""), Class: h.Class, Stories: f.Stories, Construction: f.Construction,
+		SqFt: format.Num(h.BldgSF), YearBuilt: yr, Beds: fmt.Sprint(h.Beds), Baths: format.Baths(h.Baths()),
 		Basement: f.Basement, Air: f.Air, Fireplaces: f.Fireplaces, Garage: f.Garage,
-		LandSqFt: land, BldgAV: money(h.BldgAV), LandAV: money(h.LandAV), AV: money(h.AV),
-		PerSF: fmt.Sprintf("$%.2f", h.BldgAVPerSF), Differences: c.Differences, Evidence: evidence,
+		LandSqFt: land, BldgAV: format.Money(h.BldgAV), LandAV: format.Money(h.LandAV), AV: format.Money(h.AV),
+		PerSF: format.PerSF(h.BldgAVPerSF), Differences: c.Differences, Evidence: evidence,
 	}
-}
-
-// milesText is a comp's distance from the subject; "" when unknown.
-func milesText(mi float64) string {
-	switch {
-	case mi < 0:
-		return ""
-	case mi < 0.1:
-		return "<0.1 mi"
-	}
-	return fmt.Sprintf("%.1f mi", mi)
 }
 
 // headline states the comparison as a fact, with no verdict.
@@ -123,9 +104,9 @@ func headline(r *comps.Report) string {
 	case comps.InLine(st.PctAboveMedian):
 		return "Your home's building is assessed about the same per square foot as similar homes nearby."
 	case st.PctAboveMedian > 0:
-		return "Your home's building is assessed " + pct(st.PctAboveMedian) + " above similar homes nearby, per square foot."
+		return "Your home's building is assessed " + format.Pct(st.PctAboveMedian) + " above similar homes nearby, per square foot."
 	default:
-		return "Your home's building is assessed " + pctAbs(st.PctAboveMedian) + " below similar homes nearby, per square foot."
+		return "Your home's building is assessed " + format.Pct(math.Abs(st.PctAboveMedian)) + " below similar homes nearby, per square foot."
 	}
 }
 
@@ -141,7 +122,7 @@ func badge(r *comps.Report) string {
 func location(r *comps.Report) string {
 	var parts []string
 	if r.City != "" {
-		parts = append(parts, titleCase(r.City))
+		parts = append(parts, format.TitleCase(r.City))
 	}
 	if r.Township != "" {
 		parts = append(parts, r.Township+" Township")
@@ -203,7 +184,7 @@ func newChart(s comps.Home, cs []comps.Comp, ev []comps.Comp, median float64, l 
 	minDX := l.DotR * 2.3
 	for _, c := range cs {
 		d := views.Dot{X: x(c.BldgAVPerSF), Evidence: isEv[c.PIN],
-			Title: fmt.Sprintf("%s: %s", titleCase(c.Address), perSF(c.BldgAVPerSF))}
+			Title: fmt.Sprintf("%s: %s", format.TitleCase(c.Address), perSF(c.BldgAVPerSF))}
 		row := 0
 		for ; row < chartRows-1; row++ {
 			if !occupied(ch.Dots, d.X, rowY(row), minDX) {
@@ -244,45 +225,16 @@ func niceStep(raw float64) float64 {
 
 // ---- formatting
 
-func money(v float64) string { return "$" + humanize.Comma(int64(math.Round(v))) }
+// perSF is a rate with its unit, for the headline and the chart labels.
+func perSF(v float64) string { return format.PerSF(v) + "/sq ft" }
 
-func perSF(v float64) string { return fmt.Sprintf("$%.2f/sq ft", v) }
-
+// perSFShort is a chart tick: whole dollars, or one decimal.
 func perSFShort(v float64) string {
 	if v == math.Trunc(v) {
 		return fmt.Sprintf("$%.0f", v)
 	}
 	return fmt.Sprintf("$%.1f", v)
 }
-
-func pct(v float64) string { return fmt.Sprintf("%.0f%%", 100*v) }
-
-func pctAbs(v float64) string { return pct(math.Abs(v)) }
-
-func num(v float64) string { return humanize.Comma(int64(math.Round(v))) }
-
-func baths(h comps.Home) string {
-	b := h.Baths()
-	if b == math.Trunc(b) {
-		return fmt.Sprintf("%.0f", b)
-	}
-	return fmt.Sprintf("%.1f", b)
-}
-
-// titleCase renders "5555 W BELMONT AVE" as "5555 W Belmont Ave".
-func titleCase(s string) string {
-	ws := strings.Fields(strings.ToLower(s))
-	for i, w := range ws {
-		if len(w) == 1 && strings.Contains("nsew", w) {
-			ws[i] = strings.ToUpper(w)
-			continue
-		}
-		ws[i] = strings.ToUpper(w[:1]) + w[1:]
-	}
-	return strings.Join(ws, " ")
-}
-
-func formatPIN(p string) string { return search.FormatPIN(p) }
 
 func shortDate(d string) string {
 	if len(d) >= 7 {

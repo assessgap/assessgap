@@ -16,7 +16,7 @@ import (
 
 	"github.com/assessgap/assessgap/internal/bor"
 	"github.com/assessgap/assessgap/internal/comps"
-	"github.com/dustin/go-humanize"
+	"github.com/assessgap/assessgap/internal/format"
 )
 
 // NotAffiliated goes on every page.
@@ -62,7 +62,7 @@ func build(r *comps.Report, generated time.Time) (*doc, error) {
 	if r.Stats.NumComps < 3 {
 		return nil, fmt.Errorf("%w: %s", ErrUnsupported, TooFewReason)
 	}
-	p := &pager{doc: newDoc(fmt.Sprintf("Assessment comparison, PIN %s, tax year %d", formatPIN(r.PIN), r.Year)), r: r}
+	p := &pager{doc: newDoc(fmt.Sprintf("Assessment comparison, PIN %s, tax year %d", format.PIN(r.PIN), r.Year)), r: r}
 	for _, page := range []func(){func() { p.summary(generated) }, p.grid, func() { p.steps(generated) }} {
 		page()
 		if p.y > p.bottom() {
@@ -116,7 +116,7 @@ func (p *pager) footer() {
 	m, w := p.m, p.cur.w
 	y := p.cur.h - m + 6
 	p.line(m, y-12, w-m, y-12, 0.5)
-	p.text(m, y, regular, 8, fmt.Sprintf("PIN %s · Tax year %d", formatPIN(p.r.PIN), p.r.Year))
+	p.text(m, y, regular, 8, fmt.Sprintf("PIN %s · Tax year %d", format.PIN(p.r.PIN), p.r.Year))
 	p.textRight(w-m, y, regular, 8, fmt.Sprintf("Page %d of %d", p.page, Pages))
 	p.text(m, y+11, regular, 8, NotAffiliated)
 }
@@ -153,20 +153,20 @@ func (p *pager) summary(generated time.Time) {
 	if r.AVStage != "certified" {
 		stage = "Mailed: the Assessor's initial value; not yet certified, and it may change"
 	}
-	addr := titleCase(s.Address)
+	addr := format.TitleCase(s.Address)
 	if r.City != "" {
-		addr += ", " + titleCase(r.City)
+		addr += ", " + format.TitleCase(r.City)
 	}
 	rows := [][2]string{
 		{"Address", addr},
-		{"PIN", formatPIN(r.PIN)},
+		{"PIN", format.PIN(r.PIN)},
 		{"Property class", r.Class},
 		{"Township", r.Township},
 		{"Tax year", fmt.Sprint(r.Year)},
-		{"Assessed value", fmt.Sprintf("%s (building %s + land %s)", money(s.AV), money(s.BldgAV), money(s.LandAV))},
+		{"Assessed value", fmt.Sprintf("%s (building %s + land %s)", format.Money(s.AV), format.Money(s.BldgAV), format.Money(s.LandAV))},
 		{"Value stage", stage},
-		{"Building", fmt.Sprintf("%s sq ft, built %s, %s, %s", num(s.BldgSF), yearOr(s.YearBuilt),
-			plural(fmt.Sprint(s.Beds), "bedroom"), plural(baths(*s), "bath"))},
+		{"Building", fmt.Sprintf("%s sq ft, built %s, %s, %s", format.Num(s.BldgSF), yearOr(s.YearBuilt),
+			plural(fmt.Sprint(s.Beds), "bedroom"), plural(format.Baths(s.Baths()), "bath"))},
 	}
 	p.keyValues(rows)
 
@@ -174,7 +174,7 @@ func (p *pager) summary(generated time.Time) {
 	p.body(fmt.Sprintf(
 		"The property's building is assessed at %s per square foot of building area (building AV %s ÷ %s sq ft). "+
 			"The median of %d similar homes in the same Assessor neighborhood is %s per square foot, so the property is %s the median.",
-		perSF(s.BldgAVPerSF), money(s.BldgAV), num(s.BldgSF), st.NumComps, perSF(st.MedianBldgAVPerSF), gapPhrase(st.PctAboveMedian)))
+		format.PerSF(s.BldgAVPerSF), format.Money(s.BldgAV), format.Num(s.BldgSF), st.NumComps, format.PerSF(st.MedianBldgAVPerSF), gapPhrase(st.PctAboveMedian)))
 	p.body("The building part of the assessment is compared, per square foot, because the Assessor values land " +
 		"separately at a neighborhood rate per square foot of land.")
 	below := comps.CountBelow(*s, r.Comps)
@@ -195,20 +195,20 @@ func (p *pager) summary(generated time.Time) {
 			"Applying the comparable homes' median building rate of %s per square foot to the property's %s square feet, "+
 				"and adding the property's land AV of %s, gives an assessed value of %s. That is %s less than the current "+
 				"assessed value of %s.",
-			perSF(st.MedianBldgAVPerSF), num(s.BldgSF), money(s.LandAV), money(st.UniformityAV), money(st.PotentialAVReduction), money(s.AV)))
+			format.PerSF(st.MedianBldgAVPerSF), format.Num(s.BldgSF), format.Money(s.LandAV), format.Money(st.UniformityAV), format.Money(st.PotentialAVReduction), format.Money(s.AV)))
 	case st.PotentialAVReduction >= 1:
 		// Within 1% of the median: every surface calls this about equal, so no difference is stated.
 		p.body(fmt.Sprintf(
 			"Applying the comparable homes' median building rate of %s per square foot to the property's %s square feet, "+
 				"and adding the property's land AV of %s, gives an assessed value of %s, about the same as the current "+
 				"assessed value of %s: the building's rate is within 1%% of the median.",
-			perSF(st.MedianBldgAVPerSF), num(s.BldgSF), money(s.LandAV), money(st.UniformityAV), money(s.AV)))
+			format.PerSF(st.MedianBldgAVPerSF), format.Num(s.BldgSF), format.Money(s.LandAV), format.Money(st.UniformityAV), format.Money(s.AV)))
 	default:
 		p.body(fmt.Sprintf(
 			"Applying the comparable homes' median building rate of %s per square foot to the property's %s square feet, "+
 				"and adding the property's land AV of %s, gives an assessed value of %s, which is not below the current "+
 				"assessed value of %s.",
-			perSF(st.MedianBldgAVPerSF), num(s.BldgSF), money(s.LandAV), money(st.UniformityAV), money(s.AV)))
+			format.PerSF(st.MedianBldgAVPerSF), format.Num(s.BldgSF), format.Money(s.LandAV), format.Money(st.UniformityAV), format.Money(s.AV)))
 	}
 
 	if len(r.Flags) > 0 {
@@ -271,29 +271,29 @@ type column struct {
 // Titles may break onto a second line with "\n". Widths add up to the
 // landscape page's 720 pt content width.
 var columns = []column{
-	{"PIN", 70, false, func(c comps.Comp) string { return formatPIN(c.PIN) }},
-	{"Address", 70, false, func(c comps.Comp) string { return titleCase(c.Address) }},
+	{"PIN", 70, false, func(c comps.Comp) string { return format.PIN(c.PIN) }},
+	{"Address", 70, false, func(c comps.Comp) string { return format.TitleCase(c.Address) }},
 	{"Away", 32, true, func(c comps.Comp) string { return milesText(c.Miles) }},
 	{"Class", 23, false, func(c comps.Comp) string { return c.Class }},
 	{"Stories", 39, false, func(c comps.Comp) string { return dash(c.Features().Stories) }},
 	{"Construction", 72, false, func(c comps.Comp) string { return dash(c.Features().Construction) }},
-	{"Bldg\nsq ft", 29, true, func(c comps.Comp) string { return num(c.BldgSF) }},
+	{"Bldg\nsq ft", 29, true, func(c comps.Comp) string { return format.Num(c.BldgSF) }},
 	{"Built", 24, true, func(c comps.Comp) string {
 		if c.YearBuilt <= 0 {
 			return "–"
 		}
 		return fmt.Sprint(c.YearBuilt)
 	}},
-	{"Beds /\nbaths", 31, true, func(c comps.Comp) string { return fmt.Sprintf("%d / %s", c.Beds, baths(c.Home)) }},
+	{"Beds /\nbaths", 31, true, func(c comps.Comp) string { return fmt.Sprintf("%d / %s", c.Beds, format.Baths(c.Baths())) }},
 	{"Basement", 66, false, func(c comps.Comp) string { return dash(c.Features().Basement) }},
 	{"Central\nair", 27, false, func(c comps.Comp) string { return dash(c.Features().Air) }},
 	{"Fire-\nplaces", 25, true, func(c comps.Comp) string { return dash(c.Features().Fireplaces) }},
 	{"Garage", 31, false, func(c comps.Comp) string { return dash(c.Features().Garage) }},
 	{"Land\nsq ft", 31, true, func(c comps.Comp) string { return landSF(c.LandSF) }},
-	{"Building\nAV", 40, true, func(c comps.Comp) string { return money(c.BldgAV) }},
-	{"Land\nAV", 37, true, func(c comps.Comp) string { return money(c.LandAV) }},
-	{"Total\nAV", 40, true, func(c comps.Comp) string { return money(c.AV) }},
-	{"Bldg AV\n/ sq ft", 33, true, func(c comps.Comp) string { return fmt.Sprintf("$%.2f", c.BldgAVPerSF) }},
+	{"Building\nAV", 40, true, func(c comps.Comp) string { return format.Money(c.BldgAV) }},
+	{"Land\nAV", 37, true, func(c comps.Comp) string { return format.Money(c.LandAV) }},
+	{"Total\nAV", 40, true, func(c comps.Comp) string { return format.Money(c.AV) }},
+	{"Bldg AV\n/ sq ft", 33, true, func(c comps.Comp) string { return format.PerSF(c.BldgAVPerSF) }},
 }
 
 const (
@@ -363,9 +363,9 @@ func (p *pager) grid() {
 		p.text(m, p.y, bold, 7.5, "Differences of each evidence comparable from the subject (theirs vs the subject's):")
 		p.y += 9
 		for i, c := range r.Evidence {
-			addr := titleCase(c.Address)
+			addr := format.TitleCase(c.Address)
 			if addr == "" {
-				addr = "PIN " + formatPIN(c.PIN)
+				addr = "PIN " + format.PIN(c.PIN)
 			}
 			p.para(m, cw, regular, 7, fmt.Sprintf("%d. %s: %s", i+1, addr, c.Differences))
 			p.y -= 4
@@ -495,7 +495,7 @@ func (p *pager) steps(now time.Time) {
 			"has something wrong, say so in your brief.",
 		"Go to " + bor.PortalURL + " and choose Submit an Appeal. You can create an account or continue as a guest " +
 			"(guests get the decision by mail only; account holders also get it by email).",
-		"Choose \"" + bor.AppealType + "\" as the type of appeal and enter PIN " + formatPIN(r.PIN) + ". When asked if " +
+		"Choose \"" + bor.AppealType + "\" as the type of appeal and enter PIN " + format.PIN(r.PIN) + ". When asked if " +
 			"you are a Board of Review attorney, answer No. Choose your appellant type (owner).",
 		"Decide whether you want a hearing. It is optional, held by phone for homeowners, and the Board says you are " +
 			"not penalized for skipping it. You choose this when you file.",
@@ -546,44 +546,14 @@ func (p *pager) checkItem(n int, s string) {
 }
 
 // ---------------------------------------------------------------- formatting
-// (mirrors internal/web/report.go; kept local so the packet doesn't depend on the web package)
+// Figures use internal/format, as the web page and the CLI do. What is left
+// here is the PDF's own wording and placeholders.
 
-func money(v float64) string { return "$" + humanize.Comma(int64(math.Round(v))) }
-
-func num(v float64) string { return humanize.Comma(int64(math.Round(v))) }
-
-func perSF(v float64) string { return fmt.Sprintf("$%.2f", v) }
-
-func gapPhrase(g float64) string {
-	switch {
-	case comps.InLine(g):
-		return "about equal to"
-	case g > 0:
-		return fmt.Sprintf("%.0f%% above", 100*g)
-	default:
-		return fmt.Sprintf("%.0f%% below", -100*g)
-	}
-}
-
-func baths(h comps.Home) string {
-	b := h.Baths()
-	if b == math.Trunc(b) {
-		return fmt.Sprintf("%.0f", b)
-	}
-	return fmt.Sprintf("%.1f", b)
-}
+func gapPhrase(g float64) string { return format.Gap(g, comps.InLine(g)) }
 
 // milesText is the distance from the subject; "–" when unknown (and for the
 // subject itself).
-func milesText(mi float64) string {
-	switch {
-	case mi < 0:
-		return "–"
-	case mi < 0.1:
-		return "<0.1 mi"
-	}
-	return fmt.Sprintf("%.1f mi", mi)
-}
+func milesText(mi float64) string { return format.Miles(mi, "–") }
 
 // dash shows a characteristic that isn't on record as "–".
 func dash(s string) string {
@@ -597,7 +567,7 @@ func landSF(v float64) string {
 	if v <= 0 {
 		return "–"
 	}
-	return num(v)
+	return format.Num(v)
 }
 
 func plural(n, noun string) string {
@@ -626,23 +596,4 @@ func ordinal(n int) string {
 		suffix = "rd"
 	}
 	return fmt.Sprintf("%d%s", n, suffix)
-}
-
-func titleCase(s string) string {
-	ws := strings.Fields(strings.ToLower(s))
-	for i, w := range ws {
-		if len(w) == 1 && strings.Contains("nsew", w) {
-			ws[i] = strings.ToUpper(w)
-			continue
-		}
-		ws[i] = strings.ToUpper(w[:1]) + w[1:]
-	}
-	return strings.Join(ws, " ")
-}
-
-func formatPIN(p string) string {
-	if len(p) != 14 {
-		return p
-	}
-	return p[0:2] + "-" + p[2:4] + "-" + p[4:7] + "-" + p[7:10] + "-" + p[10:14]
 }
