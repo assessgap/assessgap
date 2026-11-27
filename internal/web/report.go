@@ -39,7 +39,10 @@ func toView(r *comps.Report) views.ReportData {
 	s, st := *r.Subject, r.Stats
 	v.Verdict, v.Reasons = r.Verdict, r.Reasons
 	v.Headline, v.Badge = headline(r), badge(r)
-	v.SubjectBldgAVPerSF, v.MedianBldgAVPerSF = perSF(st.SubjectBldgAVPerSF), perSF(st.MedianBldgAVPerSF)
+	// The subject's rate unrounded, as its comparison row and the chart label print
+	// it: st.SubjectBldgAVPerSF is already cut to the cent, so at a half cent
+	// the headline printed one cent more than those two (the PDF had the same split).
+	v.SubjectBldgAVPerSF, v.MedianBldgAVPerSF = perSF(s.BldgAVPerSF), perSF(st.MedianBldgAVPerSF)
 	switch g := st.PctAboveMedian; {
 	case comps.InLine(g):
 		v.GapLabel = "about equal to"
