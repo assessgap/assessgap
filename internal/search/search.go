@@ -7,6 +7,8 @@ import (
 	"database/sql"
 	"strings"
 	"unicode"
+
+	"github.com/assessgap/assessgap/internal/format"
 )
 
 // Match is one search result.
@@ -94,6 +96,10 @@ func ParsePIN(q string) (string, bool) {
 	}
 	return "", false
 }
+
+// FormatPIN renders a PIN for display, as format.PIN does: the inverse of
+// ParsePIN, kept beside it for callers that round-trip a PIN.
+func FormatPIN(p string) string { return format.PIN(p) }
 
 const prefixSQL = `
 SELECT pin, address, COALESCE(city, ''), COALESCE(class, '')

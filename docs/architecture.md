@@ -56,7 +56,7 @@ cmd/assessgap ─► cli ─► web ─► web/views
                   └─► refresh ─► ingest
 ```
 
-1. **Leaves import nothing from this module:** `comps`, `bor`, `search`, `format`, `socrata`. The engine must stay usable by any surface or tool, and `format` takes the engine's thresholds as arguments (`format.Gap(g, comps.InLine(g))`) rather than importing them.
+1. **Leaves import nothing from this module:** `comps`, `bor`, `search`, `format`, `socrata`. The one exception is `search`, which uses `format` for `FormatPIN`. The engine must stay usable by any surface or tool, and `format` takes the engine's thresholds as arguments (`format.Gap(g, comps.InLine(g))`) rather than importing them.
 2. **Presentation (`web`, `web/views`, `packet`) never imports the data side** (`store`, `ingest`, `refresh`, `live`, `socrata`). It reads a `comps.Report`, or the served tables through the `*sql.DB` it's given.
 3. **The data side never imports presentation or `cli`.**
 4. **Only `cli` imports `web`; only `web` imports `web/views`; only `cmd/assessgap` imports `cli`.** `fixture` and `golden` are imported only by tests; `e2e` holds only tests.

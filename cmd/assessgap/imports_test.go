@@ -22,11 +22,11 @@ const module = "github.com/assessgap/assessgap/"
 var allowedImports = map[string][]string{
 	"cmd/assessgap": {"internal/cli"},
 
-	// Leaves: rules, facts and formatting, with no internal imports.
+	// Leaves: rules, facts and formatting, with no internal imports but format.
 	"internal/bor":     nil,
 	"internal/comps":   nil,
 	"internal/format":  nil,
-	"internal/search":  nil,
+	"internal/search":  {"internal/format"},
 	"internal/socrata": nil,
 
 	// Building the database (the write side).
