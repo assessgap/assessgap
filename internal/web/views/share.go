@@ -1,9 +1,6 @@
 package views
 
-import (
-	"context"
-	"encoding/json"
-)
+import "context"
 
 // Share is the link-preview (Open Graph, Twitter card) and canonical-URL
 // information for one request. Package web puts it in the render context, so
@@ -16,6 +13,7 @@ type Share struct {
 	// Private pages (reports) get a generic preview: previews are cached by
 	// third parties, so a shared report link must never carry an address or PIN.
 	Private bool
+	Path    string // the request path, for marking the current page in the header
 }
 
 type shareKey struct{}
@@ -45,29 +43,4 @@ func (sh Share) previewText(title, desc string) (string, string) {
 		desc = shareDesc
 	}
 	return title, desc
-}
-
-// breadcrumbJSON is schema.org BreadcrumbList JSON-LD for a township page.
-// json.Marshal escapes <, > and &, so the result is safe inside <script>.
-func breadcrumbJSON(ctx context.Context, name, slug string) string {
-	o := shareFrom(ctx).Origin
-	type item struct {
-		Type     string `json:"@type"`
-		Position int    `json:"position"`
-		Name     string `json:"name"`
-		Item     string `json:"item"`
-	}
-	b, err := json.Marshal(struct {
-		Context string `json:"@context"`
-		Type    string `json:"@type"`
-		Items   []item `json:"itemListElement"`
-	}{"https://schema.org", "BreadcrumbList", []item{
-		{"ListItem", 1, "AssessGap", o + "/"},
-		{"ListItem", 2, "Townships", o + "/townships"},
-		{"ListItem", 3, name + " Township", o + "/townships/" + slug},
-	}})
-	if err != nil {
-		return ""
-	}
-	return `<script type="application/ld+json">` + string(b) + `</script>`
 }

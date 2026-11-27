@@ -21,6 +21,7 @@ func (s Site) Years() string { return fmt.Sprintf("%d–%d", s.FirstYear, s.Last
 // Match is a search result.
 type Match struct {
 	PIN, PINFmt, Address, City, Kind string
+	Township, TownshipURL            string // "" when the parcel's township isn't known
 }
 
 // ReportData is everything the report page shows.

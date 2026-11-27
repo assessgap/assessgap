@@ -103,5 +103,9 @@ func TestGoldenTownships(t *testing.T) {
 		v := townshipView(c.township, facts[c.township], day(c.on))
 		check("township-"+v.Slug+"-"+c.on, v)
 	}
-	check("townships-index-2026-09-15", townshipIndex(day("2026-09-15")))
+	// All is bor.Townships in order, not data: left out, like the report's Window.
+	check("townships-index-2026-09-15", struct {
+		views.TownshipIndex
+		All struct{}
+	}{TownshipIndex: townshipIndex(day("2026-09-15"))})
 }

@@ -43,6 +43,8 @@ func TestSearchHandler(t *testing.T) {
 		{"13-33-103-013-0000", false, http.StatusSeeOther, "/check/13331030130000", ""},
 		// htmx gets the results fragment, never a redirect.
 		{"13-33-103-013-0000", true, http.StatusOK, "", "/check/13331030130000"},
+		// A result names its township and links to its page ("Find your township").
+		{"13-33-103-013-0000", true, http.StatusOK, "", `href="/townships/jefferson"`},
 		// A full-page search with several matches lists them.
 		{"2106 n laramie", false, http.StatusOK, "", "/check/13331120411002"},
 	}

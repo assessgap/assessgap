@@ -8,33 +8,52 @@ import (
 templ Townships(s Site, x TownshipIndex) {
 	@Layout(s, "Cook County property tax appeal deadlines by township (Board of Review) · AssessGap",
 		"Board of Review appeal dates for all 38 Cook County townships: which are open now, which open soon, and where the Board hasn't posted dates yet.") {
-		<div class="mx-auto max-w-3xl px-5 py-10 space-y-8">
+		<div class="mx-auto max-w-3xl px-5 py-8 sm:py-10 space-y-8">
 			<header>
-				<h1 class="text-3xl font-semibold tracking-tight text-slate-900 text-balance">Board of Review appeal dates by township</h1>
+				@breadcrumbs([]Crumb{{Name: "Home", Path: "/"}, {Name: "Townships", Path: "/townships"}}, true)
+				<h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900 text-balance">Board of Review appeal dates by township</h1>
 				<p class="mt-3 text-slate-600">
 					The Cook County Board of Review opens each of the county's 38 townships for appeals each session, for at least 30 days.
 					Pick your township for its dates, recent appeal outcomes and how to file on your own.
 				</p>
-				<p class="mt-2 text-sm text-slate-500">
+				<p class="mt-2 text-sm text-slate-600">
 					From the Board's { fmt.Sprint(bor.SessionYear) } schedule, checked { x.ScheduleAsOf }.
-					<a href={ templ.SafeURL(bor.DatesURL) } rel="noopener" class="text-emerald-700 underline">The Board's dates and deadlines</a>
+					<a href={ templ.SafeURL(bor.DatesURL) } rel="noopener" class="text-emerald-700 underline underline-offset-4">The Board's dates and deadlines →</a>
 				</p>
 			</header>
+			<section aria-labelledby="az" class="rounded-2xl bg-white p-5 ring-1 ring-stone-200">
+				<h2 id="az" class="font-semibold text-slate-900">All 38 townships, A–Z</h2>
+				<div class="mt-3">
+					@townshipAZ(x.All)
+				</div>
+			</section>
+			<section aria-labelledby="find" class="rounded-2xl bg-white p-5 ring-1 ring-stone-200">
+				<h2 id="find" class="font-semibold text-slate-900">Find your township</h2>
+				<p class="mt-1 mb-4 text-sm text-slate-600">Not sure which township you're in? Search your address: each result names its township and links to its dates.</p>
+				@searchForm("", false, "Your address or PIN")
+			</section>
+			<nav aria-label="Townships by appeal status" class="flex flex-wrap gap-x-5 text-sm">
+				for _, g := range x.Groups {
+					if len(g.Townships) > 0 {
+						<a href={ templ.SafeURL("#g-" + g.State) } class="inline-flex min-h-11 items-center text-emerald-700 underline underline-offset-4">{ g.Heading } ({ fmt.Sprint(len(g.Townships)) })</a>
+					}
+				}
+			</nav>
 			for _, g := range x.Groups {
 				if len(g.Townships) > 0 {
 					<section aria-labelledby={ "g-" + g.State }>
 						<h2 id={ "g-" + g.State } class="text-lg font-semibold text-slate-900">
-							{ g.Heading } <span class="font-normal text-slate-500">({ fmt.Sprint(len(g.Townships)) })</span>
+							{ g.Heading } <span class="font-normal text-slate-600">({ fmt.Sprint(len(g.Townships)) })</span>
 						</h2>
 						if g.State == "unscheduled" {
-							<p class="mt-1 text-sm text-slate-500">You can pre-register on the Board's portal before your township opens.</p>
+							<p class="mt-1 text-sm text-slate-600">You can pre-register on the Board's portal before your township opens.</p>
 						}
 						<ul class="mt-3 overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200 divide-y divide-stone-100">
 							for _, t := range g.Townships {
 								<li>
-									<a href={ templ.SafeURL("/townships/" + t.Slug) } class="flex flex-col gap-y-0.5 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-x-5 hover:bg-emerald-50 focus:bg-emerald-50">
+									<a href={ templ.SafeURL("/townships/" + t.Slug) } class="flex flex-col gap-y-0.5 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-x-5 hover:bg-emerald-50 focus-visible:bg-emerald-50">
 										<span class="font-medium text-slate-900">{ t.Name }</span>
-										<span class="text-sm text-slate-500">{ t.Dates }</span>
+										<span class="text-sm text-slate-600">{ t.Dates }</span>
 									</a>
 								</li>
 							}
@@ -46,27 +65,34 @@ templ Townships(s Site, x TownshipIndex) {
 	}
 }
 
+// townshipAZ links every township's page, A–Z, in a compact grid.
+templ townshipAZ(all []TownshipLink) {
+	<ul class="grid grid-cols-3 gap-x-2 text-sm sm:grid-cols-5 sm:gap-x-4">
+		for _, t := range all {
+			<li><a href={ templ.SafeURL("/townships/" + t.Slug) } class="flex min-h-11 items-center text-emerald-800 underline-offset-4 hover:underline sm:min-h-9">{ t.Name }</a></li>
+		}
+	</ul>
+}
+
 templ Township(s Site, t TownshipData) {
 	@Layout(s, t.Name+" Township property tax appeal deadline (Board of Review) · AssessGap",
 		t.Name+" Township, Cook County: Board of Review appeal dates and evidence deadline (when posted), recent appeal outcomes, and how to file on your own.") {
-		@templ.Raw(breadcrumbJSON(ctx, t.Name, t.Slug))
-		<div class="mx-auto max-w-3xl px-5 py-10 space-y-8">
+		<div class="mx-auto max-w-3xl px-5 py-8 sm:py-10 space-y-8">
 			<header>
-				<nav aria-label="Breadcrumb" class="text-sm text-slate-500">
-					<a href="/" class="hover:underline">Home</a> <span aria-hidden="true">›</span>
-					<a href="/townships" class="hover:underline">Townships</a> <span aria-hidden="true">›</span>
-					<span aria-current="page">{ t.Name }</span>
-				</nav>
-				<h1 class="mt-3 text-3xl font-semibold tracking-tight text-slate-900 text-balance">{ t.Name } Township property tax appeals</h1>
-				<p class="mt-2 text-slate-600">Cook County Board of Review dates for { t.Name } Township, recent appeal outcomes, and how to file on your own.</p>
+				@breadcrumbs(TownshipCrumbs(t.Name, t.Slug), true)
+				<h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900 text-balance">{ t.Name } Township property tax appeals</h1>
+				<p class="mt-2 text-slate-600">
+					Cook County Board of Review dates for { t.Name } Township, recent appeal outcomes, and how to file on your own.
+					<a href="/townships" class="whitespace-nowrap text-emerald-700 underline underline-offset-4">Not { t.Name }? All townships →</a>
+				</p>
 			</header>
 			@townshipWindow(t)
 			<section>
 				<h2 class="mb-3 text-lg font-semibold text-slate-900">Check a home in { t.Name }</h2>
 				@SearchBox("", false)
 			</section>
-			@townshipFacts(t)
 			@fileSteps(t)
+			@townshipFacts(t)
 			if t.Window.State != "open" {
 				<section class="rounded-3xl bg-slate-900 p-6 sm:p-8 text-slate-100">
 					<h2 class="text-xl font-semibold text-white">
@@ -82,6 +108,11 @@ templ Township(s Site, t TownshipData) {
 					</div>
 				</section>
 			}
+			<nav aria-label="Other townships" class="flex flex-wrap items-center justify-between gap-x-4 border-t border-stone-200 pt-4 text-sm">
+				<a href={ templ.SafeURL("/townships/" + t.Prev.Slug) } rel="prev" class="inline-flex min-h-11 items-center text-emerald-700 underline underline-offset-4">← { t.Prev.Name }</a>
+				<a href="/townships" class="inline-flex min-h-11 items-center font-medium text-emerald-700 underline underline-offset-4">All townships</a>
+				<a href={ templ.SafeURL("/townships/" + t.Next.Slug) } rel="next" class="inline-flex min-h-11 items-center text-emerald-700 underline underline-offset-4">{ t.Next.Name } →</a>
+			</nav>
 		</div>
 	}
 }
@@ -112,11 +143,11 @@ templ townshipWindow(t TownshipData) {
 		<p class="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold">
 			switch w.State {
 				case "open":
-					<a href={ templ.SafeURL(bor.PortalURL) } rel="noopener" class="py-1 underline underline-offset-4">File on the Board's portal →</a>
+					<a href={ templ.SafeURL(bor.PortalURL) } rel="noopener" class="inline-flex min-h-11 items-center underline underline-offset-4">File on the Board's portal →</a>
 				case "upcoming", "unscheduled":
-					<a href={ templ.SafeURL(bor.PortalURL) } rel="noopener" class="py-1 underline underline-offset-4">Pre-register with the Board →</a>
+					<a href={ templ.SafeURL(bor.PortalURL) } rel="noopener" class="inline-flex min-h-11 items-center underline underline-offset-4">Pre-register with the Board →</a>
 			}
-			<a href={ templ.SafeURL(bor.DatesURL) } rel="noopener" class="py-1 underline underline-offset-4">The Board's dates and deadlines →</a>
+			<a href={ templ.SafeURL(bor.DatesURL) } rel="noopener" class="inline-flex min-h-11 items-center underline underline-offset-4">The Board's dates and deadlines →</a>
 		</p>
 	</section>
 }
@@ -151,7 +182,7 @@ templ townshipFacts(t TownshipData) {
 			<p class="mt-3 text-sm text-slate-500">
 				Source: Cook County Board of Review appeal decisions on the county's open data portal, tax years { townshipYears(t) }:
 				residential appeals other than condominiums. The average reduction is among appeals that got one, as a share of assessed value.
-				These are outcomes for people who chose to appeal, who usually had a reason to. They aren't a prediction for any home.
+				These are outcomes for people who chose to appeal, who usually had a reason to. They aren't a prediction for any one home.
 			</p>
 		} else {
 			<p class="mt-3 text-slate-700">We don't have recent Board of Review appeal records for { t.Name } Township.</p>
@@ -182,7 +213,7 @@ func townshipYears(t TownshipData) string {
 }
 
 templ fileSteps(t TownshipData) {
-	<section class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
+	<section id="file" class="rounded-2xl bg-white p-6 ring-1 ring-stone-200">
 		<h2 class="text-lg font-semibold text-slate-900">How to file on your own</h2>
 		<p class="mt-2 text-slate-600">
 			{ "Board Rule 1: individual taxpayers “may represent properties titled in their own names”, and “a person who is not an attorney may not represent a taxpayer before the Board of Review.”" }
@@ -195,8 +226,8 @@ templ fileSteps(t TownshipData) {
 			@fileStep("5", fmt.Sprintf("If you disagree with the decision, you can ask the Board for a re-review within %d days of the date on the decision letter, on one of the grounds in Board Rule 26 (no new arguments), or appeal to the state Property Tax Appeal Board within %d days of the Board's written decision.", bor.ReReviewDays, bor.PTABDays))
 		</ol>
 		<p class="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm">
-			<a href="/how-it-works" class="py-1 text-emerald-700 underline">How AssessGap's comparison works</a>
-			<a href="https://github.com/assessgap/assessgap/blob/main/docs/bor-filing-facts.md" rel="noopener" class="py-1 text-emerald-700 underline">Our filing notes, with sources</a>
+			<a href="/how-it-works" class="inline-flex min-h-11 items-center text-emerald-700 underline underline-offset-4">How AssessGap's comparison works</a>
+			<a href="https://github.com/assessgap/assessgap/blob/main/docs/bor-filing-facts.md" rel="noopener" class="inline-flex min-h-11 items-center text-emerald-700 underline underline-offset-4">Our filing notes, with sources</a>
 		</p>
 	</section>
 }

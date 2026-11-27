@@ -155,7 +155,7 @@ func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleCheck(w http.ResponseWriter, r *http.Request) {
 	if rep := s.loadReport(w, r); rep != nil {
 		v := toView(rep)
-		if t, ok := bor.LookupTownship(rep.Township); ok && v.Window.Text != "" {
+		if t, ok := bor.LookupTownship(rep.Township); ok {
 			v.Window.TownshipName, v.Window.TownshipURL = t, townshipPath(t)
 		}
 		s.render(w, r, views.Report(s.site, v))

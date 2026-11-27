@@ -1,0 +1,129 @@
+package views
+
+// siteHeader is the bar on every page. Wide screens show the links; phones get
+// a <details> menu, which opens and closes without JavaScript.
+templ siteHeader(path string) {
+	<header class="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur">
+		<div class="relative mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-5">
+			<a href="/" class="-ml-1 flex h-11 shrink-0 items-center gap-2 rounded-lg px-1 font-semibold tracking-tight text-slate-900">
+				<span class="inline-flex size-7 items-center justify-center rounded-lg bg-emerald-700 text-sm text-white" aria-hidden="true">AG</span>
+				AssessGap
+			</a>
+			<nav aria-label="Main" class="hidden items-center gap-1 text-sm sm:flex">
+				for _, l := range navLinks {
+					{{ cur := navCurrent(l.Section, path) }}
+					if l.Section == "check" {
+						<a
+							href={ templ.SafeURL(l.Href) }
+							if cur != "" {
+								aria-current={ cur }
+							}
+							class="order-last ml-2 inline-flex h-10 items-center rounded-full bg-slate-900 px-4 font-medium text-white hover:bg-slate-700"
+						>{ l.Label }</a>
+					} else {
+						<a
+							href={ templ.SafeURL(l.Href) }
+							if cur != "" {
+								aria-current={ cur }
+							}
+							class={ "inline-flex h-10 items-center rounded-lg px-3 hover:bg-stone-100 hover:text-slate-900",
+								templ.KV("font-semibold text-slate-900 underline decoration-emerald-600 decoration-2 underline-offset-8", cur != ""),
+								templ.KV("text-slate-600", cur == "") }
+						>{ l.Label }</a>
+					}
+				}
+			</nav>
+			<details class="group sm:hidden">
+				<summary class="flex h-11 cursor-pointer list-none items-center gap-2 rounded-lg px-3 text-sm font-medium text-slate-800 ring-1 ring-stone-300 [&::-webkit-details-marker]:hidden">
+					Menu
+					<svg viewBox="0 0 20 20" class="size-4 transition-transform group-open:rotate-180" aria-hidden="true"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2"></path></svg>
+				</summary>
+				<nav aria-label="Main" class="absolute inset-x-0 top-full border-b border-stone-200 bg-white shadow-lg">
+					<ul class="divide-y divide-stone-100 px-5 py-1">
+						for _, l := range navLinks {
+							{{ cur := navCurrent(l.Section, path) }}
+							<li>
+								<a
+									href={ templ.SafeURL(l.Href) }
+									if cur != "" {
+										aria-current={ cur }
+									}
+									class={ "flex min-h-12 items-center justify-between text-base",
+										templ.KV("font-semibold text-emerald-800", cur != ""),
+										templ.KV("text-slate-800", cur == "") }
+								>
+									{ l.Label }
+									<span aria-hidden="true" class="text-slate-500">→</span>
+								</a>
+							</li>
+						}
+					</ul>
+				</nav>
+			</details>
+		</div>
+	</header>
+}
+
+templ siteFooter() {
+	<footer class="border-t border-stone-200 bg-white">
+		<div class="mx-auto grid max-w-5xl grid-cols-2 gap-x-6 gap-y-6 px-5 py-8 text-sm text-slate-600 sm:grid-cols-4">
+			<nav aria-labelledby="footer-site">
+				<h2 id="footer-site" class="font-semibold text-slate-900">AssessGap</h2>
+				<ul class="mt-1">
+					@footerLink("/#check", "Check my home")
+					@footerLink("/townships", "Appeal dates by township")
+					@footerLink("/how-it-works", "How it works")
+				</ul>
+			</nav>
+			<nav aria-labelledby="footer-about">
+				<h2 id="footer-about" class="font-semibold text-slate-900">About</h2>
+				<ul class="mt-1">
+					@footerLink("/terms", "Terms")
+					@footerLink("/privacy", "Privacy")
+					@footerLink("https://github.com/assessgap/assessgap", "Free and open source")
+					@footerLink("mailto:support@assessgap.com", "support@assessgap.com")
+				</ul>
+			</nav>
+			<p class="col-span-2 text-slate-500 sm:order-first">
+				AssessGap is an independent tool. It is not affiliated with the Cook County Assessor, the Board of Review,
+				or any government office. It is not a law firm and does not give legal advice, and it is not an appraisal.
+				You can always file an appeal yourself for free.
+			</p>
+		</div>
+	</footer>
+}
+
+templ footerLink(href, label string) {
+	<li>
+		<a
+			href={ templ.SafeURL(href) }
+			if len(href) > 8 && href[:8] == "https://" {
+				rel="noopener"
+			}
+			class="inline-flex min-h-11 items-center break-all hover:text-slate-900 hover:underline sm:min-h-8"
+		>{ label }</a>
+	</li>
+}
+
+// breadcrumbs shows the path to the current page (the last crumb). With
+// structured, the same crumbs go out as BreadcrumbList data for search
+// engines; report pages leave it out because they aren't indexed.
+templ breadcrumbs(cs []Crumb, structured bool) {
+	if structured {
+		@templ.Raw(breadcrumbJSON(ctx, cs))
+	}
+	<nav aria-label="Breadcrumb" class="-ml-1 text-sm text-slate-600">
+		<ol class="flex flex-wrap items-center">
+			for i, c := range cs {
+				<li class="flex items-center">
+					if i == len(cs)-1 {
+						<span aria-current="page" class="inline-flex min-h-11 items-center px-1 text-slate-900 sm:min-h-8">{ c.Name }</span>
+					} else {
+						<a href={ templ.SafeURL(c.Path) } class="inline-flex min-h-11 items-center px-1 underline-offset-4 hover:text-slate-900 hover:underline sm:min-h-8">{ c.Name }</a>
+						<span aria-hidden="true" class="px-1 text-slate-500">›</span>
+					}
+				</li>
+			}
+		</ol>
+	</nav>
+}

@@ -223,8 +223,11 @@ func decide(r *Report) (string, []string) {
 			money(s.LandAV), money(st.UniformityAV), money(st.PotentialAVReduction)))
 	}
 	g := Group(*st)
+	// The caveat sits in the same sentence pair as the rate, so no surface can
+	// quote one without the other (internal/golden's compliance tests check).
 	why = append(why, fmt.Sprintf("In our test of past Board of Review decisions, homeowners who appealed on their own "+
-		"with a building assessed %s got a reduction about %d%% of the time.", groupWords[g], groupRates[g]))
+		"with a building assessed %s got a reduction about %d%% of the time. "+
+		"This is what happened to past appeals like this one; it is not a prediction for any one home.", groupWords[g], groupRates[g]))
 	switch {
 	case g == 0 && n >= minComps && ev >= minEvidence:
 		return Strong, why

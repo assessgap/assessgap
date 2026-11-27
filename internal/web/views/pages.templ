@@ -5,6 +5,8 @@ templ NotifyForm(pin, reason, errMsg string) {
 }
 
 // NotifyFormFor carries a township slug when there's no PIN (township pages).
+// It sits on dark cards and on a white one, so its text inherits the card's
+// colour rather than picking one that fails contrast on the other.
 templ NotifyFormFor(pin, township, reason, errMsg string) {
 	<form hx-post="/notify" hx-swap="outerHTML" action="/notify" method="post" class="space-y-2">
 		<input type="hidden" name="pin" value={ pin }/>
@@ -24,13 +26,13 @@ templ NotifyFormFor(pin, township, reason, errMsg string) {
 				if errMsg != "" {
 					aria-invalid="true" aria-describedby="email-error"
 				}
-				class="min-w-0 flex-1 rounded-xl bg-white px-4 py-2.5 text-slate-900 ring-1 ring-stone-300 outline-none focus:ring-2 focus:ring-emerald-500"/>
-			<button type="submit" class="rounded-xl bg-emerald-500 px-4 font-medium text-white hover:bg-emerald-600">Notify me</button>
+				class="min-h-11 min-w-0 flex-1 rounded-xl bg-white px-4 py-2.5 text-slate-900 ring-1 ring-stone-300 outline-hidden focus:ring-2 focus:ring-emerald-500"/>
+			<button type="submit" class="min-h-11 rounded-xl bg-emerald-400 px-4 font-medium text-slate-950 ring-1 ring-emerald-600/40 hover:bg-emerald-300">Notify me</button>
 		</div>
 		if errMsg != "" {
-			<p id="email-error" role="alert" class="text-sm text-rose-400">{ errMsg }</p>
+			<p id="email-error" role="alert" class="text-sm font-semibold"><span aria-hidden="true">⚠ </span>{ errMsg }</p>
 		}
-		<p class="text-xs opacity-60">One or two emails about your appeal window. No spam, and you can unsubscribe anytime.</p>
+		<p class="text-xs opacity-80">One or two emails about your appeal window. No spam, and you can unsubscribe anytime.</p>
 	</form>
 }
 
@@ -43,7 +45,7 @@ templ NotifyThanks() {
 
 templ prose(s Site, title, desc string) {
 	@Layout(s, title+" · AssessGap", desc) {
-		<article class="mx-auto max-w-2xl px-5 py-14 space-y-4 text-slate-700 leading-relaxed [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:text-slate-900 [&_h2]:pt-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_a]:text-emerald-700 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-1">
+		<article class="mx-auto max-w-2xl px-5 py-8 sm:py-14 space-y-4 text-slate-700 leading-relaxed [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:text-slate-900 [&_h2]:pt-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900 [&_a]:text-emerald-700 [&_a]:underline [&_a]:underline-offset-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-1">
 			{ children... }
 		</article>
 	}
@@ -52,11 +54,20 @@ templ prose(s Site, title, desc string) {
 templ HowItWorks(s Site) {
 	@prose(s, "How it works", "How AssessGap compares your assessment with similar homes.") {
 		<h1>How it works</h1>
+		<nav aria-labelledby="otp" class="rounded-2xl bg-white px-4 py-3 ring-1 ring-stone-200 text-sm">
+			<h2 id="otp" class="pt-0! text-sm! font-medium! text-slate-600!">On this page</h2>
+			<div class="flex flex-wrap gap-x-4">
+				<a href="#compare" class="inline-flex min-h-11 items-center">What we compare</a>
+				<a href="#tested" class="inline-flex min-h-11 items-center">How we tested it</a>
+				<a href="#dont" class="inline-flex min-h-11 items-center">What we don't do</a>
+				<a href="#faq" class="inline-flex min-h-11 items-center">Common questions</a>
+			</div>
+		</nav>
 		<p>
 			In Cook County, your property tax bill depends on your home's assessed value. The Assessor sets it with a model that
 			values every home in the county, and the Board of Review hears appeals from owners who think theirs is too high.
 		</p>
-		<h2>What we compare</h2>
+		<h2 id="compare">What we compare</h2>
 		<p>
 			One ground the Board of Review accepts is <em>lack of uniformity</em>: similar homes nearby are assessed lower than yours.
 			We look up homes in your Assessor neighborhood with the same property class (or the same broad group), similar size
@@ -77,18 +88,14 @@ templ HowItWorks(s Site) {
 			For each similar home we list the details the Property Tax Appeal Board weighs when it compares homes: distance, design, construction,
 			living area, age, bathrooms, basement, central air, fireplaces and garage, and how each one differs from yours.
 		</p>
-		<h2>How we describe the comparison</h2>
+		<h2 id="describe">How we describe the comparison</h2>
 		<p>
 			We don't tell you whether to appeal. We show how your building's assessed value per square foot compares with the median of similar homes,
 			how many of them are assessed lower than yours, and how appeals have gone for homeowners in your neighborhood. We offer the
 			free evidence report (a PDF) when at least 3 similar homes have a building assessed lower per square foot than yours and yours is at
 			least 1% above the median.
 		</p>
-		<h2>If an appeal doesn't work</h2>
-		<p>
-			Each tax year you can appeal to the Assessor and then to the Board of Review. If the Board of Review doesn't lower your
-			assessment, you can appeal to the state Property Tax Appeal Board. And you can appeal again the next year.
-		</p>
+		<h2 id="tested">How we tested it</h2>
 		<p>
 			We chose how to pick and compare similar homes using about 370,000 Board of Review decisions from 2023 and 2024, then tested
 			the result once on about 220,000 decisions from 2025 that the choice never used. Among homeowners who appealed on their own in
@@ -97,19 +104,59 @@ templ HowItWorks(s Site) {
 			below: about 52% if it was still higher than at least a quarter of them, and about 25% if not. People who appeal usually already
 			have a reason to, so these rates aren't a prediction for any one home.
 		</p>
-		<h2>What we don't do</h2>
+		<h2 id="if-not">If an appeal doesn't work</h2>
+		<p>
+			Each tax year you can appeal to the Assessor and then to the Board of Review. If the Board of Review doesn't lower your
+			assessment, you can appeal to the state Property Tax Appeal Board. And you can appeal again the next year.
+		</p>
+		<h2 id="dont">What we don't do</h2>
 		<ul>
 			<li>We don't estimate what your home would sell for, and nothing here is an appraisal.</li>
 			<li>We aren't a law firm and don't give legal advice. We don't file anything for you or represent you.</li>
 			<li>We aren't affiliated with the Assessor, the Board of Review or any government office.</li>
 		</ul>
-		<h2>Where the data comes from</h2>
+		<h2 id="data">Where the data comes from</h2>
 		<p>
 			Everything comes from Cook County's public open data portal: parcel characteristics, assessed values, sales and Board of Review
 			appeal outcomes. We update our copy as the county publishes new data. If the county's data about your home is wrong, our comparison will be too, so check
 			the details we show.
 		</p>
+		<h2 id="faq">Common questions</h2>
+		<div class="divide-y divide-stone-200 border-y border-stone-200">
+			@faq("Does this tell me what my home is worth?") {
+				No. We compare assessed values between similar homes. That is a uniformity comparison, which is one of the grounds the Board of Review accepts.
+				We never estimate what a home would sell for.
+			}
+			@faq("Why would my assessment be out of line?") {
+				The Assessor values hundreds of thousands of homes with a model. Some homes end up assessed higher per square foot than near-identical
+				neighbors. The Board of Review exists to correct that.
+			}
+			@faq("Is this the Assessor's or the Board of Review's website?") {
+				No. AssessGap is independent. We use the county's public open data, and you file with the Board of Review yourself.
+			}
+			@faq("When can I appeal?") {
+				The Board of Review opens each township for about 30 days, on its own schedule.
+				See <a href="/townships">appeal dates by township</a>, or leave your email on your report and we'll tell you when yours opens.
+			}
+		</div>
+		<p class="flex flex-wrap gap-x-6 pt-4">
+			<a href="/#check" class="inline-flex min-h-11 items-center font-medium">Check your home →</a>
+			<a href="/townships" class="inline-flex min-h-11 items-center font-medium">Appeal dates by township →</a>
+		</p>
 	}
+}
+
+// faq is one question, closed until tapped, so the answers don't make the page long.
+templ faq(q string) {
+	<details class="group py-1">
+		<summary class="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 font-medium text-slate-900 [&::-webkit-details-marker]:hidden">
+			{ q }
+			<span aria-hidden="true" class="text-slate-500 transition-transform group-open:rotate-45">+</span>
+		</summary>
+		<p class="pb-4 text-slate-600">
+			{ children... }
+		</p>
+	</details>
 }
 
 templ Terms(s Site) {
