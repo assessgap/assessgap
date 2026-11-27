@@ -15,7 +15,13 @@ ssh "$host" 'set -euo pipefail
   sudo chown deploy /tmp/app-backup.db'
 scp -q "$host:/tmp/app-backup.db" "data/backups/app-$day.db"
 ssh "$host" 'rm /tmp/app-backup.db'
-[ "$(sqlite3 "data/backups/app-$day.db" 'PRAGMA integrity_check')" = ok ]
+f="data/backups/app-$day.db"
+# An empty file passes integrity_check, so also require the signup table:
+# the count is assigned on its own line so a failure trips set -e and the
+# ERR trap (inside echo's arguments it would not).
+[ -s "$f" ]
+[ "$(sqlite3 "$f" 'PRAGMA integrity_check')" = ok ]
+signups=$(sqlite3 "$f" 'select count(*) from signup')
 find data/backups -name 'app-*.db' -mtime +30 -delete
-echo "backup ok: data/backups/app-$day.db ($(sqlite3 "data/backups/app-$day.db" 'select count(*) from signup') signups)"
+echo "backup ok: $f ($signups signups)"
 ping ""

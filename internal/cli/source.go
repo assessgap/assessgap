@@ -36,5 +36,9 @@ func openCounty(path string) (*sql.DB, error) {
 	if _, err := os.Stat(path); err != nil {
 		return nil, errNoDB(path)
 	}
-	return store.OpenReadOnly(path)
+	db, err := store.OpenReadOnly(path)
+	if err != nil { // SQLite's own message ("file is not a database") names no file
+		return nil, fmt.Errorf("county database %s: %w", path, err)
+	}
+	return db, nil
 }

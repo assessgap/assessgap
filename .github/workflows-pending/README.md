@@ -31,3 +31,13 @@ git tag v0.1.0 && git push origin v0.1.0                                       #
 ```
 
 Review the draft on GitHub, then publish it.
+
+## `fuzz.yml`
+
+Runs each fuzz target (`*_fuzz_test.go`: PIN parsing, the address normalizer, township slugs and redirects, the search and report routes, live mode's handling of county CSV and SoQL quoting, Socrata page fetching, and `build.sql`'s field parsing) for 3 minutes, nightly and on demand. Their seed corpora already run in `scripts/check.sh` as ordinary tests, so this job only adds the search for new inputs; it never blocks a pull request. On a failure it uploads the input as an artifact: reproduce with `go test ./<pkg> -run <Target>/<file>`, fix, and commit the file under `testdata/fuzz/<Target>/` as the regression seed. Read-only token (`contents: read`). Why each target exists, and what the first runs found: `docs/dev/2026-11-27-e2e.md`.
+
+**Install:**
+
+```sh
+git mv .github/workflows-pending/fuzz.yml .github/workflows/fuzz.yml
+```

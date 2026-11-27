@@ -31,7 +31,7 @@ pin_prefix=""
 restart=""
 
 usage() {
-  sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
   exit 2
 }
 
@@ -85,6 +85,8 @@ take_lock() {
   mkdir "$lock" || die "could not take lock $lock"
   echo $$ > "$lock/pid"
 }
+# A new -data dir: without it the lock's mkdir fails and reads as a stale lock.
+mkdir -p "$data"
 take_lock
 trap 'rm -rf "$lock"' EXIT
 # Make INT/TERM (e.g. launchctl stop) exit through the EXIT trap.
