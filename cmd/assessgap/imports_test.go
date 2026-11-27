@@ -43,9 +43,8 @@ var allowedImports = map[string][]string{
 	"internal/cli": {"internal/bor", "internal/comps", "internal/ingest", "internal/live", "internal/packet",
 		"internal/refresh", "internal/search", "internal/store", "internal/web"},
 
-	// Test support, imported only from _test.go files. internal/e2e (PR #7,
-	// open on its own branch) holds only tests and a doc.go; it's listed ahead
-	// so either PR can merge first.
+	// Test support, imported only from _test.go files. internal/e2e holds only
+	// tests (it runs the built binary) and a doc.go.
 	"internal/fixture": {"internal/ingest", "internal/store"},
 	"internal/golden":  nil,
 	"internal/e2e":     nil,

@@ -42,7 +42,7 @@ comps.Report  ──►  web (report page, via web/views)
 | | `internal/ingest` | Dataset list, the columns we keep, `build.sql` |
 | | `internal/refresh` | Validation and finalizing of a rebuilt database |
 | | `internal/live` | One home's data from the API, for live mode |
-| Tests | `internal/fixture`, `internal/golden` | The frozen fixture database and the golden files (test-only) |
+| Tests | `internal/fixture`, `internal/golden`, `internal/e2e` | The frozen fixture database, the golden files, and end-to-end tests of the built binary (test-only) |
 | Tools | `tools/*` | Fixture rebuild, tuning, share image, PR checks (not part of the binary) |
 
 ## Dependency rules
@@ -58,7 +58,7 @@ cmd/assessgap ─► cli ─► web ─► web/views
 1. **Leaves import nothing from this module:** `comps`, `bor`, `search`, `socrata`. The engine must stay usable by any surface or tool.
 2. **Presentation (`web`, `web/views`, `packet`) never imports the data side** (`store`, `ingest`, `refresh`, `live`, `socrata`). It reads a `comps.Report`, or the served tables through the `*sql.DB` it's given.
 3. **The data side never imports presentation or `cli`.**
-4. **Only `cli` imports `web`; only `web` imports `web/views`; only `cmd/assessgap` imports `cli`.** `fixture` and `golden` are imported only by tests.
+4. **Only `cli` imports `web`; only `web` imports `web/views`; only `cmd/assessgap` imports `cli`.** `fixture` and `golden` are imported only by tests; `e2e` holds only tests.
 5. **`tools/*` may import only `comps`, `ingest` and `store`.**
 
 `cmd/assessgap/imports_test.go` enforces these as an allow-list per package, so a new import edge or a new package fails `go test` until the list (and this page) says so.
