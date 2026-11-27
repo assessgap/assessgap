@@ -33,7 +33,7 @@ comps.Report  ──►  web (report page, via web/views)
 | | `internal/cli` | Subcommands, flags, database paths, CLI text output, the evaluation commands (`backtest`, `sample`, `live-eval`) |
 | Presentation | `internal/web` | HTTP server, routes, limits, the report page's view model, the chart, township pages, signups |
 | | `internal/web/views` | templ templates and the view structs they render (`types.go`) |
-| | `internal/packet` | The evidence report PDF (its own minimal PDF writer, `pdf.go`) |
+| | `internal/packet` | The evidence report PDF: one file per page (`summary.go`, `grid.go`, `steps.go`), with its own minimal PDF writer (`pdf.go`) |
 | Engine and facts | `internal/comps` | The comparison: types (`types.go`), loading (`load.go`), selection (`select.go`), statistics and reasons (`analyze.go`), wording of differences (`describe.go`), scope (`scope.go`) |
 | | `internal/bor` | Board of Review calendar and filing facts, township names, Chicago time |
 | | `internal/search` | PIN parsing, address lookup |
@@ -74,12 +74,12 @@ cmd/assessgap ─► cli ─► web ─► web/views
 | The rates quoted to homeowners (backtest of 2025 decisions) | `comps/analyze.go` (`groupRates`), also typed into `web/views/pages.templ` and `docs/methodology.md`. `comps/rates_test.go` fails if the three disagree |
 | Supported classes | `comps/scope.go` |
 | Report text from the engine (reasons, flags, differences) | `comps/analyze.go`, `comps/describe.go` |
-| Filing windows, deadlines, portal URLs | `bor/bor.go` (one hand-edited session a year). `bor.StatusOf` decides the state and `State.Slug()` names it. Each surface words it: `web/window.go`, `cli/format.go` (`windowText`), `packet/packet.go` (`windowStep`) |
+| Filing windows, deadlines, portal URLs | `bor/bor.go` (one hand-edited session a year). `bor.StatusOf` decides the state and `State.Slug()` names it. Each surface words it: `web/window.go`, `cli/format.go` (`windowText`), `packet/steps.go` (`windowStep`) |
 | Datasets, columns kept, year floors | `ingest/ingest.go` |
 | Typed schema | `ingest/build.sql` |
 | SQLite pragmas | `store/open.go` |
 | Website limits and timeouts | `web/server.go`, `web/limit.go`, `cli/serve.go` |
-| Formatting of money, rates, percents, addresses, PINs | `internal/format`. Each surface keeps only its own wording and its placeholder for an unknown value (`cli/format.go`, `web/report.go`, the end of `packet/packet.go`). `comps` keeps its own `money`/`pct`, which round slightly differently, for the reasons text |
+| Formatting of money, rates, percents, addresses, PINs | `internal/format`. Each surface keeps only its own wording and its placeholder for an unknown value (`cli/format.go`, `web/report.go`, `packet/words.go`). `comps` keeps its own `money`/`pct`, which round slightly differently, for the reasons text |
 | Database path rules (`-db`, `$ASSESSGAP_DB`, live by default) | `cli/source.go` |
 | Goldens and fixture | `internal/golden/cases.go`, `testdata/` ([testdata/README.md](../testdata/README.md)) |
 
@@ -92,7 +92,7 @@ Counts are source files you edit, not counting generated files (`*_templ.go`, `a
 2. `ingest/build.sql`: the typed table and its `INSERT … SELECT`. Inserts are positional, so keep the column at the same place in both.
 3. `comps/types.go`, `comps/load.go`: the `Home` field and its JSON tag, and its place in `homeColumns` and `scanHome`. CLI JSON then has it.
 4. `comps/describe.go`: in `Features` and the differences wording, if it describes the home.
-5. `packet/packet.go`: a `columns` entry (widths must still add up to 720 pt).
+5. `packet/grid.go`: a `columns` entry (widths must still add up to 720 pt).
 6. `web/views/types.go`, `web/report.go` (`homeRow`), `web/views/report.templ`: the web grid.
 7. Rebuild the fixture from a full database (`tools/fixture`) and update the goldens, explaining each change.
 
@@ -102,6 +102,6 @@ Counts are source files you edit, not counting generated files (`*_templ.go`, `a
 
 **A page:** route in `web/server.go`, the template in `web/views/pages.templ` (or a new `.templ`), `indexedPaths` in `web/seo.go` for the sitemap, the header or footer in `web/views/nav.go` and `nav.templ`, and `PAGES` in `ops/stats.py`.
 
-**Another assessment stage or year:** a new year needs a new `bor` schedule. Data years roll forward on their own. A new stage (say Board of Review final values, already in `build.sql`) touches the "certified, else mailed" choice, which is written in SQL in `comps/load.go`, `refresh/refresh.go` and `live/live.go`, plus each surface's wording (`web/report.go`, `packet/packet.go`, `cli/check.go`).
+**Another assessment stage or year:** a new year needs a new `bor` schedule. Data years roll forward on their own. A new stage (say Board of Review final values, already in `build.sql`) touches the "certified, else mailed" choice, which is written in SQL in `comps/load.go`, `refresh/refresh.go` and `live/live.go`, plus each surface's wording (`web/report.go`, `packet/summary.go`, `cli/check.go`).
 
 **Another county:** not planned. The seam would be the typed tables: a county fills the same schema from its own `ingest`. Cook specifics are 14-digit PINs (`search`), class codes (`comps/scope.go`), 5-digit neighborhoods and PIN blocks (`live`), and the `bor` package.
