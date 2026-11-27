@@ -104,6 +104,20 @@ const (
 	Closed
 )
 
+// Slug is the state's name in page markup, styles and links: "open",
+// "upcoming", "closed" or "unscheduled".
+func (s State) Slug() string {
+	switch s {
+	case Open:
+		return "open"
+	case Upcoming:
+		return "upcoming"
+	case Closed:
+		return "closed"
+	}
+	return "unscheduled"
+}
+
 // Status is a township's window relative to a moment in time.
 type Status struct {
 	Township string

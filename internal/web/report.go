@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/assessgap/assessgap/internal/bor"
 	"github.com/assessgap/assessgap/internal/comps"
 	"github.com/assessgap/assessgap/internal/format"
 	"github.com/assessgap/assessgap/internal/web/views"
@@ -241,36 +240,4 @@ func shortDate(d string) string {
 		return d[:7]
 	}
 	return d
-}
-
-// window describes the township's filing window for the report banner.
-func window(township string, now time.Time) views.Window {
-	if township == "" {
-		return views.Window{}
-	}
-	st := bor.StatusOf(township, now)
-	day := func(t time.Time) string { return t.Format("January 2") }
-	t := township + " Township"
-	switch st.State {
-	case bor.Open:
-		left := fmt.Sprintf("%d days left", st.DaysLeft)
-		if st.DaysLeft == 1 {
-			left = "last day"
-		}
-		return views.Window{State: "open",
-			Text:     fmt.Sprintf("%s is open for Board of Review appeals. File by %s (%s).", t, day(st.Group.Close), left),
-			LinkText: "Go to the Board's filing portal", LinkURL: bor.PortalURL}
-	case bor.Upcoming:
-		return views.Window{State: "upcoming",
-			Text:     fmt.Sprintf("%s opens for Board of Review appeals on %s and closes on %s.", t, day(st.Group.Open), day(st.Group.Close)),
-			LinkText: "Board of Review dates", LinkURL: bor.DatesURL}
-	case bor.Closed:
-		return views.Window{State: "closed",
-			Text:     fmt.Sprintf("%s's %d Board of Review window closed on %s. Leave your email below and we'll tell you when the next one opens.", t, bor.SessionYear, day(st.Group.Close)),
-			LinkText: "Board of Review dates", LinkURL: bor.DatesURL}
-	default:
-		return views.Window{State: "unscheduled",
-			Text:     fmt.Sprintf("The Board of Review hasn't posted %s's dates yet. You can pre-register on the Board's portal now, and we'll email you when it opens if you leave your email below.", t),
-			LinkText: "Pre-register with the Board", LinkURL: bor.PortalURL}
-	}
 }

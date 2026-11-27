@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"time"
 
 	"github.com/dustin/go-humanize"
 )
@@ -57,6 +58,18 @@ func Miles(mi float64, unknown string) string {
 		return "<0.1 mi"
 	}
 	return fmt.Sprintf("%.1f mi", mi)
+}
+
+// LongDate is a date written out: "September 1, 2026".
+func LongDate(t time.Time) string { return t.Format("January 2, 2006") }
+
+// DaysLeft is an open filing window's remaining days, counting today: "12
+// days left", or "last day" when it closes today.
+func DaysLeft(n int) string {
+	if n == 1 {
+		return "last day"
+	}
+	return fmt.Sprintf("%d days left", n)
 }
 
 // TitleCase renders "5555 W BELMONT AVE" as "5555 W Belmont Ave".

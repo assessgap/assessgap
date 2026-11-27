@@ -74,7 +74,7 @@ cmd/assessgap ─► cli ─► web ─► web/views
 | The rates quoted to homeowners (backtest of 2025 decisions) | `comps/analyze.go` (`groupRates`), copied into `web/views/pages.templ` and `docs/methodology.md` |
 | Supported classes | `comps/scope.go` |
 | Report text from the engine (reasons, flags, differences) | `comps/analyze.go`, `comps/describe.go` |
-| Filing windows, deadlines, portal URLs | `bor/bor.go` (one hand-edited session a year) |
+| Filing windows, deadlines, portal URLs | `bor/bor.go` (one hand-edited session a year). `bor.StatusOf` decides the state and `State.Slug()` names it. Each surface words it: `web/window.go`, `cli/format.go` (`windowText`), `packet/packet.go` (`windowStep`) |
 | Datasets, columns kept, year floors | `ingest/ingest.go` |
 | Typed schema | `ingest/build.sql` |
 | SQLite pragmas | `store/open.go` |

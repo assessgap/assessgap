@@ -146,7 +146,7 @@ func (p *pager) summary(generated time.Time) {
 	p.newPage(fmt.Sprintf("Assessment comparison: tax year %d", r.Year))
 	p.para(margin, contentW, regular, 9, fmt.Sprintf(
 		"Prepared %s from public Cook County Assessor data. Figures are assessed values (AV) as published by the Assessor.",
-		bor.InChicago(generated).Format("January 2, 2006")))
+		format.LongDate(bor.InChicago(generated))))
 
 	p.heading("Property")
 	stage := "Certified: the Assessor's value after Assessor appeals"
@@ -520,7 +520,7 @@ func (p *pager) steps(now time.Time) {
 // windowStep describes the township's filing window at time now.
 func windowStep(township string, now time.Time) string {
 	st := bor.StatusOf(township, now)
-	day := func(t time.Time) string { return t.Format("January 2, 2006") }
+	day := format.LongDate
 	switch st.State {
 	case bor.Open:
 		return fmt.Sprintf("File by %s. %s Township is open for Board of Review appeals now. Evidence is due by %s.",

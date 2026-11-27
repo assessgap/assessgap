@@ -149,32 +149,6 @@ func appealsView(t appealTotals, has bool) *views.TownshipAppeals {
 	return v
 }
 
-func longDay(t time.Time) string { return t.Format("January 2, 2006") }
-
-// townshipWindow formats bor.StatusOf for the township pages.
-func townshipWindow(township string, now time.Time) views.TownshipWindow {
-	st := bor.StatusOf(township, now)
-	var w views.TownshipWindow
-	if g := st.Group; g != nil {
-		w.Group, w.Open, w.Close, w.EvidenceDue = g.Name, longDay(g.Open), longDay(g.Close), longDay(g.EvidenceDue)
-	}
-	switch st.State {
-	case bor.Open:
-		w.State, w.Label = "open", "Open now"
-		w.DaysLeft = fmt.Sprintf("%d days left", st.DaysLeft)
-		if st.DaysLeft == 1 {
-			w.DaysLeft = "last day"
-		}
-	case bor.Upcoming:
-		w.State, w.Label = "upcoming", "Opening soon"
-	case bor.Closed:
-		w.State, w.Label = "closed", fmt.Sprintf("Closed for the %d session", bor.SessionYear)
-	default:
-		w.State, w.Label = "unscheduled", "Dates not posted yet"
-	}
-	return w
-}
-
 func townshipView(name string, f townshipFacts, now time.Time) views.TownshipData {
 	v := views.TownshipData{
 		Name: name, Slug: townshipSlug(name),
@@ -210,26 +184,26 @@ func scheduleAsOf() string {
 	if err != nil {
 		return bor.ScheduleAsOf
 	}
-	return longDay(t)
+	return format.LongDate(t)
 }
 
 // townshipIndex groups every township by its window's state at now.
 func townshipIndex(now time.Time) views.TownshipIndex {
 	groups := []views.TownshipGroup{
-		{State: "open", Heading: "Open now"},
-		{State: "upcoming", Heading: "Opening soon"},
-		{State: "unscheduled", Heading: "Dates not posted yet"},
-		{State: "closed", Heading: fmt.Sprintf("Closed for the %d session", bor.SessionYear)},
+		{State: bor.Open.Slug(), Heading: "Open now"},
+		{State: bor.Upcoming.Slug(), Heading: "Opening soon"},
+		{State: bor.Unscheduled.Slug(), Heading: "Dates not posted yet"},
+		{State: bor.Closed.Slug(), Heading: fmt.Sprintf("Closed for the %d session", bor.SessionYear)},
 	}
 	for _, t := range bor.Townships {
 		w := townshipWindow(t, now)
 		l := views.TownshipLink{Name: t, Slug: townshipSlug(t)}
 		switch w.State {
-		case "open":
+		case bor.Open.Slug():
 			l.Dates = "Closes " + w.Close + " (" + w.DaysLeft + ")"
-		case "upcoming":
+		case bor.Upcoming.Slug():
 			l.Dates = "Opens " + w.Open + ", closes " + w.Close
-		case "closed":
+		case bor.Closed.Slug():
 			l.Dates = "Closed " + w.Close
 		default:
 			l.Dates = "The Board hasn't posted dates yet"
