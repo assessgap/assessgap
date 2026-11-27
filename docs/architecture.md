@@ -30,7 +30,7 @@ comps.Report  ──►  web (report page, via web/views)
 | Layer | Package | Job |
 |---|---|---|
 | Entry | `cmd/assessgap` | `main`: calls `cli.Main` |
-| | `internal/cli` | Subcommands, flags, database paths, CLI text output, the evaluation commands (`backtest`, `sample`, `live-eval`) |
+| | `internal/cli` | Subcommands, flags, database paths, CLI text output, the evaluation commands (flags in `eval.go`; `backtest.go`, `sample.go`, `liveeval.go`, and the backtest's buckets in `buckets.go`) |
 | Presentation | `internal/web` | HTTP server, routes, limits, the report page's view model, the chart, township pages, signups |
 | | `internal/web/views` | templ templates and the view structs they render (`types.go`) |
 | | `internal/packet` | The evidence report PDF: one file per page (`summary.go`, `grid.go`, `steps.go`), with its own minimal PDF writer (`pdf.go`) |
@@ -70,7 +70,7 @@ cmd/assessgap ─► cli ─► web ─► web/views
 |---|---|
 | Core types (home, comparable, statistics, report) | `comps/types.go` |
 | Comparison rules: search steps, weights, how many homes | `comps/select.go` (`DefaultParams`: steps, weights, `MinComps` 8, `MaxComps` 30) |
-| Thresholds: in line (±1%), too few to compare (3), evidence counts, groups, land tolerance | `comps/analyze.go` (constants at the top). Surfaces ask `comps.InLine`, `AboveMedian`, `Stats.TooFewToCompare` and `Stats.StatesReduction`, never a literal. The backtest's buckets in `cli/eval.go` keep their own numbers on purpose, so runs stay comparable across versions |
+| Thresholds: in line (±1%), too few to compare (3), evidence counts, groups, land tolerance | `comps/analyze.go` (constants at the top). Surfaces ask `comps.InLine`, `AboveMedian`, `Stats.TooFewToCompare` and `Stats.StatesReduction`, never a literal. The backtest's buckets in `cli/buckets.go` keep their own numbers on purpose, so runs stay comparable across versions |
 | The rates quoted to homeowners (backtest of 2025 decisions) | `comps/analyze.go` (`groupRates`), also typed into `web/views/pages.templ` and `docs/methodology.md`. `comps/rates_test.go` fails if the three disagree |
 | Supported classes | `comps/scope.go` |
 | Report text from the engine (reasons, flags, differences) | `comps/analyze.go`, `comps/describe.go` |
