@@ -6,6 +6,9 @@ package bor
 import (
 	"strings"
 	"time"
+	// America/Chicago must load even on a host without zoneinfo: mustLoc's
+	// fixed UTC-6 fallback is an hour off in daylight time, when groups 1-3 close.
+	_ "time/tzdata"
 )
 
 const (
@@ -29,6 +32,10 @@ type Group struct {
 }
 
 var chicago = mustLoc("America/Chicago")
+
+// InChicago is t in Cook County's time zone, for printing a date: the server
+// runs in UTC, where the evening is already tomorrow.
+func InChicago(t time.Time) time.Time { return t.In(chicago) }
 
 func mustLoc(name string) *time.Location {
 	l, err := time.LoadLocation(name)
@@ -96,6 +103,20 @@ const (
 	Open
 	Closed
 )
+
+// Slug is the state's name in page markup, styles and links: "open",
+// "upcoming", "closed" or "unscheduled".
+func (s State) Slug() string {
+	switch s {
+	case Open:
+		return "open"
+	case Upcoming:
+		return "upcoming"
+	case Closed:
+		return "closed"
+	}
+	return "unscheduled"
+}
 
 // Status is a township's window relative to a moment in time.
 type Status struct {

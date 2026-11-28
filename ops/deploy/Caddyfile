@@ -1,6 +1,9 @@
 # /etc/caddy/Caddyfile on the web server. Caddy gets and renews the TLS certs.
 assessgap.com {
 	encode zstd gzip
+	# Browsers that have visited once never try plain http again, so a hostile
+	# network can't strip TLS from the address someone types. No includeSubDomains.
+	header Strict-Transport-Security "max-age=31536000"
 	reverse_proxy 127.0.0.1:8080
 	log {
 		output file /var/log/caddy/access.log {

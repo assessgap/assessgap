@@ -16,6 +16,7 @@ import (
 
 	"github.com/assessgap/assessgap/internal/comps"
 	"github.com/assessgap/assessgap/internal/fixture"
+	"github.com/assessgap/assessgap/internal/format"
 )
 
 func TestMain(m *testing.M) { os.Exit(fixture.Main(m)) }
@@ -38,7 +39,14 @@ func TestRenderEveryHome(t *testing.T) {
 			t.Fatalf("%s: %v", pin, err)
 		}
 		var buf bytes.Buffer
-		if err := Render(&buf, r, when); err != nil {
+		err = Render(&buf, r, when)
+		if pin == tooFewPIN {
+			if !errors.Is(err, ErrUnsupported) {
+				t.Errorf("%s (1 similar home): err = %v, want ErrUnsupported", pin, err)
+			}
+			continue
+		}
+		if err != nil {
 			t.Errorf("%s: %v", pin, err)
 			continue
 		}
@@ -55,7 +63,7 @@ func TestRenderEveryHome(t *testing.T) {
 			t.Fatal(err)
 		}
 		for _, c := range r.Comps {
-			if n := strings.Count(txt, formatPIN(c.PIN)); n != 1 {
+			if n := strings.Count(txt, format.PIN(c.PIN)); n != 1 {
 				t.Errorf("%s: comp %s appears %d times", pin, c.PIN, n)
 			}
 		}
@@ -74,11 +82,16 @@ func TestRenderEveryHome(t *testing.T) {
 			}
 		}
 	}
-	// The frozen fixture has 2,102 supported homes; this keeps the loop honest.
-	if rendered != 2102 {
-		t.Errorf("rendered %d reports, want 2102", rendered)
+	// The frozen fixture has 2,102 supported homes, one of them with too few
+	// similar homes; this keeps the loop honest.
+	if rendered != 2101 {
+		t.Errorf("rendered %d reports, want 2101", rendered)
 	}
 }
+
+// tooFewPIN is the fixture's only supported home with fewer than 3 similar
+// homes (golden case too-few-comps: 1).
+const tooFewPIN = "13332280060000"
 
 // TestGridFitsEveryValue covers what the fixture may not: every value the
 // Assessor publishes for the decoded columns (docs/data-inventory.md), in
@@ -158,6 +171,30 @@ func TestRenderWorstCaseGrid(t *testing.T) {
 	}
 }
 
+// TestSubjectRateOneRounding: a subject rate on a half cent must print the
+// same on every page. 19,305 / 1,000 sq ft = $19.305, which prints as $19.30;
+// Stats carries it rounded to the cent first, $19.31 (comps rounds half away
+// from zero), so printing that on page 2 put two rates on one report.
+func TestSubjectRateOneRounding(t *testing.T) {
+	subject := comps.Home{PIN: "13331030130000", Address: "1 MAIN ST", Class: "203", AV: 25305, BldgAV: 19305,
+		LandAV: 6000, BldgAVPerSF: 19.305, BldgSF: 1000, NumCards: 1, HasSplit: true}
+	r := &comps.Report{PIN: subject.PIN, Year: 2026, AVStage: "mailed", Class: "203", Nbhd: "71280",
+		Township: "Jefferson", Subject: &subject, Disclaimer: comps.Disclaimer,
+		Search: &comps.Search{Description: "same neighborhood"},
+		Stats:  &comps.Stats{NumComps: 3, SubjectBldgAVPerSF: 19.31, MedianBldgAVPerSF: 18, PctAboveMedian: 0.0725}}
+	for i := range 3 {
+		h := comps.Home{PIN: fmt.Sprintf("1333103%03d0000", i), Class: "203", BldgSF: 1000, BldgAVPerSF: 18}
+		r.Comps = append(r.Comps, comps.Comp{Home: h, Miles: 0.1})
+	}
+	txt, err := Text(r, when)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(txt, "19.31") || !strings.Contains(txt, "Subject: $19.30") {
+		t.Errorf("subject rate printed inconsistently; want $19.30 everywhere:\n%s", txt)
+	}
+}
+
 // supportedPINs lists the fixture's homes that get a comparison.
 func supportedPINs(t *testing.T, db *sql.DB) []string {
 	t.Helper()
@@ -187,6 +224,22 @@ func countPages(pdf []byte) int {
 	return len(regexp.MustCompile(`/Type /Page /`).FindAll(pdf, -1))
 }
 
+// TestPreparedDateInChicago: the server runs in UTC, so a report downloaded
+// at 9 pm in Chicago on Nov 24 is generated at 03:00 UTC on Nov 25.
+func TestPreparedDateInChicago(t *testing.T) {
+	r, err := comps.New(fixture.Open(t)).Report(context.Background(), "13331030130000", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	txt, err := Text(r, time.Date(2026, 11, 25, 3, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(txt, "Prepared November 24, 2026") {
+		t.Errorf("want the Chicago date, Prepared November 24, 2026:\n%.300s", txt)
+	}
+}
+
 func TestUnsupported(t *testing.T) {
 	condo, err := comps.New(fixture.Open(t)).Report(context.Background(), "13331120411001", 0)
 	if err != nil {
@@ -200,6 +253,9 @@ func TestUnsupported(t *testing.T) {
 		{"no report", nil},
 		{"condo", condo},
 		{"subject but no statistics", &comps.Report{PIN: "S", Subject: &s}},
+		// Without the guard, page 1 says "the median of 0 similar homes ... is $0.00".
+		{"no similar homes", &comps.Report{PIN: "S", Subject: &s, Stats: &comps.Stats{}}},
+		{"2 similar homes", &comps.Report{PIN: "S", Subject: &s, Stats: &comps.Stats{NumComps: 2}}},
 	}
 	for _, tt := range tests {
 		if err := Render(&bytes.Buffer{}, tt.r, when); !errors.Is(err, ErrUnsupported) {

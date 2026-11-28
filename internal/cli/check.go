@@ -13,6 +13,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/assessgap/assessgap/internal/comps"
+	"github.com/assessgap/assessgap/internal/format"
 	"github.com/assessgap/assessgap/internal/search"
 )
 
@@ -66,9 +67,9 @@ func lookup(ctx context.Context, env *Env, dbFlag string, live bool, q string, y
 	r, err := comps.New(db).Report(ctx, pin, year)
 	if errors.Is(err, comps.ErrNotFound) {
 		if year != 0 {
-			return nil, fmt.Errorf("PIN %s has no assessed value on record for tax year %d", search.FormatPIN(pin), year)
+			return nil, fmt.Errorf("PIN %s has no assessed value on record for tax year %d", format.PIN(pin), year)
 		}
-		return nil, fmt.Errorf("PIN %s has no assessed value on record", search.FormatPIN(pin))
+		return nil, fmt.Errorf("PIN %s has no assessed value on record", format.PIN(pin))
 	}
 	return r, err
 }
@@ -100,7 +101,7 @@ func resolve(ctx context.Context, env *Env, db *sql.DB, q string) (string, error
 	fmt.Fprintf(env.Stderr, "%q matches several properties%s. Run again with a PIN or a fuller address:\n", q, more)
 	tw := tabwriter.NewWriter(env.Stderr, 0, 0, 2, ' ', 0)
 	for _, m := range ms {
-		fmt.Fprintf(tw, "  %s\t%s\t%s\t%s\n", search.FormatPIN(m.PIN), m.Address, m.City, m.Kind())
+		fmt.Fprintf(tw, "  %s\t%s\t%s\t%s\n", format.PIN(m.PIN), m.Address, m.City, m.Kind())
 	}
 	tw.Flush()
 	return "", &exitError{code: 1}
@@ -109,9 +110,9 @@ func resolve(ctx context.Context, env *Env, db *sql.DB, q string) (string, error
 // writeText prints a readable report for a terminal.
 func writeText(w io.Writer, r *comps.Report, now time.Time) error {
 	p := &printer{w: w}
-	addr := titleCase(r.Address)
+	addr := format.TitleCase(r.Address)
 	if r.City != "" {
-		addr += ", " + titleCase(r.City)
+		addr += ", " + format.TitleCase(r.City)
 	}
 	if addr == "" {
 		addr = "(no address on record)"
@@ -121,7 +122,7 @@ func writeText(w io.Writer, r *comps.Report, now time.Time) error {
 	if r.AVStage == "certified" {
 		stage = "certified value"
 	}
-	p.line("PIN %s · %s Township · class %s · tax year %d (%s)", search.FormatPIN(r.PIN), r.Township, r.Class, r.Year, stage)
+	p.line("PIN %s · %s Township · class %s · tax year %d (%s)", format.PIN(r.PIN), r.Township, r.Class, r.Year, stage)
 	if r.Township != "" {
 		p.line("")
 		p.line("Board of Review: %s", windowText(r.Township, now))
@@ -137,16 +138,16 @@ func writeText(w io.Writer, r *comps.Report, now time.Time) error {
 	s, st := r.Subject, r.Stats
 	p.line("")
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	fmt.Fprintf(tw, "This home's building\t%s per sq ft\t(building AV %s on %s sq ft)\n", perSF(s.BldgAVPerSF), money(s.BldgAV), num(s.BldgSF))
-	fmt.Fprintf(tw, "Assessed value\t%s total\t(building %s + land %s)\n", money(s.AV), money(s.BldgAV), money(s.LandAV))
+	fmt.Fprintf(tw, "This home's building\t%s per sq ft\t(building AV %s on %s sq ft)\n", format.PerSF(s.BldgAVPerSF), format.Money(s.BldgAV), format.Num(s.BldgSF))
+	fmt.Fprintf(tw, "Assessed value\t%s total\t(building %s + land %s)\n", format.Money(s.AV), format.Money(s.BldgAV), format.Money(s.LandAV))
 	if st.NumComps > 0 {
-		fmt.Fprintf(tw, "Similar homes' median\t%s per sq ft\t(building AV, %d similar homes)\n", perSF(st.MedianBldgAVPerSF), st.NumComps)
+		fmt.Fprintf(tw, "Similar homes' median\t%s per sq ft\t(building AV, %d similar homes)\n", format.PerSF(st.MedianBldgAVPerSF), st.NumComps)
 		fmt.Fprintf(tw, "Gap\t%s\t\n", gapPhrase(st.PctAboveMedian))
 		fmt.Fprintf(tw, "Assessed lower\t%d of %d similar homes\t\n", countBelow(r), st.NumComps)
-		fmt.Fprintf(tw, "At the median rate\t%s assessed value\t(median × this home's sq ft + its land AV %s", money(st.UniformityAV), money(s.LandAV))
+		fmt.Fprintf(tw, "At the median rate\t%s assessed value\t(median × this home's sq ft + its land AV %s", format.Money(st.UniformityAV), format.Money(s.LandAV))
 		// Like the web page and the reasons: a difference is stated only at 1% or more above the median.
-		if comps.AboveMedian(st.PctAboveMedian) && st.PotentialAVReduction >= 1 {
-			fmt.Fprintf(tw, "; %s below this home's", money(st.PotentialAVReduction))
+		if st.StatesReduction() {
+			fmt.Fprintf(tw, "; %s below this home's", format.Money(st.PotentialAVReduction))
 		}
 		fmt.Fprintln(tw, ")")
 	}
@@ -155,7 +156,7 @@ func writeText(w io.Writer, r *comps.Report, now time.Time) error {
 	if r.Search != nil {
 		p.line("Compared on: %s.", r.Search.Description)
 	}
-	if st.NumComps < 3 {
+	if st.TooFewToCompare() {
 		p.line("Too few similar homes were found for a meaningful comparison.")
 	}
 
@@ -194,9 +195,9 @@ func (p *printer) nbhd(r *comps.Report) {
 		if n.ProSe {
 			who = "Filed by homeowners"
 		}
-		line := fmt.Sprintf("  %s: %s got a reduction (%d appeals, %d–%d)", who, pct(n.WinRate), n.Appeals, n.FirstYear, n.LastYear)
+		line := fmt.Sprintf("  %s: %s got a reduction (%d appeals, %d–%d)", who, format.Pct(n.WinRate), n.Appeals, n.FirstYear, n.LastYear)
 		if n.Decreases > 0 {
-			line += fmt.Sprintf("; average cut %s of assessed value", pct(n.AvgCutPct))
+			line += fmt.Sprintf("; average cut %s of assessed value", format.Pct(n.AvgCutPct))
 		}
 		p.line("%s", line)
 	}
@@ -207,9 +208,9 @@ func homeTable(w io.Writer, hs []comps.Comp) {
 	rows := [][]string{{"#", "PIN", "Address", "Class", "Away", "Sq ft", "Built", "Beds/baths",
 		"Building AV", "Land AV", "Total AV", "Bldg per sq ft"}}
 	for i, c := range hs {
-		rows = append(rows, []string{fmt.Sprint(i + 1), search.FormatPIN(c.PIN), titleCase(c.Address), c.Class,
-			milesText(c.Miles), num(c.BldgSF), yearOr(c.YearBuilt), fmt.Sprintf("%d / %s", c.Beds, baths(c.Home)),
-			money(c.BldgAV), money(c.LandAV), money(c.AV), perSF(c.BldgAVPerSF)})
+		rows = append(rows, []string{fmt.Sprint(i + 1), format.PIN(c.PIN), format.TitleCase(c.Address), c.Class,
+			milesText(c.Miles), format.Num(c.BldgSF), yearOr(c.YearBuilt), fmt.Sprintf("%d / %s", c.Beds, format.Baths(c.Baths())),
+			format.Money(c.BldgAV), format.Money(c.LandAV), format.Money(c.AV), format.PerSF(c.BldgAVPerSF)})
 	}
 	table(w, "  ", rows, 4) // columns from index 4 on are numbers
 }

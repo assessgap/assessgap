@@ -2,11 +2,13 @@ package search
 
 import (
 	"context"
+	"database/sql"
 	"os"
 	"reflect"
 	"testing"
 
 	"github.com/assessgap/assessgap/internal/fixture"
+	_ "modernc.org/sqlite"
 )
 
 func TestMain(m *testing.M) { os.Exit(fixture.Main(m)) }
@@ -47,18 +49,6 @@ func TestParsePIN(t *testing.T) {
 	}
 }
 
-func TestFormatPIN(t *testing.T) {
-	tests := []struct{ in, want string }{
-		{"13281000270000", "13-28-100-027-0000"},
-		{"1328", "1328"},
-	}
-	for _, tt := range tests {
-		if got := FormatPIN(tt.in); got != tt.want {
-			t.Errorf("FormatPIN(%q) = %q, want %q", tt.in, got, tt.want)
-		}
-	}
-}
-
 func TestExact(t *testing.T) {
 	house := []Match{
 		{PIN: "1", Address: "5555 W BELMONT AVE"},
@@ -84,6 +74,48 @@ func TestExact(t *testing.T) {
 		m, ok := Exact(tt.q, tt.ms)
 		if ok != tt.wantOK || m.PIN != tt.want {
 			t.Errorf("Exact(%q) = %q, %v; want %q, %v", tt.q, m.PIN, ok, tt.want, tt.wantOK)
+		}
+	}
+}
+
+// TestFindStreetNamedForADirection: the Assessor spells out North, West and
+// so on when they are part of the street name, which the fixture has none of.
+// Before the fix, "1921 W North Ave" became "1921 W N AVE" and found nothing.
+func TestFindStreetNamedForADirection(t *testing.T) {
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	db.SetMaxOpenConns(1) // one in-memory database
+	if _, err := db.Exec(`CREATE TABLE parcel (pin TEXT, address TEXT, city TEXT, class TEXT);
+		INSERT INTO parcel VALUES
+			('17062000260000', '1921 W NORTH AVE', 'CHICAGO', '212'),
+			('04213011170000', '3704 ARI WEST DR', 'GLENVIEW', '208'),
+			('13331030130000', '2329 N LOCKWOOD AVE', 'CHICAGO', '203')`); err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		q, want string
+		exact   bool // the whole address was typed, so the CLI picks it
+	}{
+		{"1921 W North Ave", "17062000260000", true},
+		{"1921 west north avenue", "17062000260000", true},
+		{"1921 North Ave", "17062000260000", false}, // no direction typed: retried with W
+		{"3704 Ari West Dr", "04213011170000", true},
+		{"2329 North Lockwood", "13331030130000", false}, // the direction still abbreviates
+	}
+	for _, tt := range tests {
+		ms, err := Find(context.Background(), db, tt.q)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(ms) != 1 || ms[0].PIN != tt.want {
+			t.Errorf("Find(%q) = %v, want PIN %s", tt.q, ms, tt.want)
+			continue
+		}
+		if _, ok := Exact(tt.q, ms); ok != tt.exact {
+			t.Errorf("Exact(%q) ok = %v, want %v", tt.q, ok, tt.exact)
 		}
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/assessgap/assessgap/internal/bor"
+	"github.com/assessgap/assessgap/internal/format"
 	"github.com/assessgap/assessgap/internal/search"
 	"github.com/assessgap/assessgap/internal/web/views"
 )
@@ -77,8 +78,8 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 	}
 	results := make([]views.Match, len(ms))
 	for i, m := range ms {
-		results[i] = views.Match{PIN: m.PIN, Address: titleCase(m.Address), City: titleCase(m.City),
-			Kind: m.Kind(), PINFmt: formatPIN(m.PIN)}
+		results[i] = views.Match{PIN: m.PIN, Address: format.TitleCase(m.Address), City: format.TitleCase(m.City),
+			Kind: m.Kind(), PINFmt: format.PIN(m.PIN)}
 		if t, ok := towns[m.PIN]; ok {
 			results[i].Township, results[i].TownshipURL = t, townshipPath(t)
 		}

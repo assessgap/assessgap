@@ -79,7 +79,7 @@ type Search struct {
 	SFTolerance float64 `json:"sf_tolerance"`  // ±fraction of subject building sqft
 	AgeTol      int     `json:"age_tolerance"` // ±years built; 0 = not applied
 	Description string  `json:"description"`
-	Candidates  int     `json:"candidates"` // homes passing the filters, before top-20 cut
+	Candidates  int     `json:"candidates"` // homes passing the filters, before the MaxComps cut (30)
 }
 
 // Stats summarizes the subject against its comps. Rates are building AV per

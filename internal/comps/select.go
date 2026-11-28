@@ -6,8 +6,8 @@ import (
 	"sort"
 )
 
-// Params are the rules for choosing similar homes. Every report uses
-// DefaultParams(). Other values exist so the tuning tool (tools/tune) measures
+// Params are the rules for choosing similar homes. Every report uses the
+// defaults (DefaultParams returns a copy). Other values exist so the tuning tool (tools/tune) measures
 // a candidate rule with the same code a report would run.
 type Params struct {
 	// Steps are tried in order until one admits MinComps homes. Each must be a
@@ -18,7 +18,7 @@ type Params struct {
 
 	// Similarity weights. A distance of 1.0 ≈ "noticeably different on one
 	// dimension".
-	WSF       float64 // per 100% building sqft difference (±25% → 1.0 at 4)
+	WSF       float64 // per 100% building sqft difference (±25% → 0.25 at the default 1)
 	WAge      float64 // per AgeScale years
 	AgeScale  float64
 	WBath     float64 // per bathroom (half bath = 0.5)
@@ -41,7 +41,7 @@ type Params struct {
 	SameTypeResd, SameBasement bool
 }
 
-// DefaultParams are the rules every report uses (docs/methodology.md).
+// defaults are the rules every report uses (docs/methodology.md).
 //
 // Within the hard filters (same neighborhood and class, size and age bands),
 // nearness counts most: 4 per mile, capped at 1 mile, against 1 per 100% size

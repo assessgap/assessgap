@@ -337,11 +337,15 @@ func TestSyntheticProximity(t *testing.T) {
 	s.add(sh{pin: "B", class: "203", sf: 1000, av: 25000, year: 1950, lat: 41.915, lon: -87.7}) // 1.0364 mi
 	s.add(sh{pin: "C", class: "203", sf: 1000, av: 25000, year: 1950})                          // no location
 	s.add(sh{pin: "N", class: "203", sf: 1000, av: 25000, year: 1950, lat: 41.901, lon: -87.7}) // 0.0691 mi
+	// East-west: 0.01° of longitude at 41.9° N = 0.6909 × cos(41.9°) = 0.6909 ×
+	// 0.7443 = 0.5143 mi (0.69 without the cos factor, 0 without the longitude
+	// term). It scores 4 × 0.5143 = 2.06, between N and the capped homes.
+	s.add(sh{pin: "E", class: "203", sf: 1000, av: 25000, year: 1950, lat: 41.9, lon: -87.69})
 	r := s.report("S")
-	if got := pins(r.Comps); got != "N,B,A,C" {
-		t.Errorf("comps %s, want N,B,A,C (more similar first, then nearer, unknown location last)", got)
+	if got := pins(r.Comps); got != "N,E,B,A,C" {
+		t.Errorf("comps %s, want N,E,B,A,C (more similar first, then nearer, unknown location last)", got)
 	}
-	want := map[string]float64{"A": 1.38, "B": 1.04, "C": -1, "N": 0.07}
+	want := map[string]float64{"A": 1.38, "B": 1.04, "C": -1, "N": 0.07, "E": 0.51}
 	for _, c := range r.Comps {
 		if c.Miles != want[c.PIN] {
 			t.Errorf("%s: %v mi, want %v", c.PIN, c.Miles, want[c.PIN])

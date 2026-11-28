@@ -7,12 +7,19 @@ import (
 )
 
 // OpenReadOnly opens a database for concurrent reads (the website's view of cook.db).
+//
+// The page cache is per connection and the Go SQLite driver keeps what it
+// grows, so it is sized for one request, not for the server: the largest
+// neighborhood's report reads about 14 MB of pages, and the OS file cache and
+// the mmap window hold the rest. At 200 MB each, the 2 idle connections alone
+// could keep 400 MB on the 1 GB server (docs/dev/2026-11-26-audit.md).
 func OpenReadOnly(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro&_pragma=query_only(1)&_pragma=busy_timeout(5000)&_pragma=cache_size(-200000)&_pragma=mmap_size(1073741824)")
+	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro&_pragma=query_only(1)&_pragma=busy_timeout(5000)&_pragma=cache_size(-32000)&_pragma=mmap_size(1073741824)")
 	if err != nil {
 		return nil, err
 	}
 	db.SetMaxOpenConns(8)
+	db.SetMaxIdleConns(2) // database/sql's default, stated: idle connections keep their cache
 	return db, db.Ping()
 }
 

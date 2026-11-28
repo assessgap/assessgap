@@ -46,7 +46,7 @@ Each report quotes the backtest rate for its group. The gap comes first, because
 ## Backtest
 We run the method on in-scope Board of Review appeals that ended in a decrease or no change, using the certified value the Board started from (the value at the stage appealed), and compare with the actual outcome. Win = any reduction.
 
-**How the method was chosen (2026-11-26).** About 60 candidate rules (for example, distance and size weights, the number of homes kept, size and age bands, required matches, and how the subject is compared with the group) were scored on tax years 2023 and 2024 only (368,881 PIN-years). A rule had to do better in both years and across groups of townships. The chosen rule was then scored once on tax year 2025 (219,816 PIN-years), which the search never saw. All 2025 figures below are from that check.
+**How the method was chosen (2026-11-26).** About 50 candidate rules (for example, distance and size weights, the number of homes kept, size and age bands, required matches, and how the subject is compared with the group) were scored on tax years 2023 and 2024 only (368,881 PIN-years). A rule had to do better in both years and across groups of townships. The chosen rule was then scored once on tax year 2025 (219,816 PIN-years), which the search never saw. All 2025 figures below are from that check.
 
 | Tax year 2025, self-filed (68,092 appeals with 3+ similar homes) | AUC |
 |---|--:|

@@ -8,14 +8,34 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
+// The engine's thresholds. The surfaces use them through InLine,
+// AboveMedian, Stats.TooFewToCompare and Stats.StatesReduction, never as
+// literals. The quoted rates are groupRates, below.
 const (
 	// possibleGap: within ±1% of the median is "in line" on every surface; from
 	// +1% the reports state the value at the median rate, and the evidence
 	// report may be offered.
 	possibleGap = 0.01
+	// minComparable: with fewer similar homes, every surface says there are too
+	// few to compare, and there is no evidence report.
+	minComparable = 3
+	// minEvidence and maxEvidence: how many lower-assessed homes a stronger
+	// tier needs, and how many the reports list.
 	minEvidence = 3
 	maxEvidence = 6
 )
+
+// TooFewToCompare reports whether there are too few similar homes to state a
+// median. Every surface then says so instead of comparing.
+func (st Stats) TooFewToCompare() bool { return st.NumComps < minComparable }
+
+// StatesReduction reports whether the reports state how much lower the value
+// at the median rate is: 1% or more above the median, by at least $1. Below
+// that, every surface states the value at the median rate without a
+// difference.
+func (st Stats) StatesReduction() bool {
+	return AboveMedian(st.PctAboveMedian) && st.PotentialAVReduction >= 1
+}
 
 // Shares of similar homes whose building is assessed lower per sq ft than
 // the subject's (strictly, so a home assessed the same as its neighbors gains
@@ -189,7 +209,7 @@ func decide(r *Report) (string, []string) {
 	n, ev := st.NumComps, len(r.Evidence)
 	var why []string
 
-	if n < minEvidence {
+	if st.TooFewToCompare() {
 		return Weak, []string{fmt.Sprintf(
 			"We found only %d comparable home(s) in your neighborhood, too few to compare fairly.", n)}
 	}

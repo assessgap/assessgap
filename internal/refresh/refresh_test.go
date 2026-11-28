@@ -56,6 +56,12 @@ func TestCheck(t *testing.T) {
 			[]string{"sale: table is empty"}},
 		{"table new since old build", &Snapshot{Counts: with(full(1000), "sale", -1), LatestYear: 2026},
 			Snapshot{Counts: full(1000), LatestYear: 2026}, nil},
+		{"split coverage dips 1.9 points: allowed", &Snapshot{Counts: full(1000), LatestYear: 2026, SplitShare: 1},
+			Snapshot{Counts: full(1000), LatestYear: 2026, SplitShare: 0.981}, nil},
+		// Certified totals published before their split: row counts unchanged.
+		{"split missing for half the values", &Snapshot{Counts: full(1000), LatestYear: 2026, SplitShare: 1},
+			Snapshot{Counts: full(1000), LatestYear: 2026, SplitShare: 0.5},
+			[]string{"split on record for 50.0% of 2026 values, was 100.0% of 2026's"}},
 		{"several problems", &base, Snapshot{Counts: with(with(full(1000), "parcel", 0), "sale", 500), LatestYear: 2024},
 			[]string{"parcel: table is empty", "sale: shrank 50.0%", "went backwards"}},
 	}
@@ -90,19 +96,27 @@ func openTemp(t *testing.T, path string, stmts ...string) *sql.DB {
 	return db
 }
 
-const assessmentDDL = `CREATE TABLE assessment (pin TEXT, year INTEGER, mailed REAL, certified REAL)`
+const assessmentDDL = `CREATE TABLE assessment (pin TEXT, year INTEGER, mailed REAL, certified REAL,
+	mailed_bldg REAL, mailed_land REAL, certified_bldg REAL, certified_land REAL)`
 
 // TestTake checks the inputs to the swap gate: a missing table is left out
-// of Counts (so Check reports it missing), and the latest year is read.
+// of Counts (so Check reports it missing), the latest year is read, and the
+// split share uses the same stage as the total.
 func TestTake(t *testing.T) {
 	db := openTemp(t, filepath.Join(t.TempDir(), "new.db"), assessmentDDL, `INSERT INTO assessment VALUES
-		('A', 2026, 10, 9), ('B', 2026, 10, NULL), ('B', 2025, 10, NULL), ('E', 2026, 10, NULL)`)
+		('A', 2026, 10, 9,       6, 4, NULL, NULL), -- certified, but only the mailed split: no split
+		('B', 2026, 10, NULL,    6, 4, NULL, NULL), -- mailed with its split
+		('C', 2026, 10, 9,       6, 4, 5, 4),       -- certified with its split
+		('E', 2026, 10, NULL, NULL, NULL, NULL, NULL),
+		('F', 2026, NULL, NULL, NULL, NULL, NULL, NULL), -- no value: not counted
+		('B', 2025, 10, NULL, NULL, NULL, NULL, NULL)`)
 	snap, err := Take(context.Background(), db)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if snap.Counts["assessment"] != 4 || snap.LatestYear != 2026 {
-		t.Errorf("snapshot = %+v, want 4 assessment rows and 2026", snap)
+	// B and C of the 4 valued 2026 rows (A, B, C, E) have their split.
+	if snap.Counts["assessment"] != 6 || snap.LatestYear != 2026 || snap.SplitShare != 0.5 {
+		t.Errorf("snapshot = %+v, want 6 assessment rows, 2026, split share 0.5", snap)
 	}
 	if _, ok := snap.Counts["parcel"]; ok {
 		t.Errorf("missing table should be absent from Counts")
@@ -116,7 +130,7 @@ func TestFinalize(t *testing.T) {
 	ctx := context.Background()
 	dir := t.TempDir()
 	path := filepath.Join(dir, "f.db")
-	db := openTemp(t, path, assessmentDDL, `INSERT INTO assessment VALUES ('A', 2026, 1, 1)`)
+	db := openTemp(t, path, assessmentDDL, `INSERT INTO assessment (pin, year, mailed, certified) VALUES ('A', 2026, 1, 1)`)
 	if err := Finalize(ctx, db); err != nil {
 		t.Fatal(err)
 	}
@@ -142,7 +156,7 @@ func TestQuickCheckCorrupt(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "c.db")
 	db := openTemp(t, path, assessmentDDL)
 	for i := range 200 {
-		if _, err := db.Exec(`INSERT INTO assessment VALUES (?, 2026, 1, 1)`, strings.Repeat("x", 100)+string(rune('a'+i%26))); err != nil {
+		if _, err := db.Exec(`INSERT INTO assessment (pin, year, mailed, certified) VALUES (?, 2026, 1, 1)`, strings.Repeat("x", 100)+string(rune('a'+i%26))); err != nil {
 			t.Fatal(err)
 		}
 	}

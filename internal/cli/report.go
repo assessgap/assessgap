@@ -33,7 +33,11 @@ func runReport(ctx context.Context, env *Env, args []string) error {
 	var buf bytes.Buffer
 	err = packet.Render(&buf, r, time.Now())
 	if errors.Is(err, packet.ErrUnsupported) {
-		return fmt.Errorf("no evidence report for this property: %s", r.Unsupported)
+		reason := r.Unsupported
+		if reason == "" {
+			reason = packet.TooFewReason
+		}
+		return fmt.Errorf("no evidence report for this property: %s", reason)
 	}
 	if err != nil {
 		return err

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/assessgap/assessgap/internal/bor"
+	"github.com/assessgap/assessgap/internal/format"
 )
 
 func runTownship(ctx context.Context, env *Env, args []string) error {
@@ -53,7 +54,7 @@ func runTownship(ctx context.Context, env *Env, args []string) error {
 func stateName(st bor.Status) string {
 	switch st.State {
 	case bor.Open:
-		return fmt.Sprintf("open (%d days left)", st.DaysLeft)
+		return "open (" + format.DaysLeft(st.DaysLeft) + ")"
 	case bor.Upcoming:
 		return "upcoming"
 	case bor.Closed:

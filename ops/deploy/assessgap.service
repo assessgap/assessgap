@@ -11,6 +11,8 @@ ExecStart=/srv/assessgap/assessgap serve -addr 127.0.0.1:8080 -db /srv/assessgap
 Restart=on-failure
 RestartSec=2
 MemoryMax=600M
+# app.db holds signup emails: files the service creates are readable by it only.
+UMask=0077
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true

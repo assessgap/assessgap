@@ -20,7 +20,21 @@ var Tables = ingest.Tables
 type Snapshot struct {
 	Counts     map[string]int64 // table → rows; a missing table is absent from the map
 	LatestYear int              // MAX(assessment.year)
+	// SplitShare is the share of the latest year's assessed values whose
+	// building/land split, from the same stage, is on record. Reports compare
+	// building AV, so a home without it gets no comparison; row counts can't
+	// see the split go missing (say, certified totals published before their
+	// split).
+	SplitShare float64
 }
+
+// splitSQL counts the latest year's assessed values and those with a split,
+// choosing the stage as comps does (certified, else mailed).
+const splitSQL = `
+SELECT COUNT(*), COALESCE(SUM(CASE WHEN certified IS NOT NULL
+	THEN certified_bldg IS NOT NULL AND certified_land IS NOT NULL
+	ELSE mailed_bldg IS NOT NULL AND mailed_land IS NOT NULL END), 0)
+FROM assessment WHERE year = ? AND COALESCE(certified, mailed) IS NOT NULL`
 
 // Take reads row counts for Tables and the latest assessment year.
 // Missing tables are left out of Counts rather than treated as errors, so a
@@ -48,6 +62,13 @@ func Take(ctx context.Context, db *sql.DB) (Snapshot, error) {
 			return s, err
 		}
 		s.LatestYear = int(y.Int64)
+		var valued, split int64
+		if err := db.QueryRowContext(ctx, splitSQL, s.LatestYear).Scan(&valued, &split); err != nil {
+			return s, fmt.Errorf("assessment split: %w", err)
+		}
+		if valued > 0 {
+			s.SplitShare = float64(split) / float64(valued)
+		}
 	}
 	return s, nil
 }
@@ -80,6 +101,10 @@ func Check(old *Snapshot, cur Snapshot, maxShrink float64) []string {
 	if old != nil && cur.LatestYear < old.LatestYear {
 		problems = append(problems, fmt.Sprintf("assessment: latest year went backwards (%d → %d)",
 			old.LatestYear, cur.LatestYear))
+	}
+	if old != nil && old.SplitShare-cur.SplitShare > maxShrink {
+		problems = append(problems, fmt.Sprintf("assessment: building/land split on record for %.1f%% of %d values, was %.1f%% of %d's, limit %.1f points",
+			100*cur.SplitShare, cur.LatestYear, 100*old.SplitShare, old.LatestYear, 100*maxShrink))
 	}
 	return problems
 }

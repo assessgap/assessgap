@@ -1,5 +1,5 @@
 """Daily traffic summary from Caddy's JSON access log. Runs on the web server
-(see ops/stats.sh). It prints counts only, never IPs or PINs.
+(see ops/stats.sh). It prints counts only, never IPs, PINs or queries.
 
 usage: python3 stats.py [days] [logdir]
 """
@@ -13,12 +13,18 @@ tz = ZoneInfo("America/Chicago")
 since = datetime.datetime.now(tz).date() - datetime.timedelta(days=days - 1)
 
 BOT = re.compile(r"bot|crawl|spider|slurp|curl|wget|python|go-http|httpx|scan|preview|monitor|uptime|headless", re.I)
-PAGES = {"/", "/how-it-works", "/terms", "/privacy"}
+PAGES = {"/", "/how-it-works", "/terms", "/privacy", "/townships", "/search"}
+TOWNSHIP = re.compile(r"^/townships/[a-z-]+$")
 REPORT = re.compile(r"^/check/[0-9-]+$")
 PDF = re.compile(r"^/check/[0-9-]+/report\.pdf$")
 
 day = collections.defaultdict(lambda: collections.Counter())
 visitors = collections.defaultdict(set)
+# The search box asks /search as you type (htmx), and most people click a
+# result instead of submitting, so a search is a visitor who asked at least
+# one real query that day, not a request: one typed address is 5-10 requests.
+searchers = collections.defaultdict(set)
+first = None  # earliest day the log still holds
 referrers, sources, bots = collections.Counter(), collections.Counter(), collections.Counter()
 
 def lines():
@@ -36,6 +42,7 @@ for line in lines():
     if req.get("host") != "assessgap.com":
         continue
     d = datetime.datetime.fromtimestamp(e["ts"], tz).date()
+    first = d if first is None else min(first, d)
     if d < since:
         continue
     h = req.get("headers", {})
@@ -53,17 +60,20 @@ for line in lines():
             bots[d] += 1
         continue
     htmx = "Hx-Request" in h or "HX-Request" in h
-    if method == "GET" and status == 200 and not htmx and (path in PAGES or REPORT.match(path)):
+    ip = req.get("client_ip") or req.get("remote_ip")
+    if method == "GET" and status == 200 and not htmx and (path in PAGES or TOWNSHIP.match(path) or REPORT.match(path)):
         c["page views"] += 1
-        visitors[d].add(req.get("client_ip") or req.get("remote_ip"))
+        visitors[d].add(ip)
         ref = (h.get("Referer") or [""])[0]
         host = urlsplit(ref).hostname or ""
         if host and not host.endswith("assessgap.com"):
             referrers[host.removeprefix("www.")] += 1
         for src in parse_qs(u.query).get("src", []):
             sources[src[:40]] += 1
-    if method == "GET" and path == "/search" and not htmx:
-        c["searches"] += 1
+    # Live search (htmx) and a submitted search (303 to the report, or 200).
+    if method == "GET" and path == "/search" and status < 400:
+        if len("".join(parse_qs(u.query).get("q", [""])[0].split())) >= 3:
+            searchers[d].add(ip)
     if method == "GET" and status == 200 and REPORT.match(path):
         c["reports viewed"] += 1
     if method == "GET" and status == 200 and PDF.match(path):
@@ -71,15 +81,18 @@ for line in lines():
     if method == "POST" and path == "/notify" and status < 400:
         c["email signups"] += 1
 
-cols = ["visitors", "page views", "searches", "reports viewed", "PDFs downloaded", "email signups", "5xx", "busy (503)", "bot hits"]
+cols = ["visitors", "page views", "searchers", "reports viewed", "PDFs downloaded", "email signups", "5xx", "busy (503)", "bot hits"]
 print(f"{'day':<11}" + "".join(f"{k:>16}" for k in cols))
 tot = collections.Counter()
 for i in range(days):
     d = since + datetime.timedelta(days=i)
     row = dict(day[d]); row["visitors"] = len(visitors[d]); row["bot hits"] = bots[d]
+    row["searchers"] = len(searchers[d])
     tot.update(row)
     print(f"{d.isoformat():<11}" + "".join(f"{row.get(k, 0):>16}" for k in cols))
-print(f"{'total':<11}" + "".join(f"{tot.get(k, 0):>16}" for k in cols) + "   (visitors: sum of daily uniques)")
+print(f"{'total':<11}" + "".join(f"{tot.get(k, 0):>16}" for k in cols) + "   (visitors, searchers: sum of daily uniques)")
+if first is None or first > since:
+    print(f"\nThe access log starts {first or 'nowhere (no lines)'}; earlier days read 0 because they've been rotated out.")
 for title, counter in (("Referrers", referrers), ("?src= tags", sources)):
     if counter:
         print(f"\n{title}:")

@@ -28,11 +28,11 @@ Everything here compares **assessed values** and the characteristics the Assesso
 
 ## Summary
 
-- **The engine uses 12 characteristics today**: building sq ft, year built, land sq ft, full and half baths, residence type, exterior wall, basement, number of buildings (cards), class, neighborhood and, since 2026-11-25c, location (parcel latitude/longitude, for distance). Bedrooms and rooms are used only in the data checks and the display; basement finish, central air, fireplaces and garage in the evidence grid and the "differences" line.
+- **The engine uses 11 characteristics today**: building sq ft, year built, land sq ft, full and half baths, residence type, exterior wall, number of buildings (cards), class, neighborhood and, since 2026-11-25c, location (parcel latitude/longitude, for distance, the heaviest similarity term since 2026-11-26). Bedrooms and rooms are used only in the data checks and the display; basement type (weight 0 since 2026-11-26), basement finish, central air, fireplaces and garage in the evidence grid and the "differences" line.
 - **Well filled and with real variety** (good candidates to offer as user choices): building sq ft, land sq ft, year built, bedrooms, rooms, full and half baths, residence type (5 values), exterior wall (4), basement type (4), basement finish (3), garage size (8), central air (2), attic type and finish (3 each), fireplaces, porch (3), garage attached (2).
 - **Filled but almost constant** (99%+ one value; not useful for matching, and they could mislead): construction quality, repair condition, CDU (the portal itself says "not well maintained"), site desirability, use, apartments, commercial units.
 - **Too sparse**: renovation (1.2% filled, and only ever "Yes").
-- **Location**: today's only location rule is "same Assessor neighborhood". The parcel universe adds latitude/longitude, census tract and block group, municipality, school districts, ward and community area, flood and noise indicators, subdivision ID and a walkability score. Parcel proximity (Part 2) adds the distance to the 3 nearest neighbors, transit, major roads, railroads, parks and water. Any of these could support "within N feet" or "same subdivision" rules.
+- **Location**: today's location rules are "same Assessor neighborhood" and straight-line distance between parcel centers (4 per mile, capped at 1 mile). The parcel universe adds latitude/longitude, census tract and block group, municipality, school districts, ward and community area, flood and noise indicators, subdivision ID and a walkability score. Parcel proximity (Part 2) adds the distance to the 3 nearest neighbors, transit, major roads, railroads, parks and water. Any of these could support "within N feet" or "same subdivision" rules.
 - **Assessed values**: the 2026 certified value is present for 47.6% of supported homes (the Assessor certifies township by township), and the Board of Review value for none yet. That is why reports say whether they use mailed or certified values.
 
 ## Part 1: datasets we ingest
@@ -63,28 +63,28 @@ API rows: 30,656,402. Rows last updated 2026-11-15. Fill rates over 934,627 rows
 | `char_rooms` | number | Rooms. Number of total rooms in the building (excluding baths). Not to be confused with bedrooms | 100.0% | 36 | R (check) |
 | `char_fbath` | number | Full baths. Defined as having a bath or shower. If this value is missing, the default value is set to 1. Values: 1 (57%), 2 (34%), 3 (7%), 4 (2%) | 100.0% | 16 | E (distance, check) |
 | `char_hbath` | number | Half baths. Defined as bathrooms without a shower or bathtub. Values: 0 (51%), 1 (47%), 2 (2%) | 99.7% | 13 | E (distance) |
-| `char_frpl` | number | Fireplaces. Counted as the number of flues one can see from the outside of the building. Values: 0 (67%), 1 (28%), 2 (4%), 3 (1%) | 99.2% | 12 | B |
+| `char_frpl` | number | Fireplaces. Counted as the number of flues one can see from the outside of the building. Values: 0 (67%), 1 (28%), 2 (4%), 3 (1%) | 99.2% | 12 | R (grid, differences) |
 | `char_type_resd` | text | Type of residence. Values: 1 Story (44%), 2 Story (33%), 1.5 Story (11%), Split Level (10%), 3 Story + (2%) | 100.0% | 5 | E (distance) |
 | `char_cnst_qlty` | text | Construction quality. Values: Average (99%), Deluxe (1%), Poor (0%) | 100.0% | 3 | B |
 | `char_apts` | text | Apartments. Number of apartments for class 211 and 212 properties. Values: None (99%), Two–Six (under 0.5%) | 99.3% | 6 | B |
 | `char_attic_fnsh` | text | Attic finish. Values: None (85%), Living Area (14%), Partial (0%) | 99.4% | 3 | – |
 | `char_gar1_att` | text | Garage 1 attached. Values: No (65%), Yes (35%) | 99.8% | 2 | – |
 | `char_gar1_area` | text | Is Garage 1 physically included within the building area? If yes, the garage area is subtracted from the building square feet calculation by the field agent. Values: No (89%), Yes (10%) | 99.8% | 2 | – |
-| `char_gar1_size` | text | Garage 1 size. Values: 2 cars (58%), 1 cars (14%), 0 cars (12%), 1.5 cars (6%), 2.5 cars (5%), 3 cars (4%), 4 cars (0%), 3.5 cars (0%) | 99.9% | 8 | B |
+| `char_gar1_size` | text | Garage 1 size. Values: 2 cars (58%), 1 cars (14%), 0 cars (12%), 1.5 cars (6%), 2.5 cars (5%), 3 cars (4%), 4 cars (0%), 3.5 cars (0%) | 99.9% | 8 | R (grid, differences) |
 | `char_gar1_cnst` | text | Garage 1 exterior wall material. Values: Frame (60%), Masonry (22%), Frame + Masonry (6%), Stucco (0%) | 87.8% | 4 | – |
 | `char_attic_type` | text | Attic type. Values: None (67%), Full (18%), Partial (15%) | 100.0% | 3 | – |
-| `char_bsmt` | text | Basement type. Values: Full (58%), Partial (24%), Slab (12%), Crawl (6%) | 99.9% | 4 | E (distance) |
+| `char_bsmt` | text | Basement type. Values: Full (58%), Partial (24%), Slab (12%), Crawl (6%) | 99.9% | 4 | R (grid, differences; weight 0 since 2026-11-26) |
 | `char_ext_wall` | text | Exterior wall material. Values: Masonry (40%), Frame (31%), Frame + Masonry (27%), Stucco (2%) | 100.0% | 4 | E (distance) |
 | `char_heat` | text | Central heating. Values: Warm Air Furnace (89%), Hot Water Steam (10%), Electric Heater (0%), None (0%) | 100.0% | 4 | – |
 | `char_repair_cnd` | text | Repair condition. Values: Average (99%), Above Average (1%), Below Average (0%) | 100.0% | 3 | B |
-| `char_bsmt_fin` | text | Basement finish. Values: Unfinished (65%), Formal Rec Room (35%), Apartment (0%) | 99.6% | 3 | B |
+| `char_bsmt_fin` | text | Basement finish. Values: Unfinished (65%), Formal Rec Room (35%), Apartment (0%) | 99.6% | 3 | R (grid, differences) |
 | `char_roof_cnst` | text | Roof material. Values: Shingle + Asphalt (95%), Tar + Gravel (3%), Shake (1%), Tile (1%), Other (1%), Slate (0%) | 100.0% | 6 | – |
 | `char_use` | text | Single vs. multi-family use. Values: Single-Family (100%), Multi-Family (0%) | 100.0% | 2 | – |
 | `char_site` | text | Site desirability. Values: Not Relevant To Value (99%), Beneficial To Value (1%), Detracts From Value (0%) | 100.0% | 3 | – |
 | `char_ncu` | text | Number of commercial units on the parcel (the vast majority are for properties with class 212). Values: 0 (99%) | 98.9% | 6 | – |
 | `char_renovation` | text | Renovation. Values: Yes (1%) | 1.2% | 1 | – |
 | `char_porch` | text | Porch. Values: None (85%), Frame Enclosed (14%), Masonry Enclosed (1%) | 99.8% | 3 | – |
-| `char_air` | text | Central air conditioning. Values: Central A/C (57%), No Central A/C (43%) | 100.0% | 2 | B |
+| `char_air` | text | Central air conditioning. Values: Central A/C (57%), No Central A/C (43%) | 100.0% | 2 | R (grid, differences) |
 | `char_tp_plan` | text | Design plan. Values: Stock Plan (69%), None (29%), Architect (2%) | 100.0% | 3 | – |
 | `row_id` | text | Unique row key for API | 100.0% | 934627 | – |
 
@@ -102,12 +102,12 @@ API rows: 50,671,458. Rows last updated 2026-11-15. Fill rates over 929,070 rows
 | `township_code` | text | Township code | 100.0% | 38 | – |
 | `township_name` | text | Township name | 100.0% | 38 | – |
 | `nbhd` | text | Assessor neighborhood code, first two digits are township, last three are neighborhood | 100.0% | 847 | E (pool) |
-| `mailed_bldg` | number | Assessor mailed building value | 100.0% | 103460 | – |
-| `mailed_land` | number | Assessor mailed land value | 100.0% | 37699 | – |
+| `mailed_bldg` | number | Assessor mailed building value | 100.0% | 103460 | E (building AV/sq ft if not certified) |
+| `mailed_land` | number | Assessor mailed land value | 100.0% | 37699 | E (land check if not certified) |
 | `mailed_tot` | number | Assessor mailed total value | 100.0% | 83385 | E (AV if not certified) |
 | `mailed_hie` | number | Assessor mailed home improvement exemption value | 100.0% | 2247 | – |
-| `certified_bldg` | number | Assessor certified building value | 47.6% | 94239 | – |
-| `certified_land` | number | Assessor certified land value | 47.6% | 34942 | – |
+| `certified_bldg` | number | Assessor certified building value | 47.6% | 94239 | E (building AV/sq ft) |
+| `certified_land` | number | Assessor certified land value | 47.6% | 34942 | E (land check) |
 | `certified_tot` | number | Assessor certified total value | 47.6% | 66381 | E (AV) |
 | `certified_hie` | number | Assessor certified home improvement exemption value | 47.6% | 1677 | – |
 | `board_bldg` | number | Board of Review certified building value | 0.0% | 0 | – |
@@ -135,8 +135,8 @@ API rows: 1,864,469. Rows last updated 2026-11-15. Fill rates over 929,070 suppo
 | `nbhd_code` | text | Assessor neighborhood code, first two digits are township, last three are neighborhood | 100.0% | 847 | E (appeal stats by neighborhood) |
 | `tax_code` | text | Tax district code, as seen on individual property tax bills (Not currently up-to-date) | 100.0% | 1534 | B |
 | `zip_code` | text | Property zip code | 99.7% | 182 | – |
-| `lon` | number | Parcel centroid longitude | 99.9% | 928204 | B |
-| `lat` | number | Parcel centroid latitude | 99.9% | 928228 | B |
+| `lon` | number | Parcel centroid longitude | 99.9% | 928204 | E (distance) |
+| `lat` | number | Parcel centroid latitude | 99.9% | 928228 | E (distance) |
 | `x_3435` | number | Parcel centroid X coordinate (CRS 3435) | 99.9% | 928239 | – |
 | `y_3435` | number | Parcel centroid Y coordinate (CRS 3435) | 99.9% | 928297 | – |
 | `census_block_group_geoid` | text | Census block group GEOID | 99.9% | 3830 | – |
@@ -436,32 +436,35 @@ Not useful here: **Assessor - Commercial Valuation Data** (`csik-bsws`) is comme
 
 ## Part 3: proposal for a configurable comparison
 
-Today's rules (see `docs/methodology.md`) are a fixed pipeline: a pool, hard filters that widen in four steps, a weighted distance, and the 20 nearest. A config can express the same thing as a list of criteria, so the default config reproduces today's results exactly. That can be tested: the backtest and `assessgap live-eval` must give identical output with the default config.
+Today's rules (see `docs/methodology.md`) are a fixed pipeline: a pool, hard filters that widen in four steps, a weighted distance, and the 30 most similar (nearness weighted most). A config can express the same thing as a list of criteria, so the default config reproduces today's results exactly. That can be tested: the backtest and `assessgap live-eval` must give identical output with the default config.
 
 ```yaml
 # default.yaml: today's rules
 pool:
   same: [nbhd, year]                  # Assessor neighborhood and tax year
-  require: {num_cards: 1, bldg_sf: ">0", av: ">0"}
+  require: {num_cards: 1, bldg_sf: ">0", av: ">0", has_split: true}   # building/land split on record
   classes: [202, 203, 204, 205, 206, 207, 208, 209, 210, 234, 278, 295]
-keep: 20                              # nearest homes kept
+keep: 30                              # most similar homes kept
 min_comps: 8                          # widen until at least this many
 criteria:                             # each: field, rule, tolerance per widening step, weight
   - {field: class,     match: exact,      widen: [exact, group, group, group], weight: 0.25}
-  - {field: bldg_sf,   match: within_pct, steps: [25, 25, 35, 50],             weight: 4,   scale: subject}
+  - {field: bldg_sf,   match: within_pct, steps: [25, 25, 35, 50],             weight: 1,   scale: subject}
   - {field: yrblt,     match: within,     steps: [15, 15, 25, 40],             weight: 1,   scale: 15}
   - {field: baths,     match: distance,                                        weight: 0.5}
   - {field: land_sf,   match: distance,   cap: 1,                              weight: 0.5, scale: subject}
   - {field: type_resd, match: same,                                            weight: 0.5}
   - {field: ext_wall,  match: same,                                            weight: 0.5}
-  - {field: bsmt,      match: same,                                            weight: 0.5}
+  - {field: location,  match: miles,      cap: 1,                              weight: 4}   # unknown location counts as the cap
 ```
+
+Ties go to the nearer home. Basement type is no longer a criterion (weight 0 since 2026-11-26).
 
 Rules, each implemented once and shared by every field:
 
 - `exact` / `same`: a hard filter (`exact`) or a mismatch penalty of `weight` (`same`).
 - `within` / `within_pct`: a hard filter at the current widening step's tolerance, plus `weight·|Δ|/scale` in the distance.
 - `distance`: no filter, only the distance term (optionally capped).
+- `miles`: no filter, `weight` per mile between parcel centers, capped.
 - Later, location rules over Part 2 data: `within_ft` (from parcel centroids, or `nearest_neighbor_*` for next-door comparisons), `same_area` on a geography column (subdivision, census tract, school district).
 
 What users could change: turn a criterion on or off, tighten or loosen its tolerance, and choose its weight from a few presets (ignore, low, normal, high) rather than raw numbers. Bounds keep results meaningful: the pool always stays within one Assessor neighborhood and tax year, because that is what the Board's own uniformity guidance compares ("same neighborhood and within the same classification code", see `docs/bor-filing-facts.md`). Building sq ft also stays required, because AV per sq ft depends on it. The report would print the config used, alongside today's "Compared on" line.

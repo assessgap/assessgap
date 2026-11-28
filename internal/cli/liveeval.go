@@ -147,6 +147,19 @@ func compPINs(cs []comps.Comp) []string {
 	return out
 }
 
+// diffField is the field a compareReports line names, without its details:
+// "comp PINs" and "comp details" must count apart, since only the first means
+// a different set of similar homes.
+func diffField(d string) string {
+	switch {
+	case strings.HasPrefix(d, "year/stage "):
+		return "year/stage"
+	case strings.HasPrefix(d, "live report error: "):
+		return "live report error"
+	}
+	return d
+}
+
 // compareReports lists what differs between the local and live reports.
 func compareReports(a, b *comps.Report) []string {
 	var d []string
@@ -259,7 +272,7 @@ func printLiveEval(w io.Writer, rs []liveResult, failures []string, skipped int,
 		}
 		core := true
 		for _, d := range r.diffs {
-			fieldCount[strings.SplitN(d, " ", 2)[0]]++
+			fieldCount[diffField(d)]++
 			if d == "subject" || d == "stats" || d == "comp PINs" || strings.HasPrefix(d, "year/stage") {
 				core = false
 			}
